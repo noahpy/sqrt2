@@ -1,5 +1,4 @@
 
-
 ### Ignore binaries (files without extension)
 # Ignore all
 *
@@ -7,3 +6,5 @@
 !*.*
 # Unignore all dirs
 !*/
+# Unignore main binary
+!Implementierung/main
