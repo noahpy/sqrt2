@@ -1,8 +1,4 @@
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 0a2a7476d84d1ea0a6c69b408f2e3f2eef8df15f
 ### Ignore binaries (files without extension)
 # Ignore all
 *
@@ -10,8 +6,5 @@
 !*.*
 # Unignore all dirs
 !*/
-<<<<<<< HEAD
-=======
 # Unignore main binary
 !Implementierung/main
->>>>>>> 0a2a7476d84d1ea0a6c69b408f2e3f2eef8df15f
