@@ -7,7 +7,7 @@
 struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   uint32_t *bignumDigits = NULL;
   do {
-    bignumDigits = (uint32_t*) malloc(a.size+b.size * sizeof(*bignumDigits));
+    bignumDigits = (uint32_t*) malloc((a.size+b.size) * sizeof(*bignumDigits));
   } while (!bignumDigits);
 
   struct bignum result = { .size = a.size+b.size , .digits = bignumDigits };
