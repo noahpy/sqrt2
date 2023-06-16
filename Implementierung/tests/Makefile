@@ -1,5 +1,5 @@
 
 all:
-	gcc test_rahmenprogramm.c ../rahmenprogramm.c -o test_rahmenprogramm -Wall -Wextra -Wpedantic -Werror -std=c17
+	gcc test_rahmenprogramm.c ../rahmenprogramm.c -o test_rahmenprogramm -g -Wall -Wextra -Wpedantic -std=c17
 clear:
 	rm test_rahmenprogramm
