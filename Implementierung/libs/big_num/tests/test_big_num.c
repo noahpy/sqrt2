@@ -17,33 +17,33 @@ void test_multiplication(struct bignum a, struct bignum b, struct bignum expecte
     if (result.size == expected.size){
         for (size_t i = 0; i < result.size; i++) {
             if (result.digits[i] != expected.digits[i]) {
-                printf("Test failed: multiplicationBignum(");
+                printf("Test failed: multiplicationBignum( ");
                 for (size_t j = a.size-1; j > 0; j--){
-                    printf("%d ", a.digits[j]);
+                    printf("%o ", a.digits[j]);
                 }
-                printf("%d ", a.digits[0]);
+                printf("%o ", a.digits[0]);
                 printf(", ");
                 for (size_t j = b.size-1; j > 0; j--){
-                    printf("%d ", b.digits[j]);
+                    printf("%o ", b.digits[j]);
                 }
-                printf("%d ", b.digits[0]);
-                printf(").digits[%zu] == %d, but got %d\n", i, expected.digits[i], result.digits[i]);
+                printf("%o ", b.digits[0]);
+                printf(").digits[%zu] == %o, but got %o\n", i, expected.digits[i], result.digits[i]);
                 free(result.digits);
                 return;
             }
         }
         test_passed++;
     } else {
-        printf("Test failed: multiplicationBignum(");
+        printf("Test failed: multiplicationBignum( ");
         for (size_t j = b.size-1; j > 0; j--){
-            printf("%d ", a.digits[j]);
+            printf("%o ", a.digits[j]);
         }
-        printf("%d ", a.digits[0]);
+        printf("%o ", a.digits[0]);
         printf(", ");
         for (size_t j = b.size-1; j > 0; j--){
-            printf("%d ", b.digits[j]);
+            printf("%o ", b.digits[j]);
         }
-        printf("%d ", b.digits[0]);
+        printf("%o ", b.digits[0]);
         printf(") - size should be %zu, but was %zu\n", expected.size, result.size);
     }
     free(result.digits);
@@ -92,9 +92,37 @@ int main(void){
   expected.size = 3;
   test_multiplication(a, b, expected);
 
+  // 0x13214ab113214ab1 * 0x13214ab113214ab1 = 0x16df56aa048b9363c47922c9d6cce61
+  *a_digits = 0x13214ab1; *(a_digits+1) = 0x13214ab1; *b_digits = 0x13214ab1; *(b_digits+1) = 0x13214ab1; *expected_digits = 0x9d6cce61; *(expected_digits+1) = 0x3c47922c; *(expected_digits+2) = 0xa048b936; *(expected_digits+3) = 0x16df56a;
+  a.size = 2; b.size = 2; expected.size = 4;
+  test_multiplication(a, b, expected);
+
+  // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff_ffffffff = 0xffffffff_ffffffff_fffffffe_00000000_00000000_00000001
+  *a_digits = 0xffffffff; *(a_digits+1) = 0xffffffff; *(a_digits+2) = 0xffffffff; *b_digits = 0xffffffff; *(b_digits+1) = 0xffffffff; *(b_digits+2) = 0xffffffff; *expected_digits = 0x00000001; *(expected_digits+1) = 0x00000000; *(expected_digits+2) = 0x00000000; *(expected_digits+3) = 0xfffffffe;
+  *(expected_digits+4) = 0xffffffff; *(expected_digits+5) = 0xffffffff;
+  a.size = 3; b.size = 3; expected.size = 6;
+  test_multiplication(a, b, expected);
+
+  // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff = 0xffffffff_fffffffe_ffffffff_00000000_00000001
+  *a_digits = 0xffffffff; *(a_digits+1) = 0xffffffff; *(a_digits+2) = 0xffffffff; *b_digits = 0xffffffff; *(b_digits+1) = 0xffffffff; *expected_digits = 0x00000001; *(expected_digits+1) = 0x00000000; *(expected_digits+2) = 0xffffffff; *(expected_digits+3) = 0xfffffffe;
+  *(expected_digits+4) = 0xffffffff;
+  a.size = 3; b.size = 2; expected.size = 5;
+  test_multiplication(a, b, expected);
+
+  // 0x5234ad_94724362 * 0x3abf = 0x12_dd44a123_a4847a1e
+  *a_digits = 0x94724362; *(a_digits+1) = 0x5234ad; *b_digits = 0x3abf; *expected_digits = 0xa4847a1e; *(expected_digits+1) = 0xdd44a123; *(expected_digits+2) = 0x12;
+  a.size = 2; b.size = 1; expected.size = 3;
+  test_multiplication(a, b, expected);
+
+  // 0xadf_ebcfefef_beaaa420 * 0xadcbef_afafef69 = 0x7_61fc1a06_bad8d17d_fc98d30e_95173120
+  *a_digits = 0xbeaaa420; *(a_digits+1) = 0xebcfefef; *(a_digits+2) = 0xadf; *b_digits = 0xafafef69; *(b_digits+1) = 0xadcbef; *expected_digits = 0x95173120; *(expected_digits+1) = 0xfc98d30e; *(expected_digits+2) = 0xbad8d17d; *(expected_digits+3) = 0x61fc1a06;
+  *(expected_digits+4) = 0x7;
+  a.size = 3; b.size = 2; expected.size = 5;
+  test_multiplication(a, b, expected);
+
   // print overall result
   float success_rate = ((float)test_passed)/((float)test_cases) * 100;
-  printf("PASSED: %d, FAILED: %d, SUCESS RATE: %.1f%%\n", test_passed, (test_cases-test_passed), success_rate);
+  printf("PASSED: %d, FAILED: %d, SUCCESS RATE: %.1f%%\n", test_passed, (test_cases-test_passed), success_rate);
   free(a_digits); free(b_digits); free(expected_digits);
 
   return 0;
