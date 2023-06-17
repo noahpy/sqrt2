@@ -93,7 +93,7 @@ int main(void){
   expected_digits = (uint32_t*) malloc(16 * sizeof(*expected_digits));
 
   if (!a_digits || !b_digits || !expected_digits) {
-    printf("failed alloc a b or expected");
+    printf("Failed allocation");
     return EXIT_FAILURE;
   }
 
@@ -104,6 +104,7 @@ int main(void){
   // 4 * 8 = 32
   *a_digits = 4; *b_digits = 8; *expected_digits = 32;
   test_multiplication(a, b, expected);
+
   // 4 + 8 = 12
   *a_digits = 4; *b_digits = 8;
   *expected_digits = 12;
@@ -114,6 +115,7 @@ int main(void){
   expected.size = 3;
   *expected_digits = 32;
   test_multiplication(a, b, expected);
+
   // 4 + 8 = 12, but a.size is 2
   *expected_digits = 12;
   test_addition(a, b, expected);
@@ -123,6 +125,7 @@ int main(void){
   a.size = 1;
   expected.size = 2;
   test_multiplication(a, b, expected);
+
   // 9 + 1 = 10
   *expected_digits = 10;
   test_addition(a, b, expected);
@@ -130,6 +133,7 @@ int main(void){
   // 1 * 9 = 9
   *a_digits = 1; *b_digits = 9; *expected_digits = 9;
   test_multiplication(a, b, expected);
+
   // 1 + 9 = 10
   *expected_digits = 10;
   test_addition(a, b, expected);
@@ -137,6 +141,7 @@ int main(void){
   // 754 * 754 = 568516
   *a_digits = 754; *b_digits = 754; *expected_digits = 568516;
   test_multiplication(a, b, expected);
+
   // 754 + 754 = 1508
   *expected_digits = 1508;
   test_addition(a, b, expected);
@@ -146,6 +151,7 @@ int main(void){
   a.size = 2;
   expected.size = 3;
   test_multiplication(a, b, expected);
+
   // 4294967296 + 1 = 4294967297
   *expected_digits = 1; *(expected_digits+1) = 1;
   test_addition(a, b, expected);
@@ -154,6 +160,7 @@ int main(void){
   *a_digits = 0x13214ab1; *(a_digits+1) = 0x13214ab1; *b_digits = 0x13214ab1; *(b_digits+1) = 0x13214ab1; *expected_digits = 0x9d6cce61; *(expected_digits+1) = 0x3c47922c; *(expected_digits+2) = 0xa048b936; *(expected_digits+3) = 0x16df56a;
   a.size = 2; b.size = 2; expected.size = 4;
   test_multiplication(a, b, expected);
+
   // 0x13214ab1_13214ab1 + 0x13214ab1_13214ab1 = 0x26429562_26429562
   expected.size = 3;
   *expected_digits = 0x26429562; *(expected_digits+1) = 0x26429562; *(expected_digits+2) = 0x0;
@@ -164,6 +171,7 @@ int main(void){
   *(expected_digits+4) = 0xffffffff; *(expected_digits+5) = 0xffffffff;
   a.size = 3; b.size = 3; expected.size = 6;
   test_multiplication(a, b, expected);
+
   // 0xffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff_ffffffff = 0x1_ffffffff_ffffffff_fffffffe
   expected.size = 4;
   *expected_digits = 0xfffffffe; *(expected_digits+1) = 0xffffffff; *(expected_digits+2) = 0xffffffff; *(expected_digits+3) = 0x1;
@@ -174,6 +182,7 @@ int main(void){
   *(expected_digits+4) = 0xffffffff;
   a.size = 3; b.size = 2; expected.size = 5;
   test_multiplication(a, b, expected);
+
   // 0xffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff = 0x1_00000000_ffffffff_fffffffe
   expected.size = 4;
   *expected_digits = 0xfffffffe; *(expected_digits+1) = 0xffffffff; *(expected_digits+2) = 0x00000000; *(expected_digits+3) = 0x1;
@@ -183,9 +192,10 @@ int main(void){
   *a_digits = 0x94724362; *(a_digits+1) = 0x5234ad; *b_digits = 0x3abf; *expected_digits = 0xa4847a1e; *(expected_digits+1) = 0xdd44a123; *(expected_digits+2) = 0x12;
   a.size = 2; b.size = 1; expected.size = 3;
   test_multiplication(a, b, expected);
+
   // 0x5234ad_94724362 + 0x3abf = 0x5234ad_94727e21
   expected.size = 3;
-  *expected_digits = 0x94727e21; *(expected_digits+1) = 0x5234ad;
+  *expected_digits = 0x94727e21; *(expected_digits+1) = 0x5234ad; *(expected_digits+2) = 0x0;
   test_addition(a, b, expected);
 
   // 0xadf_ebcfefef_beaaa420 * 0xadcbef_afafef69 = 0x7_61fc1a06_bad8d17d_fc98d30e_95173120
@@ -193,9 +203,10 @@ int main(void){
   *(expected_digits+4) = 0x7;
   a.size = 3; b.size = 2; expected.size = 5;
   test_multiplication(a, b, expected);
+
   // 0xadf_ebcfefef_beaaa420 + 0xadcbef_afafef69 = 0xadf_ec7dbbdf_6e5a9389
   expected.size = 4;
-  *expected_digits = 0x6e5a9389; *(expected_digits+1) = 0xec7dbbdf; *(expected_digits+2) = 0xadf;
+  *expected_digits = 0x6e5a9389; *(expected_digits+1) = 0xec7dbbdf; *(expected_digits+2) = 0xadf; *(expected_digits+3) = 0x0;
   test_addition(a, b, expected);
 
 

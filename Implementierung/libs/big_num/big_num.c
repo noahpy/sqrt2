@@ -15,6 +15,7 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
 
   struct bignum result = { .size = a.size+b.size , .digits = bignumDigits };
 
+  // Zero all elements
   for (size_t i = 0; i < result.size; i++) {
     bignumDigits[i] = 0;
   }
@@ -47,12 +48,13 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
 
   struct bignum result = { .size = a.size+1 , .digits = bignumDigits };
 
-  for (size_t i = 0; i < a.size; i++) {
-    bignumDigits[i] = a.digits[i];
-  }
-
-  for (size_t i = a.size; i < result.size; i++) {
-    bignumDigits[i] = 0;
+  // Take bignum a into result and zero the rest
+  for (size_t i = 0; i < result.size; i++) {
+    if (i < a.size) {
+      bignumDigits[i] = a.digits[i];
+    } else {
+      bignumDigits[i] = 0;
+    }
   }
 
   // Add the 32bit blocks of b to the corresponding blocks of a 
