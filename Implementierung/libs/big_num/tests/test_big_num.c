@@ -184,9 +184,9 @@ int main(void){
   a.size = 2; b.size = 1; expected.size = 3;
   test_multiplication(a, b, expected);
   // 0x5234ad_94724362 + 0x3abf = 0x5234ad_94727e21
-  // expected.size = 3;
-  // *expected_digits = 0x94727e21; *(expected_digits+1) = 0x5234ad;
-  // test_addition(a, b, expected);
+  expected.size = 3;
+  *expected_digits = 0x94727e21; *(expected_digits+1) = 0x5234ad;
+  test_addition(a, b, expected);
 
   // 0xadf_ebcfefef_beaaa420 * 0xadcbef_afafef69 = 0x7_61fc1a06_bad8d17d_fc98d30e_95173120
   *a_digits = 0xbeaaa420; *(a_digits+1) = 0xebcfefef; *(a_digits+2) = 0xadf; *b_digits = 0xafafef69; *(b_digits+1) = 0xadcbef; *expected_digits = 0x95173120; *(expected_digits+1) = 0xfc98d30e; *(expected_digits+2) = 0xbad8d17d; *(expected_digits+3) = 0x61fc1a06;
@@ -194,9 +194,9 @@ int main(void){
   a.size = 3; b.size = 2; expected.size = 5;
   test_multiplication(a, b, expected);
   // 0xadf_ebcfefef_beaaa420 + 0xadcbef_afafef69 = 0xadf_ec7dbbdf_6e5a9389
-  // expected.size = 4;
-  // *expected_digits = 0x6e5a9389; *(expected_digits+1) = 0xec7dbbdf; *(expected_digits+2) = 0xadf;
-  // test_addition(a, b, expected);
+  expected.size = 4;
+  *expected_digits = 0x6e5a9389; *(expected_digits+1) = 0xec7dbbdf; *(expected_digits+2) = 0xadf;
+  test_addition(a, b, expected);
 
 
   // Addition bignum
