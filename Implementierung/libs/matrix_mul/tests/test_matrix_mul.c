@@ -56,10 +56,10 @@ void runTest(int arr[]) {
     printf("%s", "case correct\n");
 }
 
-int cases[][12] = {{0, 1, 1, 2, 0, 1, 1, 2, 1, 2, 2, 5},
-                   {1, 2, 3, 4, 5, 6, 7, 8, 19, 22, 43, 50}};
-
 int main () {
+    int cases[][12] = {{0, 1, 1, 2, 0, 1, 1, 2, 1, 2, 2, 5},
+                       {1, 2, 3, 4, 5, 6, 7, 8, 19, 22, 43, 50}};
+
     for (int i = 0; i < (sizeof cases)/(12*4); i++) {
         runTest(cases[i]);
     }
