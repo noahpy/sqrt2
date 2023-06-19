@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "mat_fast_exp.h"
 
-// Creates a bignum with value n on the heap
+// Creates a bignum with value n on the heap TODO: Move to bignum
 struct bignum bignumOfInt(uint32_t n) {
     uint32_t *digit = NULL;
     if (!(digit = malloc(sizeof(uint32_t)))) {

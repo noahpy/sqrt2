@@ -3,12 +3,36 @@
 
 // Convert to bignum
 struct bignum ctb(uint32_t i) {
-    struct bignum *b = malloc(sizeof (struct bignum));
-    uint32_t *digits = malloc(sizeof (uint32_t));
+    uint32_t *digits = NULL;
+    if (!(digits = malloc(sizeof(uint32_t)))) {
+        fprintf(stderr, "Could not allocate memory\n");
+        exit(EXIT_FAILURE);
+    }
     *digits = i;
-    b->size = 1;
-    b->digits = digits;
-    return *b;
+    return (struct bignum) {1, digits};
+}
+
+
+// Compares a 4x4 matrix to a uint32_t array
+int compareTo(struct matrix4x4 a, uint32_t arr[]) {
+    if (*(a.a11.digits) != arr[0]) {
+        printf("Wrong value for a11: expected '%d' but got '%d'\n", arr[0], *(a.a11.digits));
+        return 0;
+    }
+    if (*(a.a12.digits) != arr[1]) {
+        printf("Wrong value for a12: expected '%d' but got '%d'\n", arr[1], *(a.a12.digits));
+        return 0;
+    }
+    if (*(a.a21.digits) != arr[2]) {
+        printf("Wrong value for a21: expected '%d' but got '%d'\n", arr[2], *(a.a21.digits));
+        return 0;
+    }
+    if (*(a.a22.digits) != arr[3]) {
+        printf("Wrong value for a22: expected '%d' but got '%d'\n", arr[3], *(a.a22.digits));
+        return 0;
+    }
+
+    return 1;
 }
 
 /*
@@ -19,7 +43,14 @@ struct bignum ctb(uint32_t i) {
  * [8..11] -> Expected 4x4 result matrix
  *
  * */
-void runTest(int arr[]) {
+int test(uint32_t arr[]) {
+    printf("[%d", arr[0]);
+    for (int i = 1; i < 12; i++) {
+        printf(", %d", arr[i]);
+    }
+
+    printf("%s", "]: ");
+
     struct matrix4x4 first = {
             .a11 = ctb(arr[0]),
             .a12 = ctb(arr[1]),
@@ -34,34 +65,50 @@ void runTest(int arr[]) {
     };
 
     // Multiply first in place
-    struct matrix4x4 r = mulMatrix4x4(first, second);
+    first = mulMatrix4x4(first, second);
 
     // Check for correct result
-    if (r.a11.digits[0] != arr[8]) {
-        fprintf(stderr, "Error on a11, expected %d but got %d\n", arr[8], r.a11.digits[0]);
-        return;
+    int result = compareTo(first, (arr + 8));
+    free4x4(first);
+    free4x4(second);
+    if (result) {
+        printf("%s\n", "Successful");
     }
-    if (r.a12.digits[0] != arr[9]) {
-        fprintf(stderr, "Error on a12, expected %d but got %d\n", arr[9], r.a12.digits[0]);
-        return;
-    }
-    if (r.a21.digits[0] != arr[10]) {
-        fprintf(stderr, "Error on a21, expected %d but got %d\n", arr[10], r.a21.digits[0]);
-        return;
-    }
-    if (r.a22.digits[0] != arr[11]) {
-        fprintf(stderr, "Error on a22, expected %d but got %d\n", arr[11], r.a22.digits[0]);
-        return;
-    }
-    printf("%s", "case correct\n");
+
+    return result;
 }
 
-int main () {
-    int cases[][12] = {{0, 1, 1, 2, 0, 1, 1, 2, 1, 2, 2, 5},
-                       {1, 2, 3, 4, 5, 6, 7, 8, 19, 22, 43, 50}};
+int main(void) {
+    uint32_t cases[][12] = {
+            {0,      1,      1,      2,      0,      1,      1,      2,      1,           2,           2,          5},
+            {1,      2,      3,      4,      5,      6,      7,      8,      19,          22,          43,         50},
+            {28363,  15351,  -29458, -27900, -23477, 4115,   -26042, 17066,  -1065648893, 378693911,   1418157266, -597361070},
+            {-11230, 2439,   29702,  -2829,  5452,   -1090,  11646,  6739,   -32821366,   28677121,    128988770,  -51439811},
+            {-25152, -29088, 27720,  25339,  -5788,  -702,   32247,  3297,   -792420960,  -78246432,   656663373,  64083243},
+            {16979,  29955,  -25407, -25747, -19354, 7395,   29320,  32623,  549669034,   1102781670,  -263174962, -1027829146},
+            {-31745, -25390, 24431,  1849,   -4469,  20956,  17641,  31311,  -306036585,  -1460234510, -76563930,  569870075},
+            {30339,  -7850,  5236,   16014,  17020,  -8518,  -7111,  -10696, 572191130,   -174464002,  -24758834,  -215885992},
+            {-25357, -29349, -7726,  14089,  30577,  25938,  13918,  -1700,  -1183820371, -607816566,  -40147200,  -224348288},
+            {11989,  -6665,  16527,  4082,   -25808, -29137, -27073, 10953,  -128970567,  -422325238,  -537040802, -436837053},
+            {32330,  2834,   -268,   18604,  26930,  2465,   -7826,  -14723, 848468016,   37968468,    -152812144, -274567312},
+            {-13220, -32054, -25630, -20638, -21006, -4409,  3857,   -4956,  154067042,   217146604,   458783014,  215284598},
+            {-22096, 13871,  15772,  -10713, 8627,   26960,  -23030, -13962, -510071322,  -789375062,  382785434,  574788026},
+            {-156,   -9662,  32286,  -21353, -9358,  -17298, 29526,  -30152, -283820364,  294027112,   -932601066, 85352428},
+            {15627,  24897,  -14931, 20191,  -18292, 14003,  13013,  -23223, 38135577,    -359358150,  535863335,  -677974386},
+            {4468,   1723,   4863,   -28132, 25067,  32387,  -18264, 26211,  80530484,    189866669,   635703669,  -579869871},
+            {-15594, 13502,  -14631, 15620,  10568,  18759,  12998,  811,    10701604,    -281577724,  48408352,   -261795109},
+            {-10454, 6798,   -2948,  24520,  -11283, 18297,  31084,  -16773, 329261514,   -305299692,  795441964,  -465213516},
+            {13918,  32396,  -20197, 13645,  -30426, -9424,  29233,  425,    523563200,   -117394932,  1013398207, 196135653},
+            {-7656,  -15350, 24837,  370,    -22563, -30049, -25203, -14280, 559608378,   449253144,   -569722341, -751610613}
+    };
 
-    for (int i = 0; i < (sizeof cases)/(12*4); i++) {
-        runTest(cases[i]);
+    uint32_t all = (sizeof(cases) / (sizeof(uint32_t) * 12));
+    uint32_t passed = 0;
+
+    for (uint32_t i = 0; i < all; i++) {
+        passed += test(cases[i]);
     }
+
+    printf("Passed %d out of %d tests: %d%%\n", passed, all, (int) (((double) passed / all) * 100));
     return 0;
 }

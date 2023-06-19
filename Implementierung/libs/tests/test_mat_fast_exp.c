@@ -1,41 +1,33 @@
 #include "stdio.h"
 #include "../mat_fast_exp.h"
 
-// Creates a new 4x4 zero matrix
-struct matrix4x4 createZeroMatrix() {
-    struct matrix4x4 zero = {
-            bignumOfInt(0),
-            bignumOfInt(0),
-            bignumOfInt(0),
-            bignumOfInt(0),
+// Creates a new 4x4 matrix with the given values in array [0...3]
+struct matrix4x4 createMatrix(uint32_t arr[]) {
+    struct matrix4x4 m = {
+            bignumOfInt(arr[0]),
+            bignumOfInt(arr[1]),
+            bignumOfInt(arr[2]),
+            bignumOfInt(arr[3]),
     };
-    return zero;
-}
-
-// Stores values in an existing matrix
-void storeIn(struct matrix4x4 a, uint32_t arr[]) {
-    *(a.a11.digits) = arr[0];
-    *(a.a12.digits) = arr[1];
-    *(a.a21.digits) = arr[2];
-    *(a.a22.digits) = arr[3];
+    return m;
 }
 
 // Compares a 4x4 matrix to a uint32_t array
 int compareTo(struct matrix4x4 a, uint32_t arr[]) {
     if (*(a.a11.digits) != arr[0]) {
-        printf("Wrong value for a11: expected '%d' but got '%d\n", arr[0], *(a.a11.digits));
+        printf("Wrong value for a11: expected '%d' but got '%d'\n", arr[0], *(a.a11.digits));
         return 0;
     }
     if (*(a.a12.digits) != arr[1]) {
-        printf("Wrong value for a12: expected '%d' but got '%d\n", arr[1], *(a.a12.digits));
+        printf("Wrong value for a12: expected '%d' but got '%d'\n", arr[1], *(a.a12.digits));
         return 0;
     }
     if (*(a.a21.digits) != arr[2]) {
-        printf("Wrong value for a21: expected '%d' but got '%d\n", arr[2], *(a.a21.digits));
+        printf("Wrong value for a21: expected '%d' but got '%d'\n", arr[2], *(a.a21.digits));
         return 0;
     }
     if (*(a.a22.digits) != arr[3]) {
-        printf("Wrong value for a22: expected '%d' but got '%d\n", arr[3], *(a.a22.digits));
+        printf("Wrong value for a22: expected '%d' but got '%d'\n", arr[3], *(a.a22.digits));
         return 0;
     }
 
@@ -58,8 +50,7 @@ int test(uint32_t arr[]) {
 
     printf("%s", "]: ");
 
-    struct matrix4x4 matrix = createZeroMatrix();
-    storeIn(matrix, arr);
+    struct matrix4x4 matrix = createMatrix(arr);
 
     matrix = powMatrix4x4(matrix, arr[4]);
 
@@ -74,8 +65,27 @@ int test(uint32_t arr[]) {
 
 int main() {
     uint32_t cases[][9] = {
-            {1,   2,  3,  4,  11, 25699957, 37455814, 56183721, 81883678},
-            {420, 69, 98, 24, 3,  79930368, 13373442, 18994164, 3178440}
+            {1,      2,      3,      4,      11,    25699957,    37455814,    56183721,    81883678},
+            {420,    69,     98,     24,     3,     79930368,    13373442,    18994164,    3178440},
+            {1,      0,      0,      1,      1000000, 1,           0,           0,           1},
+            {-28761, 21397,  -27268, -11555, 3,     -1897892709, 454276325,   -357118660,  1064016689},
+            {-26287, 6501,   -18109, -24926, 10,    1496308931,  -1314309295, -464074569,  1303737936},
+            {30834,  4392,   15327,  -27036, 16,    -27852800,   -656670720,  -29720576,   1143603200},
+            {-15176, 13645,  31876,  2030,   9,     -1943515648, 921582080,   311527424,   620853760},
+            {29665,  5355,   1117,   10678,  8,     -1273614360, -1341289887, 966602871,   2067328455},
+            {19179,  -10071, 31197,  -4191,  5,     -1475788532, -1464912348, -340508428,  390883556},
+            {7661,   18230,  5768,   24015,  13,    1323213949,  231505254,   159949000,   -1457911569},
+            {-29101, 2566,   1289,   -2509,  3,     868164945,   1352340710,  -189368999,  203543345},
+            {-24808, -13810, 17798,  -3162,  10,    -405080064,  1432681472,  1691577344,  721220608},
+            {-7693,  1322,   438,    -15388, 9,     664279027,   -707165110,  2072381590,  27439668},
+            {-32766, 28965,  8663,   -23390, 12,    -1233461503, -270904568,  -1025723560, 1142243329},
+            {-4112,  -11249, -32318, -1565,  9,     -2033551774, -60417535,   1531962398,  -1237163969},
+            {-1283,  11047,  -7519,  129,    15,    -848928384,  286602624,   1041669760,  -633840768},
+            {-6850,  32571,  3441,   32540,  6,     1729761499,  609775498,   -799953122,  -1039349473},
+            {6217,   11072,  -17218, -8379,  14,    1166065457,  -1069598080, -592773668,  -1712665111},
+            {14702,  -29516, 28860,  18267,  11,    -750217200,  -772542772,  192527812,   -1402081021},
+            {-19056, -6122,  -16050, -25418, 9,     -729172480,  -1382054912, -1188899840, 319527424},
+            {-2191,  15274,  22687,  -16679, 14,    -2011861873, -467347940,  1315530218,  -203082369}
     };
     uint32_t all = (sizeof(cases) / (sizeof(uint32_t) * 9));
     uint32_t passed = 0;
