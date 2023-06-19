@@ -41,8 +41,34 @@ void free4x4(struct matrix4x4 a) {
     free(a.a22.digits);
 }
 
+// Free all digit parts of a 4x4 matrix
+void freeCmp4x4(struct cmp_matrix4x4 a) {
+    // Free the digit parts
+    free(a.xm1.digits);
+    free(a.x.digits);
+    free(a.xp1.digits);
+}
+
 /*
  * A 4x4 in form of | x-1  x  | only needs to store three values in form of a cmp_matrix4x4 (compact 4x4 matrix)
  *                  |  x  x+1 |
- * which makes multiplication a bit easier
+ *
+ * If a matrix like this is multiplied by itself for as many times as wanted, it will stay in this form, reducing
+ * the number of arithmetic operations from 12 to 8
  * */
+struct cmp_matrix4x4 mulCmpMatrix4x4(struct cmp_matrix4x4 a, struct cmp_matrix4x4 b) {
+    // a.x * b.x is used for x-1 and x+1
+    struct bignum square_of_xs =  multiplicationBignum(a.x, b.x);
+
+    // x-1 = a.x-1 * b.x-1 + a.x * b.x
+    struct bignum xm1 = additionBignum(multiplicationBignum(a.xm1, b.xm1), square_of_xs);
+    //  x  = a.x-1 * b.x + a.x * b.x+1 or a,x * bx-1 + a.x+1 * b.x
+    struct bignum x = additionBignum(multiplicationBignum(a.xm1, b.x), multiplicationBignum(a.x, b.xp1));
+    // x+1 = a.x * b.x + a.x+1 * b.x+1
+    /* TODO: x+1 can also be computed by 2 * x + x-1 if | 0 1 | is the base matrix (one bitshift and one addition)
+     *                                                  | 1 2 |
+     * */
+    struct bignum xp1 = additionBignum(square_of_xs, multiplicationBignum(a.xp1, b.xp1));
+    return (struct cmp_matrix4x4) {xm1, x, xp1};
+}
+

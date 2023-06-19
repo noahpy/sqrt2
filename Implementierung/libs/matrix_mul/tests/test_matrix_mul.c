@@ -35,6 +35,25 @@ int compareTo(struct matrix4x4 a, uint32_t arr[]) {
     return 1;
 }
 
+// Compares a compact 4x4 matrix to a uint32_t array
+int compareCmpTo(struct cmp_matrix4x4 a, uint32_t arr[]) {
+    if (*(a.xm1.digits) != arr[0]) {
+        printf("Wrong value for x-1: expected '%d' but got '%d'\n", arr[0], *(a.xm1.digits));
+        return 0;
+    }
+
+    if (*(a.x.digits) != arr[1]) {
+        printf("Wrong value for x: expected '%d' but got '%d'\n", arr[1], *(a.x.digits));
+        return 0;
+    }
+    if (*(a.xp1.digits) != arr[2]) {
+        printf("Wrong value for x+1: expected '%d' but got '%d'\n", arr[2], *(a.xp1.digits));
+        return 0;
+    }
+
+    return 1;
+}
+
 /*
  *
  * Run test with an array of 12 uint32
@@ -78,6 +97,47 @@ int test(uint32_t arr[]) {
     return result;
 }
 
+/*
+ *
+ * Run test with an array of 12 uint32
+ * [0...3] -> First 4x4 matrix
+ * [4...7] -> Second 4x4 matrix
+ * [8..11] -> Expected 4x4 result matrix
+ *
+ * */
+int testCmp(uint32_t arr[]) {
+    printf("[%d", arr[0]);
+    for (int i = 1; i < 9; i++) {
+        printf(", %d", arr[i]);
+    }
+
+    printf("%s", "]: ");
+
+    struct cmp_matrix4x4 first = {
+            .xm1 = ctb(arr[0]),
+            .x = ctb(arr[1]),
+            .xp1 = ctb(arr[2]),
+    };
+    struct cmp_matrix4x4 second = {
+            .xm1 = ctb(arr[3]),
+            .x = ctb(arr[4]),
+            .xp1 = ctb(arr[5]),
+    };
+
+    // Multiply first in place
+    first = mulCmpMatrix4x4(first, second);
+
+    // Check for correct result
+    int result = compareCmpTo(first, (arr + 6));
+    freeCmp4x4(first);
+    freeCmp4x4(second);
+    if (result) {
+        printf("%s\n", "Successful");
+    }
+
+    return result;
+}
+
 int main(void) {
     uint32_t cases[][12] = {
             {0,      1,      1,      2,      0,      1,      1,      2,      1,           2,           2,          5},
@@ -102,12 +162,40 @@ int main(void) {
             {-7656,  -15350, 24837,  370,    -22563, -30049, -25203, -14280, 559608378,   449253144,   -569722341, -751610613}
     };
 
-    uint32_t all = (sizeof(cases) / (sizeof(uint32_t) * 12));
-    uint32_t passed = 0;
+    uint32_t cmpCases[][9] = {
+            /* a = | 0 1 |
+             *     | 1 2 |
+             * */
+            // a^1 * a^1
+            {0, 1, 2, 0, 1, 2, 1, 2, 5},
+            // a^4 * a^5
+            {5, 12, 29, 12, 29, 70, 408, 985, 2378},
+            // a^6 * a^12
+            {29, 70, 169, 5741, 13860, 33461, 1136689, 2744210, 6625109},
+            // a^2 * a^18
+            {1, 2, 5, 1136689, 2744210, 6625109, 6625109, 15994428, 38613965},
+            // a^8 * a^4
+            {169, 408, 985, 5, 12, 29, 5741, 13860, 33461},
+    };
 
-    for (uint32_t i = 0; i < all; i++) {
+    uint32_t normal = (sizeof(cases) / (sizeof(uint32_t) * 12));
+    uint32_t passed = 0;
+    uint32_t all = normal;
+
+    printf("%s\n", "Testing mulMatrix4x4(struct matrix4x4, struct matrix4x4):");
+    for (uint32_t i = 0; i < normal; i++) {
         passed += test(cases[i]);
     }
+    printf("\n");
+
+    uint32_t compact = (sizeof(cmpCases) / (sizeof(uint32_t) * 9));
+    all += compact;
+
+    printf("%s\n", "Testing mulCmpMatrix4x4(struct cmp_matrix4x4, struct cmp_matrix4x4):");
+    for (uint32_t i = 0; i < compact; i++) {
+        passed += testCmp(cmpCases[i]);
+    }
+    printf("\n");
 
     printf("Passed %d out of %d tests: %d%%\n", passed, all, (int) (((double) passed / all) * 100));
     return 0;

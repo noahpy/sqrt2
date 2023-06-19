@@ -17,6 +17,6 @@ struct matrix4x4 mulMatrix4x4(struct matrix4x4, struct matrix4x4);
 
 void free4x4(struct matrix4x4);
 
-struct cmp_matrix4x4 mulCmpMatrix4x4(struct cmp_matrix4x4, struct cmp_matrix4x4);
+void freeCmp4x4(struct cmp_matrix4x4);
 
-struct cmp_matrix4x4 sqCmpMatrix4x4(struct cmp_matrix4x4);
+struct cmp_matrix4x4 mulCmpMatrix4x4(struct cmp_matrix4x4, struct cmp_matrix4x4);

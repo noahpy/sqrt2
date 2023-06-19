@@ -15,7 +15,7 @@ struct bignum bignumOfInt(uint32_t n) {
     return (struct bignum) {1, digit};
 }
 
-// Computes 4x4 matrix a to the power of n
+// Computes 4x4 matrix to the power of n
 struct matrix4x4 powMatrix4x4(struct matrix4x4 a, uint32_t n) {
     /*
      * Initialising a unit matrix or (a)^0 that will be multiplied with other powers of a
