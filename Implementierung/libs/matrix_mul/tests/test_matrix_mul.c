@@ -12,6 +12,26 @@ struct bignum ctb(uint32_t i) {
     return (struct bignum) {1, digits};
 }
 
+// Creates a new 4x4 matrix with the given values in array [0...3]
+struct matrix4x4 createMatrix(uint32_t arr[]) {
+    struct matrix4x4 m = {
+            ctb(arr[0]),
+            ctb(arr[1]),
+            ctb(arr[2]),
+            ctb(arr[3]),
+    };
+    return m;
+}
+
+// Creates a new compact 4x4 matrix with the given values in array [0...2]
+struct cmp_matrix4x4 createCmpMatrix(uint32_t arr[]) {
+    return (struct cmp_matrix4x4) {
+            ctb(arr[0]),
+            ctb(arr[1]),
+            ctb(arr[2])
+    };
+}
+
 
 // Compares a 4x4 matrix to a uint32_t array
 int compareTo(struct matrix4x4 a, uint32_t arr[]) {
@@ -70,18 +90,8 @@ int test(uint32_t arr[]) {
 
     printf("%s", "]: ");
 
-    struct matrix4x4 first = {
-            .a11 = ctb(arr[0]),
-            .a12 = ctb(arr[1]),
-            .a21 = ctb(arr[2]),
-            .a22 = ctb(arr[3]),
-    };
-    struct matrix4x4 second = {
-            .a11 = ctb(arr[4]),
-            .a12 = ctb(arr[5]),
-            .a21 = ctb(arr[6]),
-            .a22 = ctb(arr[7]),
-    };
+    struct matrix4x4 first = createMatrix(arr);
+    struct matrix4x4 second = createMatrix((arr + 4));
 
     // Multiply first in place
     first = mulMatrix4x4(first, second);
@@ -113,16 +123,8 @@ int testCmp(uint32_t arr[]) {
 
     printf("%s", "]: ");
 
-    struct cmp_matrix4x4 first = {
-            .xm1 = ctb(arr[0]),
-            .x = ctb(arr[1]),
-            .xp1 = ctb(arr[2]),
-    };
-    struct cmp_matrix4x4 second = {
-            .xm1 = ctb(arr[3]),
-            .x = ctb(arr[4]),
-            .xp1 = ctb(arr[5]),
-    };
+    struct cmp_matrix4x4 first = createCmpMatrix(arr);
+    struct cmp_matrix4x4 second = createCmpMatrix((arr + 3));
 
     // Multiply first in place
     first = mulCmpMatrix4x4(first, second);
@@ -167,15 +169,15 @@ int main(void) {
              *     | 1 2 |
              * */
             // a^1 * a^1
-            {0, 1, 2, 0, 1, 2, 1, 2, 5},
+            {0,   1,   2,   0,       1,       2,       1,       2,        5},
             // a^4 * a^5
-            {5, 12, 29, 12, 29, 70, 408, 985, 2378},
+            {5,   12,  29,  12,      29,      70,      408,     985,      2378},
             // a^6 * a^12
-            {29, 70, 169, 5741, 13860, 33461, 1136689, 2744210, 6625109},
+            {29,  70,  169, 5741,    13860,   33461,   1136689, 2744210,  6625109},
             // a^2 * a^18
-            {1, 2, 5, 1136689, 2744210, 6625109, 6625109, 15994428, 38613965},
+            {1,   2,   5,   1136689, 2744210, 6625109, 6625109, 15994428, 38613965},
             // a^8 * a^4
-            {169, 408, 985, 5, 12, 29, 5741, 13860, 33461},
+            {169, 408, 985, 5,       12,      29,      5741,    13860,    33461},
     };
 
     uint32_t normal = (sizeof(cases) / (sizeof(uint32_t) * 12));

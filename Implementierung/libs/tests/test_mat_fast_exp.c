@@ -150,13 +150,13 @@ int main() {
              *     | 1 2 |
              * */
             // a^2
-            {0, 1, 2, 2, 1, 2, 5},
+            {0, 1, 2, 2,  1,       2,        5},
             // a^12
-            {0, 1, 2, 12, 5741, 13860, 33461},
+            {0, 1, 2, 12, 5741,    13860,    33461},
             // a^16
-            {0, 1, 2, 16, 195025, 470832, 1136689},
+            {0, 1, 2, 16, 195025,  470832,   1136689},
             // a^5
-            {0, 1, 2, 5, 12, 29, 70},
+            {0, 1, 2, 5,  12,      29,       70},
             // a^20
             {0, 1, 2, 20, 6625109, 15994428, 38613965},
 
@@ -166,7 +166,7 @@ int main() {
     uint32_t passed = 0;
     uint32_t all = normal;
 
-    printf("%s\n", "Testing mulMatrix4x4(struct matrix4x4, struct matrix4x4):");
+    printf("%s\n", "Testing powMatrix4x4(struct matrix4x4, uint32_t):");
     for (uint32_t i = 0; i < normal; i++) {
         passed += test(cases[i]);
     }
@@ -175,7 +175,7 @@ int main() {
     uint32_t compact = (sizeof(cmpCases) / (sizeof(uint32_t) * 7));
     all += compact;
 
-    printf("%s\n", "Testing mulCmpMatrix4x4(struct cmp_matrix4x4, struct cmp_matrix4x4):");
+    printf("%s\n", "Testing powCmpMatrix4x4(struct cmp_matrix4x4, uint32_t):");
     for (uint32_t i = 0; i < compact; i++) {
         passed += testCmp(cmpCases[i]);
     }
