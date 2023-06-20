@@ -9,7 +9,7 @@
 // a.size should be >= b.size
 struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   uint32_t *bignumDigits = NULL;
-  if(!(bignumDigits = (uint32_t*) malloc((a.size+b.size) * sizeof(*bignumDigits)))) {
+  if(!(bignumDigits = malloc((a.size+b.size) * sizeof(*bignumDigits)))) {
     fprintf(stderr, "Could not allocate memory");
     exit(EXIT_FAILURE);
   }
@@ -45,7 +45,7 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
 
 struct bignum additionBignum(struct bignum a, struct bignum b) {
   uint32_t *bignumDigits = NULL;
-  if(!(bignumDigits = (uint32_t*) malloc((a.size+1) * sizeof(*bignumDigits)))) {
+  if(!(bignumDigits = malloc((a.size+1) * sizeof(*bignumDigits)))) {
     fprintf(stderr, "Could not allocate memory");
     exit(EXIT_FAILURE);
   }
