@@ -1,4 +1,5 @@
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,9 +30,12 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
       uint64_t b64 = (uint64_t) b.digits[j];
       uint64_t c64 = a64 * b64;
       
+      size_t overflowCount = 1;
       // If there is an addition overflow, increment the third 32bit block
       if(__builtin_uaddl_overflow(c64, *(uint64_t*)(result.digits+j+i), (uint64_t*)(result.digits+j+i))) {
-        __builtin_uaddl_overflow(1, *(uint64_t*)(result.digits+2+j+i), (uint64_t*)(result.digits+2+j+i));
+        while(__builtin_uaddl_overflow(1, *(uint64_t*)(result.digits+(2*overflowCount)+j+i), (uint64_t*)(result.digits+(2*overflowCount)+j+i))){
+            overflowCount++;
+        }
       }
     }
   }
