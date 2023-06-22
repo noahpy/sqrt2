@@ -1,22 +1,22 @@
 #include "../big_num/big_num.h"
 
-struct matrix4x4 {
+struct matrix2x2 {
     struct bignum a11;
     struct bignum a12;
     struct bignum a21;
     struct bignum a22;
 };
 
-struct cmp_matrix4x4 {
+struct cmp_matrix2x2 {
     struct bignum xm1;
     struct bignum x;
     struct bignum xp1;
 };
 
-struct matrix4x4 mulMatrix4x4(struct matrix4x4, struct matrix4x4);
+struct matrix2x2 mulMatrix2x2(struct matrix2x2, struct matrix2x2, struct bignum (struct bignum, struct bignum));
 
-void free4x4(struct matrix4x4);
+void free2x2(struct matrix2x2);
 
-void freeCmp4x4(struct cmp_matrix4x4);
+void freeCmp2x2(struct cmp_matrix2x2);
 
-struct cmp_matrix4x4 mulCmpMatrix4x4(struct cmp_matrix4x4, struct cmp_matrix4x4);
+struct cmp_matrix2x2 mulCmpMatrix2x2(struct cmp_matrix2x2, struct cmp_matrix2x2, struct bignum (struct bignum, struct bignum));

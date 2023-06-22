@@ -1,9 +1,28 @@
 #include "stdio.h"
 #include "../mat_fast_exp.h"
 
-// Creates a new 4x4 matrix with the given values in array [0...3]
-struct matrix4x4 createMatrix(uint32_t arr[]) {
-    struct matrix4x4 m = {
+// TODO: Merge with bignum arithmetic
+struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
+    struct bignum *result = malloc(sizeof(struct bignum));
+    uint32_t *digits = malloc(sizeof(uint32_t));
+    digits[0] = a.digits[0] * b.digits[0];
+    result->size = 1;
+    result->digits = digits;
+    return *result;
+}
+
+struct bignum additionBignum(struct bignum a, struct bignum b) {
+    struct bignum *result = malloc(sizeof(struct bignum));
+    uint32_t *digits = malloc(sizeof(uint32_t));
+    digits[0] = a.digits[0] + b.digits[0];
+    result->size = 1;
+    result->digits = digits;
+    return *result;
+}
+
+// Creates a new 2x2 matrix with the given values in array [0...3]
+struct matrix2x2 createMatrix(uint32_t arr[]) {
+    struct matrix2x2 m = {
             bignumOfInt(arr[0]),
             bignumOfInt(arr[1]),
             bignumOfInt(arr[2]),
@@ -12,17 +31,17 @@ struct matrix4x4 createMatrix(uint32_t arr[]) {
     return m;
 }
 
-// Creates a new compact 4x4 matrix with the given values in array [0...2]
-struct cmp_matrix4x4 createCmpMatrix(uint32_t arr[]) {
-    return (struct cmp_matrix4x4) {
+// Creates a new compact 2x2 matrix with the given values in array [0...2]
+struct cmp_matrix2x2 createCmpMatrix(uint32_t arr[]) {
+    return (struct cmp_matrix2x2) {
             bignumOfInt(arr[0]),
             bignumOfInt(arr[1]),
             bignumOfInt(arr[2])
     };
 }
 
-// Compares a 4x4 matrix to a uint32_t array
-int compareTo(struct matrix4x4 a, uint32_t arr[]) {
+// Compares a 2x2 matrix to a uint32_t array
+int compareTo(struct matrix2x2 a, uint32_t arr[]) {
     if (*(a.a11.digits) != arr[0]) {
         printf("Wrong value for a11: expected '%d' but got '%d'\n", arr[0], *(a.a11.digits));
         return 0;
@@ -43,8 +62,8 @@ int compareTo(struct matrix4x4 a, uint32_t arr[]) {
     return 1;
 }
 
-// Compares a compact 4x4 matrix to a uint32_t array
-int compareCmpTo(struct cmp_matrix4x4 a, uint32_t arr[]) {
+// Compares a compact 2x2 matrix to a uint32_t array
+int compareCmpTo(struct cmp_matrix2x2 a, uint32_t arr[]) {
     if (*(a.xm1.digits) != arr[0]) {
         printf("Wrong value for x-1: expected '%d' but got '%d'\n", arr[0], *(a.xm1.digits));
         return 0;
@@ -65,9 +84,9 @@ int compareCmpTo(struct cmp_matrix4x4 a, uint32_t arr[]) {
 /*
  *
  * Run test with an array of 9 uint32
- * [0...3] -> Base 4x4 matrix
+ * [0...3] -> Base 2x2 matrix
  * [4]     -> Exponent
- * [5...8] -> Expected 4x4 matrix
+ * [5...8] -> Expected 2x2 matrix
  *
  * */
 int test(uint32_t arr[]) {
@@ -78,12 +97,12 @@ int test(uint32_t arr[]) {
 
     printf("%s", "]: ");
 
-    struct matrix4x4 matrix = createMatrix(arr);
+    struct matrix2x2 matrix = createMatrix(arr);
 
-    matrix = powMatrix4x4(matrix, arr[4]);
+    matrix = powMatrix2x2(matrix, arr[4], multiplicationBignum);
 
     int result = compareTo(matrix, (arr + 5));
-    free4x4(matrix);
+    free2x2(matrix);
     if (result) {
         printf("%s\n", "Successful");
     }
@@ -94,9 +113,9 @@ int test(uint32_t arr[]) {
 /*
  *
  * Run test with an array of 12 uint32
- * [0...2] -> First 4x4 matrix
+ * [0...2] -> First 2x2 matrix
  * [3] -> Exponent
- * [4...6] -> Expected 4x4 result matrix
+ * [4...6] -> Expected 2x2 result matrix
  *
  * */
 int testCmp(uint32_t arr[]) {
@@ -107,12 +126,12 @@ int testCmp(uint32_t arr[]) {
 
     printf("%s", "]: ");
 
-    struct cmp_matrix4x4 matrix = createCmpMatrix(arr);
+    struct cmp_matrix2x2 matrix = createCmpMatrix(arr);
 
-    matrix = powCmpMatrix4x4(matrix, arr[3]);
+    matrix = powCmpMatrix2x2(matrix, arr[3], multiplicationBignum);
 
     int result = compareCmpTo(matrix, (arr + 4));
-    freeCmp4x4(matrix);
+    freeCmp2x2(matrix);
     if (result) {
         printf("%s\n", "Successful");
     }
@@ -166,7 +185,7 @@ int main() {
     uint32_t passed = 0;
     uint32_t all = normal;
 
-    printf("%s\n", "Testing powMatrix4x4(struct matrix4x4, uint32_t):");
+    printf("%s\n", "Testing powMatrix2x2(struct matrix2x2, uint32_t):");
     for (uint32_t i = 0; i < normal; i++) {
         passed += test(cases[i]);
     }
@@ -175,7 +194,7 @@ int main() {
     uint32_t compact = (sizeof(cmpCases) / (sizeof(uint32_t) * 7));
     all += compact;
 
-    printf("%s\n", "Testing powCmpMatrix4x4(struct cmp_matrix4x4, uint32_t):");
+    printf("%s\n", "Testing powCmpMatrix2x2(struct cmp_matrix2x2, uint32_t):");
     for (uint32_t i = 0; i < compact; i++) {
         passed += testCmp(cmpCases[i]);
     }
