@@ -1,9 +1,23 @@
 
 #include "big_num.h"
-#include <stddef.h>
+#include <stddef.h> // do we need that?
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+// Creates a bignum with value n on the heap TODO: Move to bignum
+struct bignum bignumOfInt(uint32_t n) {
+    uint32_t *digit = NULL;
+    if (!(digit = malloc(sizeof(uint32_t)))) {
+        fprintf(stderr, "Could not allocate memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Set the value to n
+    *digit = n;
+
+    return (struct bignum) {1, digit};
+}
 
 // Multiply two bignums and store the result in a new bignum
 // a.size should be >= b.size
