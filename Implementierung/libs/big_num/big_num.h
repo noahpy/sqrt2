@@ -10,3 +10,4 @@ struct bignum {
 
 struct bignum multiplicationBignum(struct bignum a, struct bignum b);
 struct bignum additionBignum(struct bignum a, struct bignum b);
+struct bignum subtractionBignum(struct bignum a, struct bignum b);

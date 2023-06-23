@@ -90,6 +90,45 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
   free(result.digits);
 }
 
+void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) {
+  test_cases++;
+  struct bignum result = subtractionBignum(a, b);
+  if (result.size == expected.size) {
+    for (size_t i = 0; i < result.size; i++) {
+      if (result.digits[i] != expected.digits[i]) {
+        printf("Test failed: subtractionBignum( ");
+        for (size_t j = a.size - 1; j > 0; j--) {
+          printf("%o ", a.digits[j]);
+        }
+        printf("%o ", a.digits[0]);
+        printf(", ");
+        for (size_t j = b.size - 1; j > 0; j--) {
+          printf("%o ", b.digits[j]);
+        }
+        printf("%o ", b.digits[0]);
+        printf(").digits[%zu] == %o, but got %o\n", i, expected.digits[i],
+               result.digits[i]);
+        free(result.digits);
+        return;
+      }
+    }
+    test_passed++;
+  } else {
+    printf("Test failed: subtractionBignum( ");
+    for (size_t j = b.size - 1; j > 0; j--) {
+      printf("%o ", a.digits[j]);
+    }
+    printf("%o ", a.digits[0]);
+    printf(", ");
+    for (size_t j = b.size - 1; j > 0; j--) {
+      printf("%o ", b.digits[j]);
+    }
+    printf("%o ", b.digits[0]);
+    printf(") - size should be %zu, but was %zu\n", expected.size, result.size);
+  }
+  free(result.digits);
+}
+
 int main(void) {
   a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
   b_digits = (uint32_t *)malloc(16 * sizeof(*b_digits));
@@ -138,7 +177,13 @@ int main(void) {
   *expected_digits = 10;
   test_addition(a, b, expected);
 
+  // 9 - 1 = 8
+  expected.size = 1;
+  *expected_digits = 8;
+  test_subtraction(a, b, expected);
+
   // 1 * 9 = 9
+  expected.size = 2;
   *a_digits = 1;
   *b_digits = 9;
   *expected_digits = 9;
@@ -172,6 +217,12 @@ int main(void) {
   *expected_digits = 1;
   *(expected_digits + 1) = 1;
   test_addition(a, b, expected);
+  
+  // 4294967296 - 1 = 4294967295
+  expected.size = 2;
+  *expected_digits = 0xffffffff;
+  *(expected_digits + 1) = 0;
+  test_subtraction(a, b, expected);
 
   // 0x13214ab1_13214ab1 * 0x13214ab1_13214ab1 =
   // 0x16df56a_a048b936_3c47922c_9d6cce61
@@ -194,6 +245,12 @@ int main(void) {
   *(expected_digits + 1) = 0x26429562;
   *(expected_digits + 2) = 0x0;
   test_addition(a, b, expected);
+
+  // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
+  expected.size = 2;
+  *expected_digits = 0x0;
+  *(expected_digits + 1) = 0x0;
+  test_subtraction(a, b, expected);
 
   // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff_ffffffff =
   // 0xffffffff_ffffffff_fffffffe_00000000_00000000_00000001
@@ -249,6 +306,14 @@ int main(void) {
   *(expected_digits + 3) = 0x1;
   test_addition(a, b, expected);
 
+  // 0xffffffff_ffffffff_ffffffff - 0xffffffff_ffffffff =
+  // 0xffffffff_00000000_00000000
+  expected.size = 3;
+  *expected_digits = 0x0;
+  *(expected_digits + 1) = 0x0;
+  *(expected_digits + 2) = 0xffffffff;
+  test_subtraction(a, b, expected);
+
   // 0x5234ad_94724362 * 0x3abf = 0x12_dd44a123_a4847a1e
   *a_digits = 0x94724362;
   *(a_digits + 1) = 0x5234ad;
@@ -267,6 +332,12 @@ int main(void) {
   *(expected_digits + 1) = 0x5234ad;
   *(expected_digits + 2) = 0x0;
   test_addition(a, b, expected);
+
+  // 0x5234ad_94724362 - 0x3abf = 0x5234ad_947208a3
+  expected.size = 2;
+  *expected_digits = 0x947208a3;
+  *(expected_digits + 1) = 0x5234ad;
+  test_subtraction(a, b, expected);
 
   // 0xadf_ebcfefef_beaaa420 * 0xadcbef_afafef69 =
   // 0x7_61fc1a06_bad8d17d_fc98d30e_95173120
@@ -293,6 +364,23 @@ int main(void) {
   *(expected_digits + 3) = 0x0;
   test_addition(a, b, expected);
 
+  // 0xadf_ebcfefef_beaaa420 - 0xadcbef_afafef69 = 0xadf_eb222400_0efab4b7
+  expected.size = 3;
+  *expected_digits = 0x0efab4b7;
+  *(expected_digits + 1) = 0xeb222400;
+  *(expected_digits + 2) = 0xadf;
+  test_subtraction(a, b, expected);
+
+  // 0xadf_ebcfefef_beaaa420 - 0xffffffff_ffffffff = 0xade_ebcfefef_beaaa421
+  expected.size = 3;
+  *expected_digits = 0xbeaaa421;
+  *(expected_digits + 1) = 0xebcfefef;
+  *(expected_digits + 2) = 0xade;
+  b.size = 2;
+  *b_digits = 0xffffffff;
+  *(b_digits + 1) = 0xffffffff;
+  test_subtraction(a, b, expected);
+
   // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff =
   // 0xffffffff_fffffffe_ffffffff_00000000_00000001
   *a_digits = 0xffffffff;
@@ -309,6 +397,21 @@ int main(void) {
   b.size = 2;
   expected.size = 5;
   test_multiplication(b, a, expected);
+
+  // test multiple overflow (subtraction)
+  // 0xffffffff_00000000_00000000 - 0x1 =
+  // 0xfffffffe_ffffffff_ffffffff
+  *a_digits = 0x0;
+  *(a_digits + 1) = 0x0;
+  *(a_digits + 2) = 0xffffffff;
+  *b_digits = 0x1;
+  *expected_digits = 0xffffffff;
+  *(expected_digits + 1) = 0xffffffff;
+  *(expected_digits + 2) = 0xfffffffe;
+  a.size = 3;
+  b.size = 1;
+  expected.size = 3;
+  test_subtraction(a, b, expected);
 
   // test one-time overflow (multiplication)
   // 0x00000001_00000001 * 0xffffffff_ffffffff_ffffffff_ffffffff =
