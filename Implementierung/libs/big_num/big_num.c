@@ -1,9 +1,23 @@
 
 #include "big_num.h"
-#include <stddef.h>
+#include <stddef.h> // do we need that?
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+// Creates a bignum with value n on the heap TODO: Move to bignum
+struct bignum bignumOfInt(uint32_t n) {
+    uint32_t *digit = NULL;
+    if (!(digit = malloc(sizeof(uint32_t)))) {
+        fprintf(stderr, "Could not allocate memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Set the value to n
+    *digit = n;
+
+    return (struct bignum) {1, digit};
+}
 
 // Multiply two bignums and store the result in a new bignum
 // a.size should be >= b.size
@@ -55,7 +69,7 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
 
   struct bignum result = {.size = a.size + 1, .digits = bignumDigits};
 
-  // Take bignum a into result and zero the rest
+  // Take bignum 'a' into result and zero the rest
   for (size_t i = 0; i < result.size; i++) {
     if (i < a.size) {
       bignumDigits[i] = a.digits[i];
@@ -66,8 +80,7 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
 
   // Add the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
-    uint64_t b64 = (uint64_t)b.digits[i];
-
+    uint64_t b64 = (uint64_t) b.digits[i];
 
     size_t overflowCount = 1;
     // If there is an addition overflow, increment the third 32bit block
@@ -78,6 +91,38 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
         overflowCount++;
       }
     }
+  }
+
+  return result;
+}
+
+struct bignum subtractionBignum(struct bignum a, struct bignum b) {
+  uint32_t *bignumDigits = NULL;
+  if (!(bignumDigits = malloc((a.size) * sizeof(*bignumDigits)))) {
+    fprintf(stderr, "Could not allocate memory\n");
+    exit(EXIT_FAILURE);
+  }
+
+  struct bignum result = {.size = a.size , .digits = bignumDigits};
+
+  // Take bignum 'a' into result and zero the rest
+  for (size_t i = 0; i < result.size; i++) {
+    bignumDigits[i] = a.digits[i];
+  }
+
+  // Add the 32bit blocks of b to the corresponding blocks of a
+  for (size_t i = 0; i < b.size; i++) {
+
+    size_t overflowCount = 1;
+    // If there is an subtraction overflow, increment the third 32bit block
+    if (__builtin_usub_overflow(*(result.digits + i), *(b.digits + i),
+                                 (result.digits + i))) {
+      while(__builtin_usub_overflow(*(result.digits + (1 * overflowCount) + i), 1,
+                               (result.digits + (1 * overflowCount) + i))) {
+        overflowCount++;
+      }
+    }
+
   }
 
   return result;
