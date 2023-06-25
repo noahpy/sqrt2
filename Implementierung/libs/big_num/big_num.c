@@ -94,8 +94,6 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
     }
   }
 
-  free(a.digits);
-  free(b.digits);
   return result;
 }
 
@@ -128,8 +126,6 @@ struct bignum subtractionBignum(struct bignum a, struct bignum b) {
 
   }
 
-  free(a.digits);
-  free(b.digits);
   return result;
 }
 
