@@ -501,6 +501,19 @@ int main(void) {
   expected.size = 5;
   test_addition(a,b,expected);
 
+  // addition size overflow
+  // 0xffffffff_ffffffff + 0x1 = 0x1_00000000_00000000
+  *a_digits = 0xffffffff;
+  *(a_digits + 1) = 0xffffffff;
+  *b_digits = 0x1;
+  *expected_digits = 0x0;
+  *(expected_digits + 1) = 0x0;
+  *(expected_digits + 2) = 0x1;
+  a.size = 2;
+  b.size = 1;
+  expected.size = 3;
+  test_addition(a,b,expected);
+
   // print overall result
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
   printf("PASSED: %d, FAILED: %d, SUCCESS RATE: %.1f%%\n", test_passed,
