@@ -378,6 +378,26 @@ int main(void) {
   expected.size = 9;
   test_multiplication(a, b, expected);
 
+  // multiple overflow (addition)
+  // 0xffffffff_ffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff_ffffffff_ffffffff = 0x1_ffffffff_ffffffff_ffffffff_fffffffe
+  *a_digits = 0xffffffff;
+  *(a_digits + 1) = 0xffffffff;
+  *(a_digits + 2) = 0xffffffff;
+  *(a_digits + 3) = 0xffffffff;
+  *b_digits = 0xffffffff;
+  *(b_digits + 1) = 0xffffffff;
+  *(b_digits + 2) = 0xffffffff;
+  *(b_digits + 3) = 0xffffffff;
+  *expected_digits = 0xfffffffe;
+  *(expected_digits + 1) = 0xffffffff;
+  *(expected_digits + 2) = 0xffffffff;
+  *(expected_digits + 3) = 0xffffffff;
+  *(expected_digits + 4) = 0x1;
+  a.size = 4;
+  b.size = 4;
+  expected.size = 5;
+  test_addition(a,b,expected);
+
   // print overall result
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
   printf("PASSED: %d, FAILED: %d, SUCCESS RATE: %.1f%%\n", test_passed,

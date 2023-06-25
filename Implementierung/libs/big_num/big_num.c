@@ -68,11 +68,15 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
   for (size_t i = 0; i < b.size; i++) {
     uint64_t b64 = (uint64_t)b.digits[i];
 
+
+    size_t overflowCount = 1;
     // If there is an addition overflow, increment the third 32bit block
     if (__builtin_uaddl_overflow(b64, *(uint64_t *)(result.digits + i),
                                  (uint64_t *)(result.digits + i))) {
-      __builtin_uaddl_overflow(1, *(uint64_t *)(result.digits + 2 + i),
-                               (uint64_t *)(result.digits + 2 + i));
+      while(__builtin_uaddl_overflow(1, *(uint64_t *)(result.digits + (2*overflowCount) + i),
+                               (uint64_t *)(result.digits + (2*overflowCount) + i))){
+        overflowCount++;
+      }
     }
   }
 
