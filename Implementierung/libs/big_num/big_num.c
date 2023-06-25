@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 // Creates a bignum with value n on the heap TODO: Move to bignum
 struct bignum bignumOfInt(uint32_t n) {
@@ -16,7 +17,7 @@ struct bignum bignumOfInt(uint32_t n) {
     // Set the value to n
     *digit = n;
 
-    return (struct bignum) {1, digit};
+    return (struct bignum) {digit, 1, 0};
 }
 
 // Multiply two bignums and store the result in a new bignum
@@ -28,7 +29,7 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
     exit(EXIT_FAILURE);
   }
 
-  struct bignum result = {.size = a.size + b.size, .digits = bignumDigits};
+  struct bignum result = {.size = a.size + b.size, .digits = bignumDigits, .fracSize = a.fracSize + b.fracSize};
 
   // Zero all elements
   for (size_t i = 0; i < result.size; i++) {
@@ -67,7 +68,7 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
     exit(EXIT_FAILURE);
   }
 
-  struct bignum result = {.size = a.size + 1, .digits = bignumDigits};
+  struct bignum result = {.size = a.size + 1, .digits = bignumDigits, .fracSize = a.fracSize};
 
   // Take bignum 'a' into result and zero the rest
   for (size_t i = 0; i < result.size; i++) {
@@ -86,13 +87,15 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
     // If there is an addition overflow, increment the third 32bit block
     if (__builtin_uaddl_overflow(b64, *(uint64_t *)(result.digits + i),
                                  (uint64_t *)(result.digits + i))) {
-      while(__builtin_uaddl_overflow(1, *(uint64_t *)(result.digits + 2 + i),
-                               (uint64_t *)(result.digits + 2 + i))) {
+      while(__builtin_uaddl_overflow(1, *(uint64_t *)(result.digits + (2 * overflowCount) + i),
+                               (uint64_t *)(result.digits + (2 * overflowCount) + i))) {
         overflowCount++;
       }
     }
   }
 
+  free(a.digits);
+  free(b.digits);
   return result;
 }
 
@@ -103,7 +106,7 @@ struct bignum subtractionBignum(struct bignum a, struct bignum b) {
     exit(EXIT_FAILURE);
   }
 
-  struct bignum result = {.size = a.size , .digits = bignumDigits};
+  struct bignum result = {.size = a.size , .digits = bignumDigits , .fracSize = a.fracSize};
 
   // Take bignum 'a' into result and zero the rest
   for (size_t i = 0; i < result.size; i++) {
@@ -125,5 +128,68 @@ struct bignum subtractionBignum(struct bignum a, struct bignum b) {
 
   }
 
+  free(a.digits);
+  free(b.digits);
   return result;
+}
+
+int compareHighestDigits(struct bignum a, struct bignum b) {
+  size_t highestDigitA = a.size - 1;
+  while (a.digits[highestDigitA] == 0) highestDigitA--;
+  if (highestDigitA == b.size - 1) {
+    if (a.digits[highestDigitA] == b.digits[b.size - 1]) return 0;
+    if (a.digits[highestDigitA] > b.digits[b.size - 1]) return 1;
+    return -1;
+  } else if (highestDigitA > b.size - 1) {
+    return 1;
+  } else {
+    return -1;
+  }
+}
+
+// Compact version of shiftLeft, where the constant "2" can be shifted
+struct bignum shiftLeftConstant(struct bignum a, size_t number) {
+  // Calculate how much new 32Bit blocks are needed
+  int numberNewBlocks = number / 32;
+  int blockWithOne = a.size - 1;
+  uint32_t savedBlock = a.digits[a.size - 1]; bool restNeedsBlock = false;
+
+  if (savedBlock << (number % 32) == 0) {
+    numberNewBlocks++;
+    restNeedsBlock = true;
+  }
+
+  uint32_t *newDigits = NULL;
+  if (numberNewBlocks > 0) {
+    // printf("%o\n", blockWithOne);
+    free(a.digits);
+    if (!(newDigits = malloc(sizeof(*newDigits) * (a.size + numberNewBlocks)))) {
+      fprintf(stderr, "Could not allocate memory\n");
+      exit(EXIT_FAILURE);
+    }
+    a.size = a.size + numberNewBlocks;
+    a.digits = newDigits;
+    for (size_t i = 0; i < a.size; i++) {
+      a.digits[i] = 0;
+    }
+    a.digits[blockWithOne] = savedBlock;
+  }
+  a.fracSize = a.fracSize + number;
+
+  for (int i = blockWithOne; i < blockWithOne + numberNewBlocks + 1; i++) {
+    if (number >= 32) {
+      *(a.digits+i+1) = *(a.digits+i);
+      *(a.digits+i) = 0;
+      number -= 32;
+    } else {
+      if (restNeedsBlock) {
+        *(uint64_t*) (a.digits+i) = *(uint64_t*) (a.digits+i) << number;
+      } else {
+        *(a.digits + i) = *(a.digits + i) << number;
+      }
+      break;
+    }
+  }
+  
+  return a;
 }
