@@ -87,7 +87,7 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
     printf("%o ", b.digits[0]);
     printf(") - size should be %zu, but was %zu\n", expected.size, result.size);
   }
-  free(result.digits);
+  //free(result.digits);
 }
 
 void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) {
