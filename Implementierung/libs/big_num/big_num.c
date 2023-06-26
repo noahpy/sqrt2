@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-// Creates a bignum with value n on the heap TODO: Move to bignum
+// Creates a bignum with value n on the heap
 struct bignum bignumOfInt(uint32_t n) {
     uint32_t *digit = NULL;
     if (!(digit = malloc(sizeof(uint32_t)))) {
@@ -25,7 +25,16 @@ struct bignum bignumOfInt(uint32_t n) {
 // a.size should be >= b.size
 struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   uint32_t *bignumDigits = NULL;
-  if (!(bignumDigits = malloc((a.size + b.size) * sizeof(*bignumDigits)))) {
+  size_t newSize;
+  if(__builtin_uaddl_overflow(a.size, b.size, &newSize)){
+    perror("Could not calculate new size");
+    exit(EXIT_FAILURE);
+  }
+  if(__builtin_umull_overflow(newSize, sizeof(*bignumDigits), &newSize)){
+    perror("Could not calculate new size");
+    exit(EXIT_FAILURE);
+  }
+  if (!(bignumDigits = malloc(newSize))) {
     fprintf(stderr, "Could not allocate memory\n");
     exit(EXIT_FAILURE);
   }
@@ -114,64 +123,3 @@ struct bignum subtractionBignum(struct bignum a, struct bignum b) {
   return a;
 }
 
-int compareHighestDigits(struct bignum a, struct bignum b) {
-  size_t highestDigitA = a.size - 1;
-  while (a.digits[highestDigitA] == 0) highestDigitA--;
-  if (highestDigitA == b.size - 1) {
-    if (a.digits[highestDigitA] == b.digits[b.size - 1]) return 0;
-    if (a.digits[highestDigitA] > b.digits[b.size - 1]) return 1;
-    return -1;
-  } else if (highestDigitA > b.size - 1) {
-    return 1;
-  } else {
-    return -1;
-  }
-}
-
-// Compact version of shiftLeft, where the constant "2" can be shifted
-struct bignum shiftLeftConstant(struct bignum a, size_t number) {
-  // Calculate how much new 32Bit blocks are needed
-  int numberNewBlocks = number / 32;
-  int blockWithOne = a.size - 1;
-  uint32_t savedBlock = a.digits[a.size - 1]; 
-  bool restNeedsBlock = false;
-
-  if (savedBlock << (number % 32) == 0) {
-    numberNewBlocks++;
-    restNeedsBlock = true;
-  }
-
-  uint32_t *newDigits = NULL;
-  if (numberNewBlocks > 0) {
-    // printf("%o\n", blockWithOne);
-    free(a.digits);
-    if (!(newDigits = malloc(sizeof(*newDigits) * (a.size + numberNewBlocks)))) {
-      fprintf(stderr, "Could not allocate memory\n");
-      exit(EXIT_FAILURE);
-    }
-    a.size = a.size + numberNewBlocks;
-    a.digits = newDigits;
-    for (size_t i = 0; i < a.size; i++) {
-      a.digits[i] = 0;
-    }
-    a.digits[blockWithOne] = savedBlock;
-  }
-  a.fracSize = a.fracSize + number;
-
-  for (int i = blockWithOne; i < blockWithOne + numberNewBlocks + 1; i++) {
-    if (number >= 32) {
-      *(a.digits+i+1) = *(a.digits+i);
-      *(a.digits+i) = 0;
-      number -= 32;
-    } else {
-      if (restNeedsBlock) {
-        *(uint64_t*) (a.digits+i) = *(uint64_t*) (a.digits+i) << number;
-      } else {
-        *(a.digits + i) = *(a.digits + i) << number;
-      }
-      break;
-    }
-  }
-  
-  return a;
-}
