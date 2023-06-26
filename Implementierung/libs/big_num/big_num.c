@@ -46,6 +46,33 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   return result;
 }
 
+void recKarazubaMultiplication(uint64_t *digits, uint32_t *x, uint32_t *y, size_t n,
+        size_t offset, size_t origin_off) {
+    if (n == 1) {
+        digits[offset] = (uint64_t) x[origin_off] * y[origin_off];
+    } else {
+        size_t left = n / 2;
+
+        // Compute x0 * y0
+        recKarazubaMultiplication(digits, x, y, left, offset);
+        recKarazubaMultiplication(digits, x, y, n - left, offset + left);
+    }
+}
+
+struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
+    // Don't expand small bignums < 16 bit to avoid exponential memory usage
+    if (x.size == 1 && y.size == 1) {
+
+    }
+    uint32_t *bignumDigits = NULL;
+    if (!(bignumDigits = malloc((x.size + y.size) * sizeof(*bignumDigits)))) {
+        fprintf(stderr, "Could not allocate memory\n");
+        exit(EXIT_FAILURE);
+    }
+    recKarazubaMultiplication(bignumDigits, x.digits, y.digits, x.size, 0);
+    return (struct bignum) {x.size + y.size, bignumDigits};
+}
+
 struct bignum additionBignum(struct bignum a, struct bignum b) {
   uint32_t *bignumDigits = NULL;
   if (!(bignumDigits = malloc((a.size + 1) * sizeof(*bignumDigits)))) {
