@@ -108,7 +108,6 @@ void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) 
         printf("%o ", b.digits[0]);
         printf(").digits[%zu] == %o, but got %o\n", i, expected.digits[i],
                result.digits[i]);
-        free(result.digits);
         return;
       }
     }
@@ -126,7 +125,6 @@ void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) 
     printf("%o ", b.digits[0]);
     printf(") - size should be %zu, but was %zu\n", expected.size, result.size);
   }
-  free(result.digits);
 }
 
 int main(void) {
@@ -418,6 +416,9 @@ int main(void) {
   test_subtraction(a, b, expected);
 
   // 0xadf_ebcfefef_beaaa420 - 0xffffffff_ffffffff = 0xade_ebcfefef_beaaa421
+  *a_digits = 0xbeaaa420;
+  *(a_digits + 1) = 0xebcfefef;
+  *(a_digits + 2) = 0xadf;
   expected.size = 3;
   *expected_digits = 0xbeaaa421;
   *(expected_digits + 1) = 0xebcfefef;

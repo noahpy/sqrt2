@@ -131,35 +131,22 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
 
 
 struct bignum subtractionBignum(struct bignum a, struct bignum b) {
-  uint32_t *bignumDigits = NULL;
-  if (!(bignumDigits = malloc((a.size) * sizeof(*bignumDigits)))) {
-    fprintf(stderr, "Could not allocate memory\n");
-    exit(EXIT_FAILURE);
-  }
-
-  struct bignum result = {.size = a.size , .digits = bignumDigits , .fracSize = a.fracSize};
-
-  // Take bignum 'a' into result and zero the rest
-  for (size_t i = 0; i < result.size; i++) {
-    bignumDigits[i] = a.digits[i];
-  }
-
   // Add the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
 
     size_t overflowCount = 1;
     // If there is an subtraction overflow, increment the third 32bit block
-    if (__builtin_usub_overflow(*(result.digits + i), *(b.digits + i),
-                                 (result.digits + i))) {
-      while(__builtin_usub_overflow(*(result.digits + (1 * overflowCount) + i), 1,
-                               (result.digits + (1 * overflowCount) + i))) {
+    if (__builtin_usub_overflow(*(a.digits + i), *(b.digits + i),
+                                 (a.digits + i))) {
+      while(__builtin_usub_overflow(*(a.digits + (1 * overflowCount) + i), 1,
+                               (a.digits + (1 * overflowCount) + i))) {
         overflowCount++;
       }
     }
 
   }
 
-  return result;
+  return a;
 }
 
 int compareHighestDigits(struct bignum a, struct bignum b) {
@@ -181,7 +168,8 @@ struct bignum shiftLeftConstant(struct bignum a, size_t number) {
   // Calculate how much new 32Bit blocks are needed
   int numberNewBlocks = number / 32;
   int blockWithOne = a.size - 1;
-  uint32_t savedBlock = a.digits[a.size - 1]; bool restNeedsBlock = false;
+  uint32_t savedBlock = a.digits[a.size - 1]; 
+  bool restNeedsBlock = false;
 
   if (savedBlock << (number % 32) == 0) {
     numberNewBlocks++;
