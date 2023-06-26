@@ -1,43 +1,14 @@
 #include "../matrix_mul.h"
 #include <stdio.h>
 
-// TODO: Merge with bignum arithmetic
-struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
-    struct bignum *result = malloc(sizeof(struct bignum));
-    uint32_t *digits = malloc(sizeof(uint32_t));
-    digits[0] = a.digits[0] * b.digits[0];
-    result->size = 1;
-    result->digits = digits;
-    return *result;
-}
-
-struct bignum additionBignum(struct bignum a, struct bignum b) {
-    struct bignum *result = malloc(sizeof(struct bignum));
-    uint32_t *digits = malloc(sizeof(uint32_t));
-    digits[0] = a.digits[0] + b.digits[0];
-    result->size = 1;
-    result->digits = digits;
-    return *result;
-}
-
-// Convert to bignum
-struct bignum ctb(uint32_t i) {
-    uint32_t *digits = NULL;
-    if (!(digits = malloc(sizeof(uint32_t)))) {
-        fprintf(stderr, "Could not allocate memory\n");
-        exit(EXIT_FAILURE);
-    }
-    *digits = i;
-    return (struct bignum) {1, digits};
-}
 
 // Creates a new 2x2 matrix with the given values in array [0...3]
 struct matrix2x2 createMatrix(uint32_t arr[]) {
     struct matrix2x2 m = {
-            ctb(arr[0]),
-            ctb(arr[1]),
-            ctb(arr[2]),
-            ctb(arr[3]),
+            bignumOfInt(arr[0]),
+            bignumOfInt(arr[1]),
+            bignumOfInt(arr[2]),
+            bignumOfInt(arr[3]),
     };
     return m;
 }
@@ -45,9 +16,9 @@ struct matrix2x2 createMatrix(uint32_t arr[]) {
 // Creates a new compact 2x2 matrix with the given values in array [0...2]
 struct cmp_matrix2x2 createCmpMatrix(uint32_t arr[]) {
     return (struct cmp_matrix2x2) {
-            ctb(arr[0]),
-            ctb(arr[1]),
-            ctb(arr[2])
+            bignumOfInt(arr[0]),
+            bignumOfInt(arr[1]),
+            bignumOfInt(arr[2])
     };
 }
 
