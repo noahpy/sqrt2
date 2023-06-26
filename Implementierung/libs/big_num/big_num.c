@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-// Creates a bignum with value n on the heap TODO: Move to bignum
+// Creates a bignum with value n on the heap
 struct bignum bignumOfInt(uint32_t n) {
     uint32_t *digit = NULL;
     if (!(digit = malloc(sizeof(uint32_t)))) {
@@ -25,7 +25,16 @@ struct bignum bignumOfInt(uint32_t n) {
 // a.size should be >= b.size
 struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   uint32_t *bignumDigits = NULL;
-  if (!(bignumDigits = malloc((a.size + b.size) * sizeof(*bignumDigits)))) {
+  size_t newSize;
+  if(__builtin_uaddl_overflow(a.size, b.size, &newSize)){
+    perror("Could not calculate new size");
+    exit(EXIT_FAILURE);
+  }
+  if(__builtin_umull_overflow(newSize, sizeof(*bignumDigits), &newSize)){
+    perror("Could not calculate new size");
+    exit(EXIT_FAILURE);
+  }
+  if (!(bignumDigits = malloc(newSize))) {
     fprintf(stderr, "Could not allocate memory\n");
     exit(EXIT_FAILURE);
   }
@@ -145,6 +154,7 @@ struct bignum shiftLeftConstant(struct bignum a, size_t number) {
   if (numberNewBlocks > 0) {
     // printf("%o\n", blockWithOne);
     free(a.digits);
+    // TODO: add overflow check
     if (!(newDigits = malloc(sizeof(*newDigits) * (a.size + numberNewBlocks)))) {
       fprintf(stderr, "Could not allocate memory\n");
       exit(EXIT_FAILURE);
