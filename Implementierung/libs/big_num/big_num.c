@@ -208,59 +208,55 @@ void shiftRight(struct bignum *a, size_t number) {
 }
 
 // Calculate a/b with goldschmidt
-struct bignum goldschmidt(struct bignum a, struct bignum b, size_t fracSize) {
-   int fractionalPartSize = 1;
-   a.fracSize = 1;
+void goldschmidt(struct bignum *a, struct bignum b, size_t fracSize) {
+   size_t fractionalPartSize = 1;
+   a->fracSize = 1;
    b.fracSize = 1;
-   int counter = 0;
    struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), fractionalPartSize);
 
   // Calculates b * 0.5 until b < 1
    while (compareHighestDigits(b, oneShift) == 1) {
     fractionalPartSize++;
      b.fracSize++;
-     a.fracSize++;
+     a->fracSize++;
 
      free(oneShift.digits);
      oneShift = shiftLeftConstant(bignumOfInt(1), fractionalPartSize);
    }
 
    struct bignum two = shiftLeftConstant(bignumOfInt(2), fractionalPartSize);
-   struct bignum sub;
 
   // Calculates b * (2 - b) until b approximates 1
   // Result is in a
    while (fractionalPartSize < (fracSize + 50) * 2) {
 
-     sub = subtractionBignum(two, b);
+     subtractionBignum(&two, b);
 
-     struct bignum at = multiplicationBignum(a, sub);
-     struct bignum bt = multiplicationBignum(b, sub);
+     struct bignum at = multiplicationBignum(*a, two);
+     struct bignum bt = multiplicationBignum(b, two);
 
-     free(a.digits);
+     free(a->digits);
      free(b.digits);
 
-     a = at;
+     *a = at;
      b = bt;
 
      fractionalPartSize *= 2;
+     free(two.digits);
      two = shiftLeftConstant(bignumOfInt(2), fractionalPartSize);
 
-     free(sub.digits);
    }
    free(two.digits);
-   // free(b.digits);
 
   // Shift bignum right, until we have our desired number of fraction size
-  shiftRight(&a, a.fracSize - fracSize);
+  shiftRight(a, a->fracSize - fracSize);
 
   // Remove leading zeros
-   for (int newSize = a.size-1; newSize >= 0; newSize--) {
-     if (a.digits[newSize] != 0) {
-      a.size = newSize + 1;
+   for (int newSize = a->size-1; newSize >= 0; newSize--) {
+     if (a->digits[newSize] != 0) {
+      a->size = newSize + 1;
       break;
      }
    }
 
-  return a;
  }

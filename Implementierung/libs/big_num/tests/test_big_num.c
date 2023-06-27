@@ -131,7 +131,8 @@ void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) 
 void test_division(struct bignum a, struct bignum b, size_t number,
                          struct bignum expected) {
   test_cases++;
-  struct bignum result = goldschmidt(a, b, number);
+  goldschmidt(&a, b, number);
+  struct bignum result = a;
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
       if (result.digits[i] != expected.digits[i]) {
@@ -611,7 +612,7 @@ int main(void) {
   *a_digits = 2;
   *b_digits = 5;
   expected.size = 1;
-  *expected_digits = 0b0110011001;
+  *expected_digits = 0x199;
   test_division(a, b, 10, expected);
 
   // print overall result
