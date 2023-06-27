@@ -17,15 +17,22 @@ struct matrix2x2 powMatrix2x2(struct matrix2x2 a, uint32_t n, struct bignum mult
             bignumOfInt(1)
     };
 
+    // Pointer to store and free old matrices
+    struct matrix2x2 old;
+
     // Squaring the matrix and multiply result by it if necessary
     for (; n > 0; n >>= 1) {
         // If the least significant bit is set to 1, multiply result by a
         if (n & 1) {
+            old = result;
             result = mulMatrix2x2(result, a, multiply);
+            free2x2(old);
         }
 
         // Square a
+        old = a;
         a = mulMatrix2x2(a, a, multiply);
+        free2x2(old);
     }
 
     return result;
@@ -42,19 +49,28 @@ struct cmp_matrix2x2 powCmpMatrix2x2(struct cmp_matrix2x2 a, uint32_t n, struct 
             bignumOfInt(1)
     };
 
+    // Pointer to store and free old matrices
+    struct cmp_matrix2x2 old;
+
     // First check manual to save one matrix multiplication at the end of the for loop
     if (n & 1) {
+        old = result;
         result = mulCmpMatrix2x2(result, a, multiply);
+        freeCmp2x2(old);
     }
     n >>= 1;
     // Squaring the matrix and multiply result by it if necessary
     for (; n > 0; n >>= 1) {
         // Square a
+        old = a;
         a = mulCmpMatrix2x2(a, a, multiply);
+        freeCmp2x2(old);
 
         // If the least significant bit is set to 1, multiply result by a
         if (n & 1) {
+            old = result;
             result = mulCmpMatrix2x2(result, a, multiply);
+            freeCmp2x2(old);
         }
     }
 
