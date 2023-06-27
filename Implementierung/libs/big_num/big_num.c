@@ -27,11 +27,11 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   uint32_t *bignumDigits = NULL;
   size_t newSize;
   if(__builtin_uaddl_overflow(a.size, b.size, &newSize)){
-    perror("Could not calculate new size");
+    perror("Could not calculate new size\n");
     exit(EXIT_FAILURE);
   }
   if(__builtin_umull_overflow(newSize, sizeof(*bignumDigits), &newSize)){
-    perror("Could not calculate new size");
+    perror("Could not calculate new size\n");
     exit(EXIT_FAILURE);
   }
   if (!(bignumDigits = malloc(newSize))) {
@@ -72,18 +72,22 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
 }
 
 
-struct bignum additionBignum(struct bignum a, struct bignum b) {
+void additionBignum(struct bignum *a, struct bignum b) {
   size_t newSize;
-  if(__builtin_umull_overflow(a.size, sizeof(*a.digits), &newSize)){
-    perror("Could not calculate new size");
+  a->size++;
+  if(__builtin_umull_overflow(a->size, sizeof(*a->digits), &newSize)){
+    perror("Could not calculate new size\n");
     exit(EXIT_FAILURE);
   }
-  void* result = realloc(a.digits, newSize);
-  (void) result;
 
-  a.size++;
+  uint32_t *newDigits;  
+  if (!(newDigits = realloc(a->digits, newSize))) {
+    fprintf(stderr, "Could not allocate memory\n");
+    free(a->digits);
+    exit(EXIT_FAILURE);
+  }
 
-  a.digits[a.size - 1] = 0;
+  a->digits[a->size - 1] = 0;
  
   // Add the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
@@ -91,35 +95,33 @@ struct bignum additionBignum(struct bignum a, struct bignum b) {
 
     size_t overflowCount = 1;
     // If there is an addition overflow, increment the third 32bit block
-    if (__builtin_uaddl_overflow(b64, *(uint64_t *)(a.digits + i),
-                                 (uint64_t *)(a.digits + i))) {
-      while(__builtin_uaddl_overflow(1, *(uint64_t *)(a.digits + (2*overflowCount) + i),
-                               (uint64_t *)(a.digits + (2*overflowCount) + i))){
+    if (__builtin_uaddl_overflow(b64, *(uint64_t *)(a->digits + i),
+                                 (uint64_t *)(a->digits + i))) {
+      while(__builtin_uaddl_overflow(1, *(uint64_t *)(a->digits + (2*overflowCount) + i),
+                               (uint64_t *)(a->digits + (2*overflowCount) + i))){
         overflowCount++;
       }
     }
   }
 
-  return a;
 }
 
 
-struct bignum subtractionBignum(struct bignum a, struct bignum b) {
+void subtractionBignum(struct bignum *a, struct bignum b) {
   // Add the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
 
     size_t overflowCount = 1;
     // If there is an subtraction overflow, increment the third 32bit block
-    if (__builtin_usub_overflow(*(a.digits + i), *(b.digits + i),
-                                 (a.digits + i))) {
-      while(__builtin_usub_overflow(*(a.digits + (1 * overflowCount) + i), 1,
-                               (a.digits + (1 * overflowCount) + i))) {
+    if (__builtin_usub_overflow(*(a->digits + i), *(b.digits + i),
+                                 (a->digits + i))) {
+      while(__builtin_usub_overflow(*(a->digits + (1 * overflowCount) + i), 1,
+                               (a->digits + (1 * overflowCount) + i))) {
         overflowCount++;
       }
     }
 
   }
 
-  return a;
 }
 
