@@ -43,7 +43,7 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
 
   // Zero all elements
   for (size_t i = 0; i < result.size; i++) {
-    bignumDigits[i] = 0;
+    *(result.digits+i) = 0;
   }
 
   // Multiply every 32bit block of b with the first of a
@@ -55,13 +55,13 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
       uint64_t b64 = (uint64_t)b.digits[j];
       uint64_t c64 = a64 * b64;
 
-      size_t overflowCount = 1;
+      size_t overflowCount = 2;
       // If there is an addition overflow, increment the third 32bit block
       if (__builtin_uaddl_overflow(c64, *(uint64_t *)(result.digits + j + i),
                                    (uint64_t *)(result.digits + j + i))) {
-        while (__builtin_uaddl_overflow(
-            1, *(uint64_t *)(result.digits + (2 * overflowCount) + j + i),
-            (uint64_t *)(result.digits + (2 * overflowCount) + j + i))) {
+        while ((overflowCount) + j + i < result.size && __builtin_uadd_overflow(
+            1, *(result.digits + (overflowCount) + j + i),
+            (result.digits + (overflowCount) + j + i))) {
           overflowCount++;
         }
       }
@@ -86,19 +86,21 @@ void additionBignum(struct bignum *a, struct bignum b) {
     free(a->digits);
     exit(EXIT_FAILURE);
   }
+  // TODO: Check error
 
+  a->digits = newDigits;
   a->digits[a->size - 1] = 0;
  
   // Add the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
     uint64_t b64 = (uint64_t) b.digits[i];
 
-    size_t overflowCount = 1;
+    size_t overflowCount = 2;
     // If there is an addition overflow, increment the third 32bit block
     if (__builtin_uaddl_overflow(b64, *(uint64_t *)(a->digits + i),
                                  (uint64_t *)(a->digits + i))) {
-      while(__builtin_uaddl_overflow(1, *(uint64_t *)(a->digits + (2*overflowCount) + i),
-                               (uint64_t *)(a->digits + (2*overflowCount) + i))){
+      while((overflowCount) + i < a->size && __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
+                               (a->digits + (overflowCount) + i))){
         overflowCount++;
       }
     }
