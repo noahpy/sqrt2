@@ -364,6 +364,8 @@ int main(void) {
   *a.digits = 0xffffffff;
   *(a.digits + 1) = 0xffffffff;
   *(a.digits + 2) = 0xffffffff;
+  *b.digits = 0xffffffff;
+  *(b.digits + 1) = 0xffffffff;
   *expected.digits = 0x0;
   *(expected.digits + 1) = 0x0;
   *(expected.digits + 2) = 0xffffffff;
