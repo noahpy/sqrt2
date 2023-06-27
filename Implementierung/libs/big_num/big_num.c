@@ -88,6 +88,7 @@ void additionBignum(struct bignum *a, struct bignum b) {
   }
   // TODO: Check error
 
+  a->digits = newDigits;
   a->digits[a->size - 1] = 0;
  
   // Add the 32bit blocks of b to the corresponding blocks of a
