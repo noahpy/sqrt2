@@ -11,6 +11,6 @@ struct bignum {
 
 struct bignum bignumOfInt(uint32_t n); 
 struct bignum multiplicationBignum(struct bignum a, struct bignum b);
-void goldschmidt(struct bignum *a, struct bignum b, size_t fracSize);
+void goldschmidt(struct bignum *a, struct bignum *b, size_t fracSize);
 void additionBignum(struct bignum *a, struct bignum b);
 void subtractionBignum(struct bignum *a, struct bignum b);

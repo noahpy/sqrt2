@@ -68,6 +68,14 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
     }
   }
 
+    // Remove leading zeros
+    for (int newSize = result.size-1; newSize >= -1; newSize--) {
+     if (newSize < 0 || result.digits[newSize] != 0) {
+      result.size = newSize + 1;
+      break;
+     }
+    }
+
   return result;
 }
 
@@ -106,27 +114,42 @@ void additionBignum(struct bignum *a, struct bignum b) {
     }
   }
 
+  // Remove leading zeros
+   for (int newSize = a->size-1; newSize >= -1; newSize--) {
+     if (newSize < 0 || a->digits[newSize] != 0) {
+      a->size = newSize + 1;
+      break;
+     }
+   }
+
 }
 
 
 void subtractionBignum(struct bignum *a, struct bignum b) {
-  // Add the 32bit blocks of b to the corresponding blocks of a
+
+  // Subtract the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
 
     size_t overflowCount = 1;
-    // If there is an subtraction overflow, increment the third 32bit block
+    // If there is an subtraction overflow, decrement the third 32bit block
     if (__builtin_usub_overflow(*(a->digits + i), *(b.digits + i),
                                  (a->digits + i))) {
-      while(__builtin_usub_overflow(*(a->digits + (1 * overflowCount) + i), 1,
-                               (a->digits + (1 * overflowCount) + i))) {
+      while(overflowCount + i < a->size && __builtin_usub_overflow(*(a->digits + (overflowCount) + i), 1,
+                               (a->digits + (overflowCount) + i))) {
         overflowCount++;
       }
     }
-
   }
 
-}
+  // Remove leading zeros
+   for (int newSize = a->size-1; newSize >= -1; newSize--) {
+     if (newSize < 0 || a->digits[newSize] != 0) {
+      a->size = newSize + 1;
+      break;
+     }
+   }
 
+}
 
 int compareHighestDigits(struct bignum a, struct bignum b) {
   size_t highestDigitA = a.size - 1;
@@ -147,7 +170,7 @@ struct bignum shiftLeftConstant(struct bignum a, size_t number) {
   // Calculate how much new 32Bit blocks are needed
   int numberNewBlocks = number / 32;
   int blockWithOne = a.size - 1;
-  uint32_t savedBlock = a.digits[a.size - 1]; 
+  uint32_t savedBlock = a.digits[a.size - 1];
   bool restNeedsBlock = false;
 
   if (savedBlock << (number % 32) == 0) {
@@ -186,7 +209,7 @@ uint32_t *newDigits = NULL;
       break;
     }
   }
-  
+
   return a;
 }
 
@@ -210,45 +233,38 @@ void shiftRight(struct bignum *a, size_t number) {
 }
 
 // Calculate a/b with goldschmidt
-void goldschmidt(struct bignum *a, struct bignum b, size_t fracSize) {
-   size_t fractionalPartSize = 1;
+void goldschmidt(struct bignum *a, struct bignum *b, size_t fracSize) {
    a->fracSize = 1;
-   b.fracSize = 1;
-   struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), fractionalPartSize);
+   b->fracSize = 1;
+   struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), b->fracSize);
 
   // Calculates b * 0.5 until b < 1
-   while (compareHighestDigits(b, oneShift) == 1) {
-    fractionalPartSize++;
-     b.fracSize++;
+   while (compareHighestDigits(*b, oneShift) == 1) {
+     b->fracSize++;
      a->fracSize++;
 
-     free(oneShift.digits);
-     oneShift = shiftLeftConstant(bignumOfInt(1), fractionalPartSize);
+     oneShift = shiftLeftConstant(oneShift, 1);
    }
-
-   struct bignum two = shiftLeftConstant(bignumOfInt(2), fractionalPartSize);
+   free(oneShift.digits);
 
   // Calculates b * (2 - b) until b approximates 1
   // Result is in a
-   while (fractionalPartSize < (fracSize + 50) * 2) {
+   while (b->fracSize < (fracSize + 50) * 2) {
+     struct bignum two = shiftLeftConstant(bignumOfInt(2), b->fracSize);
 
-     subtractionBignum(&two, b);
+     subtractionBignum(&two, *b);
 
      struct bignum at = multiplicationBignum(*a, two);
-     struct bignum bt = multiplicationBignum(b, two);
+     struct bignum bt = multiplicationBignum(*b, two);
 
      free(a->digits);
-     free(b.digits);
+     free(b->digits);
 
      *a = at;
-     b = bt;
+     *b = bt;
 
-     fractionalPartSize *= 2;
      free(two.digits);
-     two = shiftLeftConstant(bignumOfInt(2), fractionalPartSize);
-
    }
-   free(two.digits);
 
   // Shift bignum right, until we have our desired number of fraction size
   shiftRight(a, a->fracSize - fracSize);
