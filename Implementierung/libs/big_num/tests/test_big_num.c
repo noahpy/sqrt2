@@ -53,7 +53,8 @@ void test_multiplication(struct bignum a, struct bignum b,
 
 void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
   test_cases++;
-  struct bignum result = additionBignum(a, b);
+  additionBignum(&a, b);
+  struct bignum result = a;
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
       if (result.digits[i] != expected.digits[i]) {
@@ -69,7 +70,7 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
         printf("%o ", b.digits[0]);
         printf(").digits[%zu] == %o, but got %o\n", i, expected.digits[i],
                result.digits[i]);
-        free(result.digits);
+        // free(result.digits);
         return;
       }
     }

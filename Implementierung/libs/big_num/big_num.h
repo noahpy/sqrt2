@@ -11,5 +11,6 @@ struct bignum {
 
 struct bignum bignumOfInt(uint32_t n); 
 struct bignum multiplicationBignum(struct bignum a, struct bignum b);
-struct bignum additionBignum(struct bignum a, struct bignum b);
+// struct bignum additionBignum(struct bignum a, struct bignum b);
+void additionBignum(struct bignum *a, struct bignum b);
 struct bignum subtractionBignum(struct bignum a, struct bignum b);
