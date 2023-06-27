@@ -86,6 +86,7 @@ void additionBignum(struct bignum *a, struct bignum b) {
     free(a->digits);
     exit(EXIT_FAILURE);
   }
+  // TODO: Check error
 
   a->digits[a->size - 1] = 0;
  
