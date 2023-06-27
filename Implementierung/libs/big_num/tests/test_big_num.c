@@ -291,6 +291,7 @@ int main(void) {
   *(expected.digits + 1) = 1;
   test_addition(a, b, expected);
 
+  resetBignums(2, 1, 2);
   // 4294967296 - 1 = 4294967295
   *a.digits = 0;
   *(a.digits + 1) = 1;
