@@ -16,7 +16,7 @@ void resetBignums(size_t as, size_t bs, size_t expecteds) {
   b = (struct bignum) {.size = bs, .digits = malloc(16 * sizeof(uint32_t))};
   expected = (struct bignum) {.size = expecteds, .digits = malloc(16 * sizeof(uint32_t))};
 
-  for (int i = 0; i < 16; i++) {
+  for (size_t i = 0; i < 16; i++) {
       a.digits[i] = 0;
       b.digits[i] = 0;
       expected.digits[i] = 0;
