@@ -1,5 +1,6 @@
 
 #include "../big_num.h"
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -170,6 +171,12 @@ int main(void) {
   a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
   b_digits = (uint32_t *)malloc(16 * sizeof(*b_digits));
   expected_digits = (uint32_t *)malloc(16 * sizeof(*expected_digits));
+
+  for(size_t i=0; i<16;i++){
+    a_digits[i] = 0;
+    b_digits[i] = 0;
+    expected_digits[i] = 0;
+  }
 
   if (!a_digits || !b_digits || !expected_digits) {
     printf("Failed allocation");
