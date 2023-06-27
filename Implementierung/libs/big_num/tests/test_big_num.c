@@ -55,8 +55,7 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
 
   test_cases++;
   additionBignum(&a, b);
-  struct bignum result = a;
-  if (result.size == expected.size) {
+  if (a.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
       if (result.digits[i] != expected.digits[i]) {
         printf("Test failed: additionBignum( ");
@@ -192,8 +191,8 @@ int main(void) {
   *b_digits = 8;
   *expected_digits = 12;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
   // 4 * 8 = 32, but a.size is 2
   *a_digits = 4;
@@ -205,8 +204,8 @@ int main(void) {
   // 4 + 8 = 12, but a.size is 2
   *expected_digits = 12;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
 
   // 9 * 1 = 9
@@ -220,8 +219,8 @@ int main(void) {
   // 9 + 1 = 10
   *expected_digits = 10;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
 
   // 9 - 1 = 8
@@ -240,8 +239,8 @@ int main(void) {
   // 1 + 9 = 10
   *expected_digits = 10;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
 
   // 754 * 754 = 568516
@@ -253,8 +252,8 @@ int main(void) {
   // 754 + 754 = 1508
   *expected_digits = 1508;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
 
   // 4294967296 * 1 = 4294967296
@@ -271,9 +270,8 @@ int main(void) {
   *expected_digits = 1;
   *(expected_digits + 1) = 1;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
-
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
   
   // 4294967296 - 1 = 4294967295
   *a_digits = 0;
@@ -312,8 +310,8 @@ int main(void) {
   *expected_digits = 0x0;
   *(expected_digits + 1) = 0x0;
   test_subtraction(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
 
   // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff_ffffffff =
@@ -343,8 +341,8 @@ int main(void) {
   *(expected_digits + 2) = 0xffffffff;
   *(expected_digits + 3) = 0x1;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
 
   // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff =
@@ -372,8 +370,8 @@ int main(void) {
   *(expected_digits + 2) = 0x00000000;
   *(expected_digits + 3) = 0x1;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
 
   // 0xffffffff_ffffffff_ffffffff - 0xffffffff_ffffffff =
@@ -405,7 +403,7 @@ int main(void) {
   *(expected_digits + 1) = 0x5234ad;
   *(expected_digits + 2) = 0x0;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
   a.digits = a_digits;
 
 
@@ -441,7 +439,7 @@ int main(void) {
   *(expected_digits + 2) = 0xadf;
   *(expected_digits + 3) = 0x0;
   test_addition(a, b, expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
   a.digits = a_digits;
 
 
@@ -587,8 +585,8 @@ int main(void) {
   b.size = 4;
   expected.size = 5;
   test_addition(a,b,expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
 
   // addition size overflow
@@ -603,8 +601,8 @@ int main(void) {
   b.size = 1;
   expected.size = 3;
   test_addition(a,b,expected);
-  a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
-  a.digits = a_digits;
+  //a_digits = (uint32_t *)malloc(16 * sizeof(*a_digits));
+  //a.digits = a_digits;
 
   // 2 / 5 = 0.4 with 10 fraction 
   a.size = 1;
