@@ -11,6 +11,18 @@ struct bignum a;
 struct bignum b;
 struct bignum expected;
 
+void resetBignums() {
+  a = (struct bignum) {.size = 1, .digits = malloc(16 * sizeof(uint32_t))};
+  b = (struct bignum) {.size = 1, .digits = malloc(16 * sizeof(uint32_t))};
+  expected = (struct bignum) {.size = 2, .digits = malloc(16 * sizeof(uint32_t))};
+
+  for (int i = 0; i < 16; i++) {
+      a.digits[i] = 0;
+      b.digits[i] = 0;
+      expected.digits[i] = 0;
+  }
+}
+
 void test_multiplication(struct bignum a, struct bignum b,
                          struct bignum expected) {
   test_cases++;
@@ -140,21 +152,15 @@ void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) 
 }
 
 int main(void) {
-  a = (struct bignum) {.size = 1, .digits = malloc(16 * sizeof(uint32_t))};
-  b = (struct bignum) {.size = 1, .digits = malloc(16 * sizeof(uint32_t))};
-  expected = (struct bignum) {.size = 2, .digits = malloc(16 * sizeof(uint32_t))};
 
+  resetBignums();
   // 4 * 8 = 32
   *a.digits = 4;
   *b.digits = 8;
   *expected.digits = 32;
   test_multiplication(a, b, expected);
 
-
-  a = (struct bignum) {.size = 1, .digits = malloc(16 * sizeof(uint32_t))};
-  b = (struct bignum) {.size = 1, .digits = malloc(16 * sizeof(uint32_t))};
-  expected = (struct bignum) {.size = 2, .digits = malloc(16 * sizeof(uint32_t))};
-
+  resetBignums();
   // 4 + 8 = 12
   *a.digits = 4;
   *b.digits = 8;
