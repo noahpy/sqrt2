@@ -158,7 +158,7 @@ void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) 
 void test_division(struct bignum a, struct bignum b, size_t number,
                          struct bignum expected) {
   test_cases++;
-  goldschmidt(&a, b, number);
+  goldschmidt(&a, &b, number);
   struct bignum result = a;
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
@@ -202,42 +202,42 @@ void test_division(struct bignum a, struct bignum b, size_t number,
 
 int main(void) {
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 4 * 8 = 32
   *a.digits = 4;
   *b.digits = 8;
   *expected.digits = 32;
   test_multiplication(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 4 + 8 = 12
   *a.digits = 4;
   *b.digits = 8;
   *expected.digits = 12;
   test_addition(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 4 * 8 = 32, but a.size is 2
   *a.digits = 4;
   *b.digits = 8;
   *expected.digits = 32;
   test_multiplication(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 4 + 8 = 12, but a.size is 2
   *a.digits = 4;
   *b.digits = 8;
   *expected.digits = 12;
   test_addition(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 9 * 1 = 9
   *a.digits = 9;
   *b.digits = 1;
   *expected.digits = 9;
   test_multiplication(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 9 + 1 = 10
   *a.digits = 9;
   *b.digits = 1;
@@ -251,35 +251,35 @@ int main(void) {
   *expected.digits = 8;
   test_subtraction(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 1 * 9 = 9
   *a.digits = 1;
   *b.digits = 9;
   *expected.digits = 9;
   test_multiplication(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 1 + 9 = 10
   *a.digits = 9;
   *b.digits = 1;
   *expected.digits = 10;
   test_addition(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 754 * 754 = 568516
   *a.digits = 754;
   *b.digits = 754;
   *expected.digits = 568516;
   test_multiplication(a, b, expected);
 
-  resetBignums(1, 1, 2);
+  resetBignums(1, 1, 1);
   // 754 + 754 = 1508
   *a.digits = 754;
   *b.digits = 754;
   *expected.digits = 1508;
   test_addition(a, b, expected);
 
-  resetBignums(2, 1, 3);
+  resetBignums(2, 1, 2);
   // 4294967296 * 1 = 4294967296
   *a.digits = 0;
   *(a.digits + 1) = 1;
@@ -288,7 +288,7 @@ int main(void) {
   *(expected.digits + 1) = 1;
   test_multiplication(a, b, expected);
 
-  resetBignums(2, 1, 3);
+  resetBignums(2, 1, 2);
   // 4294967296 + 1 = 4294967297
   *a.digits = 0;
   *(a.digits + 1) = 1;
@@ -297,7 +297,7 @@ int main(void) {
   *(expected.digits + 1) = 1;
   test_addition(a, b, expected);
 
-  resetBignums(2, 1, 2);
+  resetBignums(2, 1, 1);
   // 4294967296 - 1 = 4294967295
   *a.digits = 0;
   *(a.digits + 1) = 1;
@@ -319,7 +319,7 @@ int main(void) {
   *(expected.digits + 3) = 0x16df56a;
   test_multiplication(a, b, expected);
 
-  resetBignums(2, 2, 3);
+  resetBignums(2, 2, 2);
   // 0x13214ab1_13214ab1 + 0x13214ab1_13214ab1 = 0x26429562_26429562
   *a.digits = 0x13214ab1;
   *(a.digits + 1) = 0x13214ab1;
@@ -330,7 +330,7 @@ int main(void) {
   *(expected.digits + 2) = 0x0;
   test_addition(a, b, expected);
 
-  resetBignums(2, 2, 2);
+  resetBignums(2, 2, 0);
   // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
   *a.digits = 0x13214ab1;
   *(a.digits + 1) = 0x13214ab1;
@@ -424,7 +424,7 @@ int main(void) {
   *(expected.digits + 2) = 0x12;
   test_multiplication(a, b, expected);
 
-  resetBignums(2, 1, 3);
+  resetBignums(2, 1, 2);
   // 0x5234ad_94724362 + 0x3abf = 0x5234ad_94727e21
   *a.digits = 0x94724362;
   *(a.digits + 1) = 0x5234ad;
@@ -458,7 +458,7 @@ int main(void) {
   *(expected.digits + 4) = 0x7;
   test_multiplication(a, b, expected);
 
-  resetBignums(3, 2, 4);
+  resetBignums(3, 2, 3);
   // 0xadf_ebcfefef_beaaa420 + 0xadcbef_afafef69 = 0xadf_ec7dbbdf_6e5a9389
   *a.digits = 0xbeaaa420;
   *(a.digits + 1) = 0xebcfefef;
@@ -614,8 +614,8 @@ int main(void) {
   *(expected.digits + 2) = 0x1;
   test_addition(a,b,expected);
 
-  // 2 / 5 = 0.4 with 10 fraction 
   resetBignums(1, 1, 1);
+  // 2 / 5 = 0.4 with 10 fraction 
   *a.digits = 2;
   *b.digits = 5;
   *expected.digits = 0x199;
