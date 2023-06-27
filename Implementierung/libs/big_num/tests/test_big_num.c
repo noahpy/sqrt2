@@ -56,8 +56,8 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
   test_cases++;
   additionBignum(&a, b);
   if (a.size == expected.size) {
-    for (size_t i = 0; i < result.size; i++) {
-      if (result.digits[i] != expected.digits[i]) {
+    for (size_t i = 0; i < a.size; i++) {
+      if (a.digits[i] != expected.digits[i]) {
         printf("Test failed: additionBignum( ");
         for (size_t j = a.size - 1; j > 0; j--) {
           printf("%o ", a.digits[j]);
@@ -69,7 +69,7 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
         }
         printf("%o ", b.digits[0]);
         printf(").digits[%zu] == %o, but got %o\n", i, expected.digits[i],
-               result.digits[i]);
+               a.digits[i]);
         return;
       }
     }
@@ -85,7 +85,7 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
       printf("%o ", b.digits[j]);
     }
     printf("%o ", b.digits[0]);
-    printf(") - size should be %zu, but was %zu\n", expected.size, result.size);
+    printf(") - size should be %zu, but was %zu\n", expected.size, a.size);
   }
 }
 
