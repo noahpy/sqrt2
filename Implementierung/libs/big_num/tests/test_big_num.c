@@ -173,13 +173,13 @@ int main(void) {
   *expected.digits = 12;
   test_addition(a, b, expected);
 
-  resetBignums(2, 1, 3);
+  resetBignums(1, 1, 2);
   // 4 * 8 = 32, but a.size is 2
   *a.digits = 4;
   *expected.digits = 32;
   test_multiplication(a, b, expected);
 
-  resetBignums(2, 1, 3);
+  resetBignums(1, 1, 2);
   // 4 + 8 = 12, but a.size is 2
   *expected.digits = 12;
   test_addition(a, b, expected);
