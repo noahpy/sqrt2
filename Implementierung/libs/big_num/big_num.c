@@ -107,22 +107,21 @@ void additionBignum(struct bignum *a, struct bignum b) {
 }
 
 
-struct bignum subtractionBignum(struct bignum a, struct bignum b) {
+void subtractionBignum(struct bignum *a, struct bignum b) {
   // Add the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
 
     size_t overflowCount = 1;
     // If there is an subtraction overflow, increment the third 32bit block
-    if (__builtin_usub_overflow(*(a.digits + i), *(b.digits + i),
-                                 (a.digits + i))) {
-      while(__builtin_usub_overflow(*(a.digits + (1 * overflowCount) + i), 1,
-                               (a.digits + (1 * overflowCount) + i))) {
+    if (__builtin_usub_overflow(*(a->digits + i), *(b.digits + i),
+                                 (a->digits + i))) {
+      while(__builtin_usub_overflow(*(a->digits + (1 * overflowCount) + i), 1,
+                               (a->digits + (1 * overflowCount) + i))) {
         overflowCount++;
       }
     }
 
   }
 
-  return a;
 }
 
