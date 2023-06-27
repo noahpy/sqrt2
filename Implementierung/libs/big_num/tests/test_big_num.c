@@ -175,6 +175,9 @@ void test_division(struct bignum a, struct bignum b, size_t number,
         printf("%o ", b.digits[0]);
         printf(").digits[%zu] == %o, but got %o\n", i, expected.digits[i],
                result.digits[i]);
+        free(a.digits);
+        free(b.digits);
+        free(expected.digits);
         return;
       }
     }
@@ -192,6 +195,9 @@ void test_division(struct bignum a, struct bignum b, size_t number,
     printf("%o ", b.digits[0]);
     printf(") - size should be %zu, but was %zu\n", expected.size, result.size);
   }
+  free(a.digits);
+  free(b.digits);
+  free(expected.digits);
 }
 
 int main(void) {
@@ -609,13 +615,11 @@ int main(void) {
   test_addition(a,b,expected);
 
   // 2 / 5 = 0.4 with 10 fraction 
-  // a.size = 1;
-  // b.size = 1;
-  // *a.digits = 2;
-  // *b.digits = 5;
-  // expected.size = 1;
-  // *expected_digits = 0x199;
-  // test_division(a, b, 10, expected);
+  resetBignums(1, 1, 1);
+  *a.digits = 2;
+  *b.digits = 5;
+  *expected.digits = 0x199;
+  test_division(a, b, 10, expected);
 
   // print overall result
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
