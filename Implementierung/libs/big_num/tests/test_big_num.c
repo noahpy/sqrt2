@@ -70,7 +70,6 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
         printf("%o ", b.digits[0]);
         printf(").digits[%zu] == %o, but got %o\n", i, expected.digits[i],
                result.digits[i]);
-        // free(result.digits);
         return;
       }
     }
@@ -88,12 +87,12 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
     printf("%o ", b.digits[0]);
     printf(") - size should be %zu, but was %zu\n", expected.size, result.size);
   }
-  //free(result.digits);
 }
 
 void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) {
   test_cases++;
-  struct bignum result = subtractionBignum(a, b);
+  subtractionBignum(&a, b);
+  struct bignum result = a;
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
       if (result.digits[i] != expected.digits[i]) {
