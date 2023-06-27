@@ -1,19 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "mat_fast_exp.h"
-
-// Creates a bignum with value n on the heap TODO: Move to bignum
-struct bignum bignumOfInt(uint32_t n) {
-    uint32_t *digit = NULL;
-    if (!(digit = malloc(sizeof(uint32_t)))) {
-        fprintf(stderr, "Could not allocate memory\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Set the value to n
-    *digit = n;
-
-    return (struct bignum) {1, digit};
-}
 
 // Computes 2x2 matrix to the power of n
 struct matrix2x2 powMatrix2x2(struct matrix2x2 a, uint32_t n, struct bignum multiply(struct bignum, struct bignum)) {

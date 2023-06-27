@@ -1,6 +1,5 @@
 #include "matrix_mul/matrix_mul.h"
 
-struct bignum bignumOfInt(uint32_t);
 
 struct matrix2x2 powMatrix2x2(struct matrix2x2, uint32_t, struct bignum (struct bignum, struct bignum));
 

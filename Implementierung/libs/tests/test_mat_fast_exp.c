@@ -1,24 +1,7 @@
 #include "stdio.h"
 #include "../mat_fast_exp.h"
 
-// TODO: Merge with bignum arithmetic
-struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
-    struct bignum *result = malloc(sizeof(struct bignum));
-    uint32_t *digits = malloc(sizeof(uint32_t));
-    digits[0] = a.digits[0] * b.digits[0];
-    result->size = 1;
-    result->digits = digits;
-    return *result;
-}
 
-struct bignum additionBignum(struct bignum a, struct bignum b) {
-    struct bignum *result = malloc(sizeof(struct bignum));
-    uint32_t *digits = malloc(sizeof(uint32_t));
-    digits[0] = a.digits[0] + b.digits[0];
-    result->size = 1;
-    result->digits = digits;
-    return *result;
-}
 
 // Creates a new 2x2 matrix with the given values in array [0...3]
 struct matrix2x2 createMatrix(uint32_t arr[]) {
