@@ -250,17 +250,47 @@ void goldschmidt(struct bignum *a, struct bignum *b, size_t fracSize) {
    //
    // teest
    //
-   struct bignum t2 = 1.E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1 E1E1
-   uint32_t t2digits = malloc(9 * sizeof(*uint32_t));
+   uint32_t *t2digits = malloc(5 * sizeof(uint32_t));
+   struct bignum t2 = { .digits = t2digits, .size = 5, .fracSize = 128 };
    *(t2digits) = 0xE1E1E1E1;
    *(t2digits + 1) = 0xE1E1E1E1;
    *(t2digits + 2) = 0xE1E1E1E1;
    *(t2digits + 3) = 0xE1E1E1E1;
-   *(t2digits + 4) = 0xE1E1E1E1;
-   *(t2digits + 5) = 0xE1E1E1E1;
-   *(t2digits + 6) = 0xE1E1E1E1;
-   *(t2digits + 7) = 0xE1E1E1E1;
+   *(t2digits + 4) = 0x1;
    
+   uint32_t *t1digits = malloc(9 * sizeof(uint32_t));
+   struct bignum t1 = { .digits = t1digits, .size = 9, .fracSize = 256 };
+   *(t1digits) = 0xD2D2D2D2;
+   *(t1digits + 1) = 0xD2D2D2D2;
+   *(t1digits + 2) = 0xD2D2D2D2;
+   *(t1digits + 3) = 0xD2D2D2D2;
+   *(t1digits + 4) = 0xD2D2D2D2;
+   *(t1digits + 5) = 0xD2D2D2D2;
+   *(t1digits + 6) = 0xD2D2D2D2;
+   *(t1digits + 7) = 0xD2D2D2D2;
+   *(t1digits + 8) = 0x2;
+
+  struct bignum multt2b = multiplicationBignum(t2, *b);
+  shiftRight(&t1, t1.fracSize - multt2b.fracSize);
+  t1.fracSize -= multt2b.fracSize;
+  subtractionBignum(&t1, multt2b);
+  free(multt2b.digits);
+  free(t2.digits);
+
+  for (int i = 0; i < 5; i++) {
+    struct bignum t1t = multiplicationBignum(t1, *b);
+    struct bignum two = shiftLeftConstant(bignumOfInt(2), t1t.fracSize);
+    subtractionBignum(&two, t1t);
+    free(t1.digits);
+    t1 = multiplicationBignum(t1t, two);
+    free(t1t.digits);
+    free(two.digits);
+  }
+
+  struct bignum at = multiplicationBignum(*a, t1);
+  free(a->digits);
+  free(t1.digits);
+  *a = at;
 
    //
    //
