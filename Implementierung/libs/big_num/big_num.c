@@ -9,7 +9,7 @@
 
 void printBignum(struct bignum *a) {
     for (int i = a->size - 1; i >= 0; i--) {
-        printf("a.digits[%d]: %o\n", i, a->digits[i]);
+        printf("a.digits[%d]: 0x%08x\n", i, a->digits[i]);
     }
     printf("a.fracSize: %zu\n", a->fracSize);
 }
@@ -239,101 +239,74 @@ void shiftRight(struct bignum *a, size_t number) {
 
 }
 
-// Calculate a/b with goldschmidt
-void goldschmidt(struct bignum *a, struct bignum *b, size_t fracSize) {
-   a->fracSize = 1;
-   b->fracSize = 1;
-   struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), b->fracSize);
+// Calculate a/b with newton-raphson
+void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
+  a->fracSize = 1;
+  b->fracSize = 1;
+  struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), b->fracSize);
 
   // Calculates b * 0.5 until b < 1
-   while (compareHighestDigits(*b, oneShift) == 1) {
-     b->fracSize++;
-     a->fracSize++;
+  while (compareHighestDigits(*b, oneShift) == 1) {
+    b->fracSize++;
+    a->fracSize++;
+    oneShift = shiftLeftConstant(oneShift, 1);
+  }
+  free(oneShift.digits);
 
-     oneShift = shiftLeftConstant(oneShift, 1);
-   }
-   free(oneShift.digits);
+  // load constant 48 / 17
+  struct bignum t1 = { .digits = malloc(9 * sizeof(uint32_t)), .size = 9, .fracSize = 256 };
+  *(t1.digits) = 0xD2D2D2D2;
+  *(t1.digits + 1) = 0xD2D2D2D2;
+  *(t1.digits + 2) = 0xD2D2D2D2;
+  *(t1.digits + 3) = 0xD2D2D2D2;
+  *(t1.digits + 4) = 0xD2D2D2D2;
+  *(t1.digits + 5) = 0xD2D2D2D2;
+  *(t1.digits + 6) = 0xD2D2D2D2;
+  *(t1.digits + 7) = 0xD2D2D2D2;
+  *(t1.digits + 8) = 2;
 
-   //
-   // teest
-   //
-   
-   struct bignum t1 = { .digits = malloc(9 * sizeof(uint32_t)), .size = 9, .fracSize = 256 };
-   *(t1.digits) = 0xD2D2D2D2;
-   *(t1.digits + 1) = 0xD2D2D2D2;
-   *(t1.digits + 2) = 0xD2D2D2D2;
-   *(t1.digits + 3) = 0xD2D2D2D2;
-   *(t1.digits + 4) = 0xD2D2D2D2;
-   *(t1.digits + 5) = 0xD2D2D2D2;
-   *(t1.digits + 6) = 0xD2D2D2D2;
-   *(t1.digits + 7) = 0xD2D2D2D2;
-   *(t1.digits + 8) = 2;
+  // load constant 32 / 17
+  struct bignum t2 = (struct bignum) { .digits = malloc(5 * sizeof(uint32_t)), .size = 5, .fracSize = 128};
+  t2.digits[0] = 0xe1e1e1e1;
+  t2.digits[1] = 0xe1e1e1e1;
+  t2.digits[2] = 0xe1e1e1e1;
+  t2.digits[3] = 0xe1e1e1e1;
+  t2.digits[4] = 0x1;
 
-   struct bignum t2 = { .digits = malloc(5 * sizeof(uint32_t)), .size = 5, .fracSize = 128 };
-   *(t2.digits) = 0xE1E1E1E1;
-   *(t2.digits + 1) = 0xE1E1E1E1;
-   *(t2.digits + 2) = 0xE1E1E1E1;
-   *(t2.digits + 3) = 0xE1E1E1E1;
-   *(t2.digits + 4) = 1;
-
-  struct bignum multt2b;
-  multt2b = multiplicationBignum(t2, *b);
-  printf("b ");
-  printBignum(b);
-  printf("t2 ");
-  printBignum(&t2);
-  printf("multt2b ");
-  printBignum(&multt2b);
+  // calculate first approximation: t1 + t2 * b
+  struct bignum multt2b = multiplicationBignum(t2, *b);
   shiftRight(&t1, t1.fracSize - multt2b.fracSize);
   t1.fracSize -= (t1.fracSize - multt2b.fracSize);
+
   subtractionBignum(&t1, multt2b);
+
   free(multt2b.digits);
   free(t2.digits);
 
-
-  for (int i = 0; i < 4; i++) {
+  // iterations to approximate the values with: t1 = t1 * (2 - b * t1)
+  for (int i = 0; i < 6; i++) {
     struct bignum t1t = multiplicationBignum(t1, *b);
     struct bignum two = shiftLeftConstant(bignumOfInt(2), t1t.fracSize);
     subtractionBignum(&two, t1t);
-    free(t1.digits);
-    t1 = multiplicationBignum(t1t, two);
+
     free(t1t.digits);
+    t1t = multiplicationBignum(t1, two);
+
+    free(t1.digits);
     free(two.digits);
+
+    t1 = t1t;
   }
 
+  // multiply a with the approximated value to get a/b
   struct bignum at = multiplicationBignum(*a, t1);
   free(a->digits);
   free(t1.digits);
   *a = at;
 
-   //
-   //
-   //
-
-  // Calculates b * (2 - b) until b approximates 1
-  // Result is in a
-   //while (b->fracSize < (fracSize + 50) * 20) {
-     //struct bignum two = shiftLeftConstant(bignumOfInt(2), b->fracSize);
-
-     //subtractionBignum(&two, *b);
-     //shiftRight(&two, two.fracSize/2);
-     //two.fracSize /= 2;
-
-     //struct bignum at = multiplicationBignum(*a, two);
-     //struct bignum bt = multiplicationBignum(*b, two);
-
-     //free(a->digits);
-     //free(b->digits);
-
-     //*a = at;
-     //*b = bt;
-
-     //free(two.digits);
-   //}
-
   // Shift bignum right, until we have our desired number of fraction size
   shiftRight(a, a->fracSize - fracSize);
-  a->fracSize -= fracSize;
+  a->fracSize -= a->fracSize - fracSize;
 
   // Remove leading zeros
    for (int newSize = a->size-1; newSize >= 0; newSize--) {
@@ -342,7 +315,4 @@ void goldschmidt(struct bignum *a, struct bignum *b, size_t fracSize) {
       break;
      }
    }
-
-   printBignum(a);
-
  }
