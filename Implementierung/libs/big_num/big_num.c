@@ -7,6 +7,13 @@
 #include <errno.h>
 #include <stdbool.h>
 
+void printBignum(struct bignum *a) {
+    for (int i = a->size - 1; i >= 0; i--) {
+        printf("a.digits[%d]: %o\n", i, a->digits[i]);
+    }
+    printf("a.fracSize: %zu\n", a->fracSize);
+}
+
 // Creates a bignum with value n on the heap
 struct bignum bignumOfInt(uint32_t n) {
     uint32_t *digit = NULL;
@@ -250,34 +257,41 @@ void goldschmidt(struct bignum *a, struct bignum *b, size_t fracSize) {
    //
    // teest
    //
-   uint32_t *t2digits = malloc(5 * sizeof(uint32_t));
-   struct bignum t2 = { .digits = t2digits, .size = 5, .fracSize = 128 };
-   *(t2digits) = 0xE1E1E1E1;
-   *(t2digits + 1) = 0xE1E1E1E1;
-   *(t2digits + 2) = 0xE1E1E1E1;
-   *(t2digits + 3) = 0xE1E1E1E1;
-   *(t2digits + 4) = 0x1;
    
-   uint32_t *t1digits = malloc(9 * sizeof(uint32_t));
-   struct bignum t1 = { .digits = t1digits, .size = 9, .fracSize = 256 };
-   *(t1digits) = 0xD2D2D2D2;
-   *(t1digits + 1) = 0xD2D2D2D2;
-   *(t1digits + 2) = 0xD2D2D2D2;
-   *(t1digits + 3) = 0xD2D2D2D2;
-   *(t1digits + 4) = 0xD2D2D2D2;
-   *(t1digits + 5) = 0xD2D2D2D2;
-   *(t1digits + 6) = 0xD2D2D2D2;
-   *(t1digits + 7) = 0xD2D2D2D2;
-   *(t1digits + 8) = 0x2;
+   struct bignum t1 = { .digits = malloc(9 * sizeof(uint32_t)), .size = 9, .fracSize = 256 };
+   *(t1.digits) = 0xD2D2D2D2;
+   *(t1.digits + 1) = 0xD2D2D2D2;
+   *(t1.digits + 2) = 0xD2D2D2D2;
+   *(t1.digits + 3) = 0xD2D2D2D2;
+   *(t1.digits + 4) = 0xD2D2D2D2;
+   *(t1.digits + 5) = 0xD2D2D2D2;
+   *(t1.digits + 6) = 0xD2D2D2D2;
+   *(t1.digits + 7) = 0xD2D2D2D2;
+   *(t1.digits + 8) = 2;
 
-  struct bignum multt2b = multiplicationBignum(t2, *b);
+   struct bignum t2 = { .digits = malloc(5 * sizeof(uint32_t)), .size = 5, .fracSize = 128 };
+   *(t2.digits) = 0xE1E1E1E1;
+   *(t2.digits + 1) = 0xE1E1E1E1;
+   *(t2.digits + 2) = 0xE1E1E1E1;
+   *(t2.digits + 3) = 0xE1E1E1E1;
+   *(t2.digits + 4) = 1;
+
+  struct bignum multt2b;
+  multt2b = multiplicationBignum(t2, *b);
+  printf("b ");
+  printBignum(b);
+  printf("t2 ");
+  printBignum(&t2);
+  printf("multt2b ");
+  printBignum(&multt2b);
   shiftRight(&t1, t1.fracSize - multt2b.fracSize);
-  t1.fracSize -= multt2b.fracSize;
+  t1.fracSize -= (t1.fracSize - multt2b.fracSize);
   subtractionBignum(&t1, multt2b);
   free(multt2b.digits);
   free(t2.digits);
 
-  for (int i = 0; i < 5; i++) {
+
+  for (int i = 0; i < 4; i++) {
     struct bignum t1t = multiplicationBignum(t1, *b);
     struct bignum two = shiftLeftConstant(bignumOfInt(2), t1t.fracSize);
     subtractionBignum(&two, t1t);
@@ -319,6 +333,7 @@ void goldschmidt(struct bignum *a, struct bignum *b, size_t fracSize) {
 
   // Shift bignum right, until we have our desired number of fraction size
   shiftRight(a, a->fracSize - fracSize);
+  a->fracSize -= fracSize;
 
   // Remove leading zeros
    for (int newSize = a->size-1; newSize >= 0; newSize--) {
@@ -327,5 +342,7 @@ void goldschmidt(struct bignum *a, struct bignum *b, size_t fracSize) {
       break;
      }
    }
+
+   printBignum(a);
 
  }
