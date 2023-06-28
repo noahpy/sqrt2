@@ -621,6 +621,63 @@ int main(void) {
   *expected.digits = 0x199;
   test_division(a, b, 10, expected);
 
+  resetBignums(1, 1, 1);
+  // 2 / 5 = 0.4 with 32 fraction 
+  *a.digits = 2;
+  *b.digits = 5;
+  *expected.digits = 0x66666666;
+  test_division(a, b, 32, expected);
+
+  resetBignums(1, 1, 3);
+  // 2 / 5 = 0.4 with 96 fraction 
+  *a.digits = 2;
+  *b.digits = 5;
+  *expected.digits = 0x66666666;
+  *(expected.digits + 1) = 0x66666666;
+  *(expected.digits + 2) = 0x6666;
+  test_division(a, b, 96, expected);
+
+  resetBignums(1, 1, 2);
+  // 5 / 12 = 0.41667 with 64 fraction 
+  *a.digits = 5;
+  *b.digits = 12;
+  *expected.digits = 0x6AAAAAAA;
+  *(expected.digits + 1) = 0xAAAAAAAA;
+  test_division(a, b, 64, expected);
+
+  resetBignums(1, 1, 3);
+  // 5 / 12 = 0.41667 with 76 fraction 
+  *a.digits = 5;
+  *b.digits = 12;
+  *expected.digits = 0x55555555;
+  *(expected.digits + 1) = 0x55555555;
+  *(expected.digits + 2) = 0x55D;
+  test_division(a, b, 76, expected);
+
+  resetBignums(1, 1, 4);
+  // 985 / 2378 = 0.41421362 with 128 fraction 
+  *a.digits = 985;
+  *b.digits = 2378;
+  *expected.digits = 0x2E1360AC;
+  *(expected.digits + 1) = 0x4857D862;
+  *(expected.digits + 2) = 0x7B27D4F0;
+  *(expected.digits + 3) = 0x6A09E774;
+  test_division(a, b, 128, expected);
+
+  resetBignums(1, 1, 8);
+  // 5741 / 13860 = 0.41421356421 with 256 fraction 
+  *a.digits = 985;
+  *b.digits = 2378;
+  *expected.digits = 0xFC0C3E03;
+  *(expected.digits + 1) = 0x9E66FC47;
+  *(expected.digits + 2) = 0x5ACCF2A0;
+  *(expected.digits + 3) = 0x09E66FDB;
+  *(expected.digits + 4) = 0xB5ACCF2A;
+  *(expected.digits + 5) = 0xA09E66FD;
+  *(expected.digits + 6) = 0xDB5ACCF2;
+  *(expected.digits + 7) = 0x6A09E66F;
+  test_division(a, b, 256, expected);
+
   // print overall result
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
   printf("PASSED: %d, FAILED: %d, SUCCESS RATE: %.1f%%\n", test_passed,
