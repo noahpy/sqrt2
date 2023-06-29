@@ -165,25 +165,21 @@ void test_division(struct bignum a, struct bignum b, size_t number,
 }
 
 
-void test_shiftLeft(struct bignum a, struct bignum b, size_t number, struct bignum expected){
+void test_shift_left(struct bignum a, size_t number, struct bignum expected){
     test_cases++;
     printf("Test: shiftLeftConstant(0x");
     for (size_t j = a.size - 1; j > 0; j--) {
         printf("%08x_", a.digits[j]);
     }
-    printf("%08x", a.digits[0]);
-    printf(", 0x");
-    for (size_t j = b.size - 1; j > 0; j--) {
-        printf("%08x_", b.digits[j]);
-    }
+    printf("%08x, ", a.digits[0]);
+    printf("%zu)", number);
     struct bignum result = shiftLeftConstant(a, number);
     if (result.size == expected.size) {
         for (size_t i = 0; i < result.size; i++) {
         if (result.digits[i] != expected.digits[i]) {
             printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
                  result.digits[i]);
-            free(a.digits);
-            free(b.digits);
+            free(result.digits);
             free(expected.digits);
             return;
         }
@@ -193,8 +189,7 @@ void test_shiftLeft(struct bignum a, struct bignum b, size_t number, struct bign
     } else {
         printf(" failed! size should be %zu, but was %zu\n", expected.size, result.size);
     }
-    free(a.digits);
-    free(b.digits);
+    free(result.digits);
     free(expected.digits);
 }
 
@@ -731,7 +726,61 @@ int main(void) {
   *(expected.digits + 15) = 0x6A09E66F;
   test_division(a, b, 512, expected);
 
-  // print overall result
+
+  // TEST SHIFT LEFT
+
+  resetBignums(1, 1, 1);
+  *a.digits = 1;
+  *expected.digits = 2;
+  test_shift_left(a, 1, expected);
+  free(b.digits);
+
+  resetBignums(1, 1, 2);
+  *a.digits = 1;
+  *expected.digits = 0;
+  *(expected.digits + 1) = 1;
+  test_shift_left(a, 32, expected);
+  free(b.digits);
+
+  resetBignums(2, 1, 3);
+  *a.digits = 1;
+  *(a.digits + 1) = 1;
+  *expected.digits = 0;
+  *(expected.digits + 1) = 1;
+  *(expected.digits + 2) = 1;
+  test_shift_left(a, 32, expected);
+  free(b.digits);
+
+  resetBignums(2, 1, 3);
+  *a.digits = 0x12345678;
+  *(a.digits + 1) = 0x87654321;
+  *expected.digits = 0;
+  *(expected.digits + 1) = 0x12345678;
+  *(expected.digits + 2) = 0x87654321;
+  test_shift_left(a, 32, expected);
+  free(b.digits);
+
+  resetBignums(2, 1, 3);
+  *a.digits = 0x12345678;
+  *(a.digits + 1) = 0x87654321;
+  *expected.digits = 0x56780000;
+  *(expected.digits + 1) = 0x43211234;
+  *(expected.digits + 2) = 0x8765;
+  test_shift_left(a, 16, expected);
+  free(b.digits);
+
+  // shift by 10 (21d_950c8448_d159e000)
+  resetBignums(2, 1, 3);
+  *a.digits = 0x12345678;
+  *(a.digits + 1) = 0x87654321;
+  *expected.digits = 0xd159e000;
+  *(expected.digits + 1) = 0x950c8448;
+  *(expected.digits + 2) = 0x21d;
+  test_shift_left(a, 10, expected);
+  free(b.digits);
+
+
+  // print overall resulte
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
   printf("PASSED: %d, FAILED: %d, SUCCESS RATE: %.1f%%\n", test_passed,
          (test_cases - test_passed), success_rate);
