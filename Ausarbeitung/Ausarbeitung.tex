@@ -4,10 +4,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% TODO: Ersetzen Sie in den folgenden Zeilen die entsprechenden -Texte-
 %% mit den richtigen Werten.
-\newcommand{\theGroup}{IhreGruppennummer} % Beispiel: 42
-\newcommand{\theNumber}{IhreProjektnummer} % Beispiel: A123
-\author{Vorname1 Nachname1 \and Vorname2 Nachname2 \and Vorname3 Nachname3}
-\date{AktuellesSemester} % Beispiel: Wintersemester 2019/20
+\newcommand{\theGroup}{213} % Beispiel: 42
+\newcommand{\theNumber}{A326} % Beispiel: A123
+\author{Noah Schlenker \and Leon Baptist Kniffki \and Christian Krinitsin}
+\date{Sommersemester 2023} % Beispiel: Wintersemester 2019/20
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Diese Zeile bitte -nicht- aendern.
@@ -18,18 +18,58 @@
 
 \section{Einleitung}
 
+Verwendung von Wurzel 2:
+\begin{itemize}
+  \item Das verhältnis der beiden seitenlängen eines blattes im din-a-format beträgt 1 / sqrt(2) mit rundung auf 
+        ganze millimeter. Dadurch ist sichergestellt, dass bei halbierung des blattes entlang der längeren seite wieder 
+        ein blatt im din-a-format (mit um eins erhöhter nummerierung) entsteht.
+  \item Die wurzel aus 2 ist das frequenzverhältnis zweier töne in der musik bei gleichschwebender stimmung, die einen tritonus, 
+        also eine halbe oktave bilden.
+  \item In der elektrotechnik enthält die beziehung zwischen scheitelwert und effektivwert von sinusförmiger wechselspannung ebenfalls die konstante 
+        sqrt(2).
+\end{itemize}
+
+Geschichte über Näherung der Wurzel:
+\begin{itemize}
+  \item Die alten Inder schätzen $\sqrt{2} \approx \tfrac {577}{408} = 1,414215686$… . Stimmt auf 5 Nachkommastellen. Abweichung beträgt nur +0,0001502 Prozent.
+  \item Babylonier aus 1800 v. Chr.: $\tfrac {30547}{21600} = 1,414212962$… . Abweichung von -0,0000424 Prozent.
+\end{itemize}
+
+Möglichkeit, $\sqrt{2}$ mit einer unendlichen Präzision zu berechnen. Vorwegnahme: Bignums, Newton-Raphson-Division, Karazuba, Matrixexponentiation. \\
+(0,75 Seiten)
 
 \section{Lösungsansatz}
 
+\subsection{Big-Num}
+Diskussion über die Notwendigkeit von Bignums, Erklärung der Implementierung (Little Endian, Arithmetische Operationen, nicht Division). Laufzeiten thematisieren? \\
+(1 Seite)
+
+\subsection{Karazuba-Multiplikation}
+Erklärung des Algorithmus und der Umsetzung im Code. \\
+(0,75 Seiten)
+
+\subsection{Newton-Raphson-Division}
+Erklärung des Algorithmus und der Umsetzung im Code. \\
+(1 Seite)
 
 % TODO: Je nach Aufgabenstellung einen der Begriffe wählen
 \section{Korrektheit/Genauigkeit}
+Wahrscheinlich Genauigkeit, da es die Aufgabe ist, $\sqrt{2}$ beliebig genau darzustellen. \\
 
+Umfangreiche Erklärung darüber, wie die Matrix Elemente an $\sqrt{2}$ konvergiert und Newton-Raphson and die Division. Erklärung, wie die Kombination aus Bignum und Fixkommazahlen unendliche Genauigkeit 
+ermöglicht, auf Kosten von Laufzeit, die im nächsten Kapitel beleuchtet wird. \\ 
+(1,5 - 2 Seiten?)
 
 \section{Performanzanalyse}
-
+Newton Raphson Laufzeit erklären, mit Graphiken demonstrieren, das selbe mit Exponentiation. \\
+Vergleichsimplementierungen ansetzen (SIMD, nicht SIMD? / Karazuba, normale Multiplikation / Bitshifts?), Graphisch laufzeiten vergleichen, tatsächliche Performanz erklären und schlussfolgern. \\
+(2 - 3 Seiten)
 
 \section{Zusammenfassung und Ausblick}
+Ziel erreicht, unendliche Präzision ist gegeben. Nutzer können, abhängig von ihren Anforderungen oder "Computerspezifikationen", die Wurzel von 2 mit diesem Programm berechnen. \\
+Ausblick: SIMD in AVX, mithilfe von 256 Bit kann man Multiplikationen noch schneller machen. Division lässt sich wahrscheinlich nicht optimieren, da SIMD nicht verwendet werden kann, 
+und immer eine gewisse Anzahl an Iterationen gebraucht wird. \\
+(0,75 - 1 Seite)
 
 % TODO: Fuegen Sie Ihre Quellen der Datei Ausarbeitung.bib hinzu
 % Referenzieren Sie diese dann mit \cite{}.
