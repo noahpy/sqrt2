@@ -671,23 +671,23 @@ int main(void) {
   test_division(a, b, 7, expected);
 
   resetBignums(1, 1, 16);
-  // 5741 / 13860 with 512 fraction                
+  // 5741 / 13860 with 512 fraction
   *a.digits = 5741;
   *b.digits = 13860;
   *expected.digits = 0x2A09E66F;
   *(expected.digits + 1) = 0xFDB5ACCF;
   *(expected.digits + 2) = 0xF2A09E66;
   *(expected.digits + 3) = 0x6FDB5ACC;
-  *(expected.digits + 4) = 0x2E1360AC;
-  *(expected.digits + 5) = 0xCF2A09E6;
-  *(expected.digits + 6) = 0x66FDB5AC;
-  *(expected.digits + 7) = 0xCCF2A09E;
-  *(expected.digits + 8) = 0xE66FDB5A;
-  *(expected.digits + 9) = 0xACCF2A09;
-  *(expected.digits + 10) = 0x9E66FDB5;
-  *(expected.digits + 11) = 0x5ACCF2A0;
-  *(expected.digits + 12) = 0x09E66FDB;
-  *(expected.digits + 13) = 0xB5ACCF2A;
+  *(expected.digits + 4) = 0xCF2A09E6;
+  *(expected.digits + 5) = 0x66FDB5AC;
+  *(expected.digits + 6) = 0xCCF2A09E;
+  *(expected.digits + 7) = 0xE66FDB5A;
+  *(expected.digits + 8) = 0xACCF2A09;
+  *(expected.digits + 9) = 0x9E66FDB5;
+  *(expected.digits + 10) = 0x5ACCF2A0;
+  *(expected.digits + 11) = 0x09E66FDB;
+  *(expected.digits + 12) = 0xB5ACCF2A;
+  *(expected.digits + 13) = 0xA09E66FD;
   *(expected.digits + 14) = 0xDB5ACCF2;
   *(expected.digits + 15) = 0x6A09E66F;
   test_division(a, b, 512, expected);

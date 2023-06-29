@@ -7,11 +7,18 @@
 #include <errno.h>
 #include <stdbool.h>
 
-void printBignum(struct bignum *a) {
-    for (int i = a->size - 1; i >= 0; i--) {
-        printf("a.digits[%d]: 0x%08x\n", i, a->digits[i]);
-    }
-    printf("a.fracSize: %zu\n", a->fracSize);
+uint32_t* allocateDigits(size_t number) {
+  uint32_t *bignumDigits;
+  size_t newSize;
+  if(__builtin_umull_overflow(number, sizeof(*bignumDigits), &newSize)){
+    perror("Could not calculate new size\n");
+    exit(EXIT_FAILURE);
+  }
+  if (!(bignumDigits = malloc(newSize))) {
+    fprintf(stderr, "Could not allocate memory\n");
+    exit(EXIT_FAILURE);
+  }
+  return bignumDigits;
 }
 
 // Creates a bignum with value n on the heap
@@ -37,14 +44,7 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
     perror("Could not calculate new size\n");
     exit(EXIT_FAILURE);
   }
-  if(__builtin_umull_overflow(newSize, sizeof(*bignumDigits), &newSize)){
-    perror("Could not calculate new size\n");
-    exit(EXIT_FAILURE);
-  }
-  if (!(bignumDigits = malloc(newSize))) {
-    fprintf(stderr, "Could not allocate memory\n");
-    exit(EXIT_FAILURE);
-  }
+  bignumDigits = allocateDigits(newSize);
 
   struct bignum result = {.size = a.size + b.size, .digits = bignumDigits, .fracSize = a.fracSize + b.fracSize};
 
@@ -184,15 +184,15 @@ struct bignum shiftLeftConstant(struct bignum a, size_t number) {
     numberNewBlocks++;
     restNeedsBlock = true;
   }
-uint32_t *newDigits = NULL;
+  uint32_t *newDigits = NULL;
   if (numberNewBlocks > 0) {
-    // printf("%o\n", blockWithOne);
     free(a.digits);
-    // TODO: add overflow check
-    if (!(newDigits = malloc(sizeof(*newDigits) * (a.size + numberNewBlocks)))) {
-      fprintf(stderr, "Could not allocate memory\n");
+    size_t newSize;
+    if(__builtin_uaddl_overflow(a.size, numberNewBlocks, &newSize)){
+      perror("Could not calculate new size\n");
       exit(EXIT_FAILURE);
     }
+    newDigits = allocateDigits(newSize);
     a.size = a.size + numberNewBlocks;
     a.digits = newDigits;
     for (size_t i = 0; i < a.size; i++) {
@@ -262,7 +262,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   free(oneShift.digits);
 
   // load constant 48 / 17
-  struct bignum t1 = { .digits = malloc(9 * sizeof(uint32_t)), .size = 9, .fracSize = 256 };
+  struct bignum t1 = { .digits = allocateDigits(9), .size = 9, .fracSize = 256 };
   *(t1.digits) = 0xD2D2D2D2;
   *(t1.digits + 1) = 0xD2D2D2D2;
   *(t1.digits + 2) = 0xD2D2D2D2;
@@ -274,7 +274,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   *(t1.digits + 8) = 2;
 
   // load constant 32 / 17
-  struct bignum t2 = (struct bignum) { .digits = malloc(5 * sizeof(uint32_t)), .size = 5, .fracSize = 128};
+  struct bignum t2 = (struct bignum) { .digits = allocateDigits(5), .size = 5, .fracSize = 128};
   t2.digits[0] = 0xe1e1e1e1;
   t2.digits[1] = 0xe1e1e1e1;
   t2.digits[2] = 0xe1e1e1e1;
@@ -291,8 +291,13 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   free(multt2b.digits);
   free(t2.digits);
 
+  size_t iterationCounter = 3;
+  for (size_t i = fracSize; i >= 32; i /= 2) {
+      iterationCounter++;
+  }
+
   // iterations to approximate the values with: t1 = t1 * (2 - b * t1)
-  for (int i = 0; i < 6; i++) {
+  for (size_t i = 0; i < iterationCounter; i++) {
     struct bignum t1t = multiplicationBignum(t1, *b);
     struct bignum two = shiftLeftConstant(bignumOfInt(2), t1t.fracSize);
     subtractionBignum(&two, t1t);
