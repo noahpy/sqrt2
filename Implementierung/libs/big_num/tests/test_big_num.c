@@ -164,21 +164,51 @@ void test_division(struct bignum a, struct bignum b, size_t number,
   free(expected.digits);
 }
 
+
+void test_shiftLeft(struct bignum a, struct bignum b, size_t number, struct bignum expected){
+    test_cases++;
+    printf("Test: shiftLeftConstant(0x");
+    for (size_t j = a.size - 1; j > 0; j--) {
+        printf("%08x_", a.digits[j]);
+    }
+    printf("%08x", a.digits[0]);
+    printf(", 0x");
+    for (size_t j = b.size - 1; j > 0; j--) {
+        printf("%08x_", b.digits[j]);
+    }
+    struct bignum result = shiftLeftConstant(a, number);
+    if (result.size == expected.size) {
+        for (size_t i = 0; i < result.size; i++) {
+        if (result.digits[i] != expected.digits[i]) {
+            printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
+                 result.digits[i]);
+            free(a.digits);
+            free(b.digits);
+            free(expected.digits);
+            return;
+        }
+        }
+        printf(" passed\n");
+        test_passed++;
+    } else {
+        printf(" failed! size should be %zu, but was %zu\n", expected.size, result.size);
+    }
+    free(a.digits);
+    free(b.digits);
+    free(expected.digits);
+}
+
+
 int main(void) {
 
+  // TESTS FOR MULTIPLICATION
+ 
   resetBignums(1, 1, 1);
   // 4 * 8 = 32
   *a.digits = 4;
   *b.digits = 8;
   *expected.digits = 32;
   test_multiplication(a, b, expected);
-
-  resetBignums(1, 1, 1);
-  // 4 + 8 = 12
-  *a.digits = 4;
-  *b.digits = 8;
-  *expected.digits = 12;
-  test_addition(a, b, expected);
 
   resetBignums(1, 1, 1);
   // 4 * 8 = 32, but a.size is 2
@@ -188,32 +218,11 @@ int main(void) {
   test_multiplication(a, b, expected);
 
   resetBignums(1, 1, 1);
-  // 4 + 8 = 12, but a.size is 2
-  *a.digits = 4;
-  *b.digits = 8;
-  *expected.digits = 12;
-  test_addition(a, b, expected);
-
-  resetBignums(1, 1, 1);
   // 9 * 1 = 9
   *a.digits = 9;
   *b.digits = 1;
   *expected.digits = 9;
   test_multiplication(a, b, expected);
-
-  resetBignums(1, 1, 1);
-  // 9 + 1 = 10
-  *a.digits = 9;
-  *b.digits = 1;
-  *expected.digits = 10;
-  test_addition(a, b, expected);
-
-  resetBignums(1, 1, 1);
-  // 9 - 1 = 8
-  *a.digits = 9;
-  *b.digits = 1;
-  *expected.digits = 8;
-  test_subtraction(a, b, expected);
 
   resetBignums(1, 1, 1);
   // 1 * 9 = 9
@@ -223,25 +232,11 @@ int main(void) {
   test_multiplication(a, b, expected);
 
   resetBignums(1, 1, 1);
-  // 1 + 9 = 10
-  *a.digits = 9;
-  *b.digits = 1;
-  *expected.digits = 10;
-  test_addition(a, b, expected);
-
-  resetBignums(1, 1, 1);
   // 754 * 754 = 568516
   *a.digits = 754;
   *b.digits = 754;
   *expected.digits = 568516;
   test_multiplication(a, b, expected);
-
-  resetBignums(1, 1, 1);
-  // 754 + 754 = 1508
-  *a.digits = 754;
-  *b.digits = 754;
-  *expected.digits = 1508;
-  test_addition(a, b, expected);
 
   resetBignums(2, 1, 2);
   // 4294967296 * 1 = 4294967296
@@ -251,24 +246,6 @@ int main(void) {
   *expected.digits = 0;
   *(expected.digits + 1) = 1;
   test_multiplication(a, b, expected);
-
-  resetBignums(2, 1, 2);
-  // 4294967296 + 1 = 4294967297
-  *a.digits = 0;
-  *(a.digits + 1) = 1;
-  *b.digits = 1;
-  *expected.digits = 1;
-  *(expected.digits + 1) = 1;
-  test_addition(a, b, expected);
-
-  resetBignums(2, 1, 1);
-  // 4294967296 - 1 = 4294967295
-  *a.digits = 0;
-  *(a.digits + 1) = 1;
-  *b.digits = 1;
-  *expected.digits = 0xffffffff;
-  *(expected.digits + 1) = 0;
-  test_subtraction(a, b, expected);
 
   resetBignums(2, 2, 4);
   // 0x13214ab1_13214ab1 * 0x13214ab1_13214ab1 =
@@ -282,27 +259,6 @@ int main(void) {
   *(expected.digits + 2) = 0xa048b936;
   *(expected.digits + 3) = 0x16df56a;
   test_multiplication(a, b, expected);
-
-  resetBignums(2, 2, 2);
-  // 0x13214ab1_13214ab1 + 0x13214ab1_13214ab1 = 0x26429562_26429562
-  *a.digits = 0x13214ab1;
-  *(a.digits + 1) = 0x13214ab1;
-  *b.digits = 0x13214ab1;
-  *(b.digits + 1) = 0x13214ab1;
-  *expected.digits = 0x26429562;
-  *(expected.digits + 1) = 0x26429562;
-  *(expected.digits + 2) = 0x0;
-  test_addition(a, b, expected);
-
-  resetBignums(2, 2, 0);
-  // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
-  *a.digits = 0x13214ab1;
-  *(a.digits + 1) = 0x13214ab1;
-  *b.digits = 0x13214ab1;
-  *(b.digits + 1) = 0x13214ab1;
-  *expected.digits = 0x0;
-  *(expected.digits + 1) = 0x0;
-  test_subtraction(a, b, expected);
 
   resetBignums(3, 3, 6);
   // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff_ffffffff =
@@ -321,21 +277,6 @@ int main(void) {
   *(expected.digits + 5) = 0xffffffff;
   test_multiplication(a, b, expected);
 
-  resetBignums(3, 3, 4);
-  // 0xffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff_ffffffff =
-  // 0x1_ffffffff_ffffffff_fffffffe
-  *a.digits = 0xffffffff;
-  *(a.digits + 1) = 0xffffffff;
-  *(a.digits + 2) = 0xffffffff;
-  *b.digits = 0xffffffff;
-  *(b.digits + 1) = 0xffffffff;
-  *(b.digits + 2) = 0xffffffff;
-  *expected.digits = 0xfffffffe;
-  *(expected.digits + 1) = 0xffffffff;
-  *(expected.digits + 2) = 0xffffffff;
-  *(expected.digits + 3) = 0x1;
-  test_addition(a, b, expected);
-
   resetBignums(3, 2, 5);
   // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff =
   // 0xffffffff_fffffffe_ffffffff_00000000_00000001
@@ -351,33 +292,6 @@ int main(void) {
   *(expected.digits + 4) = 0xffffffff;
   test_multiplication(a, b, expected);
 
-  resetBignums(3, 2, 4);
-  // 0xffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff =
-  // 0x1_00000000_ffffffff_fffffffe
-  *a.digits = 0xffffffff;
-  *(a.digits + 1) = 0xffffffff;
-  *(a.digits + 2) = 0xffffffff;
-  *b.digits = 0xffffffff;
-  *(b.digits + 1) = 0xffffffff;
-  *expected.digits = 0xfffffffe;
-  *(expected.digits + 1) = 0xffffffff;
-  *(expected.digits + 2) = 0x00000000;
-  *(expected.digits + 3) = 0x1;
-  test_addition(a, b, expected);
-
-  resetBignums(3, 2, 3);
-  // 0xffffffff_ffffffff_ffffffff - 0xffffffff_ffffffff =
-  // 0xffffffff_00000000_00000000
-  *a.digits = 0xffffffff;
-  *(a.digits + 1) = 0xffffffff;
-  *(a.digits + 2) = 0xffffffff;
-  *b.digits = 0xffffffff;
-  *(b.digits + 1) = 0xffffffff;
-  *expected.digits = 0x0;
-  *(expected.digits + 1) = 0x0;
-  *(expected.digits + 2) = 0xffffffff;
-  test_subtraction(a, b, expected);
-
   resetBignums(2, 1, 3);
   // 0x5234ad_94724362 * 0x3abf = 0x12_dd44a123_a4847a1e
   *a.digits = 0x94724362;
@@ -387,25 +301,6 @@ int main(void) {
   *(expected.digits + 1) = 0xdd44a123;
   *(expected.digits + 2) = 0x12;
   test_multiplication(a, b, expected);
-
-  resetBignums(2, 1, 2);
-  // 0x5234ad_94724362 + 0x3abf = 0x5234ad_94727e21
-  *a.digits = 0x94724362;
-  *(a.digits + 1) = 0x5234ad;
-  *b.digits = 0x3abf;
-  *expected.digits = 0x94727e21;
-  *(expected.digits + 1) = 0x5234ad;
-  *(expected.digits + 2) = 0x0;
-  test_addition(a, b, expected);
-
-  resetBignums(2, 1, 2);
-  // 0x5234ad_94724362 - 0x3abf = 0x5234ad_947208a3
-  *a.digits = 0x94724362;
-  *(a.digits + 1) = 0x5234ad;
-  *b.digits = 0x3abf;
-  *expected.digits = 0x947208a3;
-  *(expected.digits + 1) = 0x5234ad;
-  test_subtraction(a, b, expected);
 
   resetBignums(3, 2, 5);
   // 0xadf_ebcfefef_beaaa420 * 0xadcbef_afafef69 =
@@ -422,43 +317,6 @@ int main(void) {
   *(expected.digits + 4) = 0x7;
   test_multiplication(a, b, expected);
 
-  resetBignums(3, 2, 3);
-  // 0xadf_ebcfefef_beaaa420 + 0xadcbef_afafef69 = 0xadf_ec7dbbdf_6e5a9389
-  *a.digits = 0xbeaaa420;
-  *(a.digits + 1) = 0xebcfefef;
-  *(a.digits + 2) = 0xadf;
-  *b.digits = 0xafafef69;
-  *(b.digits + 1) = 0xadcbef;
-  *expected.digits = 0x6e5a9389;
-  *(expected.digits + 1) = 0xec7dbbdf;
-  *(expected.digits + 2) = 0xadf;
-  *(expected.digits + 3) = 0x0;
-  test_addition(a, b, expected);
-
-  resetBignums(3, 2, 3);
-  // 0xadf_ebcfefef_beaaa420 - 0xadcbef_afafef69 = 0xadf_eb222400_0efab4b7
-  *a.digits = 0xbeaaa420;
-  *(a.digits + 1) = 0xebcfefef;
-  *(a.digits + 2) = 0xadf;
-  *b.digits = 0xafafef69;
-  *(b.digits + 1) = 0xadcbef;
-  *expected.digits = 0x0efab4b7;
-  *(expected.digits + 1) = 0xeb222400;
-  *(expected.digits + 2) = 0xadf;
-  test_subtraction(a, b, expected);
-
-  resetBignums(3, 2, 3);
-  // 0xadf_ebcfefef_beaaa420 - 0xffffffff_ffffffff = 0xade_ebcfefef_beaaa421
-  *a.digits = 0xbeaaa420;
-  *(a.digits + 1) = 0xebcfefef;
-  *(a.digits + 2) = 0xadf;
-  *b.digits = 0xffffffff;
-  *(b.digits + 1) = 0xffffffff;
-  *expected.digits = 0xbeaaa421;
-  *(expected.digits + 1) = 0xebcfefef;
-  *(expected.digits + 2) = 0xade;
-  test_subtraction(a, b, expected);
-
   resetBignums(3, 2, 5);
   // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff =
   // 0xffffffff_fffffffe_ffffffff_00000000_00000001
@@ -473,19 +331,6 @@ int main(void) {
   *(expected.digits + 3) = 0xfffffffe;
   *(expected.digits + 4) = 0xffffffff;
   test_multiplication(b, a, expected);
-
-  resetBignums(3, 1, 3);
-  // //test multiple overflow (subtraction)
-  // 0xffffffff_00000000_00000000 - 0x1 =
-  // 0xfffffffe_ffffffff_ffffffff
-  *a.digits = 0x0;
-  *(a.digits + 1) = 0x0;
-  *(a.digits + 2) = 0xffffffff;
-  *b.digits = 0x1;
-  *expected.digits = 0xffffffff;
-  *(expected.digits + 1) = 0xffffffff;
-  *(expected.digits + 2) = 0xfffffffe;
-  test_subtraction(a, b, expected);
 
   resetBignums(2, 4, 6);
   // test one-time overflow (multiplication)
@@ -549,6 +394,123 @@ int main(void) {
   *(expected.digits + 8) = 0x1;
   test_multiplication(a, b, expected);
 
+  resetBignums(5, 1, 5);
+  *a.digits = 0xe1e1e1e1;
+  *(a.digits + 1) = 0xe1e1e1e1;
+  *(a.digits + 2) = 0xe1e1e1e1;
+  *(a.digits + 3) = 0xe1e1e1e1;
+  *(a.digits + 4) = 1;
+  *b.digits = 5;
+  *expected.digits = 0x69696965;
+  *(expected.digits + 1) = 0x69696969;
+  *(expected.digits + 2) = 0x69696969;
+  *(expected.digits + 3) = 0x69696969;
+  *(expected.digits + 4) = 0x9;
+  test_multiplication(a,b,expected);
+
+
+  // TESTS FOR ADDITION
+
+  resetBignums(1, 1, 1);
+  // 4 + 8 = 12
+  *a.digits = 4;
+  *b.digits = 8;
+  *expected.digits = 12;
+  test_addition(a, b, expected);
+ 
+  resetBignums(1, 1, 1);
+  // 4 + 8 = 12, but a.size is 2
+  *a.digits = 4;
+  *b.digits = 8;
+  *expected.digits = 12;
+  test_addition(a, b, expected); 
+
+  resetBignums(1, 1, 1);
+  // 9 + 1 = 10
+  *a.digits = 9;
+  *b.digits = 1;
+  *expected.digits = 10;
+  test_addition(a, b, expected);
+
+  resetBignums(1, 1, 1);
+  // 754 + 754 = 1508
+  *a.digits = 754;
+  *b.digits = 754;
+  *expected.digits = 1508;
+  test_addition(a, b, expected);
+
+  resetBignums(2, 1, 2);
+  // 4294967296 + 1 = 4294967297
+  *a.digits = 0;
+  *(a.digits + 1) = 1;
+  *b.digits = 1;
+  *expected.digits = 1;
+  *(expected.digits + 1) = 1;
+  test_addition(a, b, expected);
+
+  resetBignums(2, 2, 2);
+  // 0x13214ab1_13214ab1 + 0x13214ab1_13214ab1 = 0x26429562_26429562
+  *a.digits = 0x13214ab1;
+  *(a.digits + 1) = 0x13214ab1;
+  *b.digits = 0x13214ab1;
+  *(b.digits + 1) = 0x13214ab1;
+  *expected.digits = 0x26429562;
+  *(expected.digits + 1) = 0x26429562;
+  *(expected.digits + 2) = 0x0;
+  test_addition(a, b, expected);
+
+  resetBignums(3, 3, 4);
+  // 0xffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff_ffffffff =
+  // 0x1_ffffffff_ffffffff_fffffffe
+  *a.digits = 0xffffffff;
+  *(a.digits + 1) = 0xffffffff;
+  *(a.digits + 2) = 0xffffffff;
+  *b.digits = 0xffffffff;
+  *(b.digits + 1) = 0xffffffff;
+  *(b.digits + 2) = 0xffffffff;
+  *expected.digits = 0xfffffffe;
+  *(expected.digits + 1) = 0xffffffff;
+  *(expected.digits + 2) = 0xffffffff;
+  *(expected.digits + 3) = 0x1;
+  test_addition(a, b, expected);
+
+  resetBignums(3, 2, 4);
+  // 0xffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff =
+  // 0x1_00000000_ffffffff_fffffffe
+  *a.digits = 0xffffffff;
+  *(a.digits + 1) = 0xffffffff;
+  *(a.digits + 2) = 0xffffffff;
+  *b.digits = 0xffffffff;
+  *(b.digits + 1) = 0xffffffff;
+  *expected.digits = 0xfffffffe;
+  *(expected.digits + 1) = 0xffffffff;
+  *(expected.digits + 2) = 0x00000000;
+  *(expected.digits + 3) = 0x1;
+  test_addition(a, b, expected);
+
+  resetBignums(2, 1, 2);
+  // 0x5234ad_94724362 + 0x3abf = 0x5234ad_94727e21
+  *a.digits = 0x94724362;
+  *(a.digits + 1) = 0x5234ad;
+  *b.digits = 0x3abf;
+  *expected.digits = 0x94727e21;
+  *(expected.digits + 1) = 0x5234ad;
+  *(expected.digits + 2) = 0x0;
+  test_addition(a, b, expected);
+
+  resetBignums(3, 2, 3);
+  // 0xadf_ebcfefef_beaaa420 + 0xadcbef_afafef69 = 0xadf_ec7dbbdf_6e5a9389
+  *a.digits = 0xbeaaa420;
+  *(a.digits + 1) = 0xebcfefef;
+  *(a.digits + 2) = 0xadf;
+  *b.digits = 0xafafef69;
+  *(b.digits + 1) = 0xadcbef;
+  *expected.digits = 0x6e5a9389;
+  *(expected.digits + 1) = 0xec7dbbdf;
+  *(expected.digits + 2) = 0xadf;
+  *(expected.digits + 3) = 0x0;
+  test_addition(a, b, expected);
+
   resetBignums(4, 4, 5);
   // multiple overflow (addition)
   // 0xffffffff_ffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff_ffffffff_ffffffff = 0x1_ffffffff_ffffffff_ffffffff_fffffffe
@@ -567,20 +529,6 @@ int main(void) {
   *(expected.digits + 4) = 0x1;
   test_addition(a,b,expected);
   
-  resetBignums(5, 1, 5);
-  *a.digits = 0xe1e1e1e1;
-  *(a.digits + 1) = 0xe1e1e1e1;
-  *(a.digits + 2) = 0xe1e1e1e1;
-  *(a.digits + 3) = 0xe1e1e1e1;
-  *(a.digits + 4) = 1;
-  *b.digits = 5;
-  *expected.digits = 0x69696965;
-  *(expected.digits + 1) = 0x69696969;
-  *(expected.digits + 2) = 0x69696969;
-  *(expected.digits + 3) = 0x69696969;
-  *(expected.digits + 4) = 0x9;
-  test_multiplication(a,b,expected);
-
   resetBignums(2, 1, 3);
   // addition size overflow
   // 0xffffffff_ffffffff + 0x1 = 0x1_00000000_00000000
@@ -591,6 +539,97 @@ int main(void) {
   *(expected.digits + 1) = 0x0;
   *(expected.digits + 2) = 0x1;
   test_addition(a,b,expected);
+
+
+  // TESTS FOR SUBTRACTION
+
+  resetBignums(1, 1, 1);
+  // 9 - 1 = 8
+  *a.digits = 9;
+  *b.digits = 1;
+  *expected.digits = 8;
+  test_subtraction(a, b, expected);
+ 
+  resetBignums(2, 1, 1);
+  // 4294967296 - 1 = 4294967295
+  *a.digits = 0;
+  *(a.digits + 1) = 1;
+  *b.digits = 1;
+  *expected.digits = 0xffffffff;
+  *(expected.digits + 1) = 0;
+  test_subtraction(a, b, expected);
+
+  resetBignums(2, 2, 0);
+  // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
+  *a.digits = 0x13214ab1;
+  *(a.digits + 1) = 0x13214ab1;
+  *b.digits = 0x13214ab1;
+  *(b.digits + 1) = 0x13214ab1;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0x0;
+  test_subtraction(a, b, expected);
+  
+  resetBignums(3, 2, 3);
+  // 0xffffffff_ffffffff_ffffffff - 0xffffffff_ffffffff =
+  // 0xffffffff_00000000_00000000
+  *a.digits = 0xffffffff;
+  *(a.digits + 1) = 0xffffffff;
+  *(a.digits + 2) = 0xffffffff;
+  *b.digits = 0xffffffff;
+  *(b.digits + 1) = 0xffffffff;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0x0;
+  *(expected.digits + 2) = 0xffffffff;
+  test_subtraction(a, b, expected);
+  
+  resetBignums(2, 1, 2);
+  // 0x5234ad_94724362 - 0x3abf = 0x5234ad_947208a3
+  *a.digits = 0x94724362;
+  *(a.digits + 1) = 0x5234ad;
+  *b.digits = 0x3abf;
+  *expected.digits = 0x947208a3;
+  *(expected.digits + 1) = 0x5234ad;
+  test_subtraction(a, b, expected);
+  
+  resetBignums(3, 2, 3);
+  // 0xadf_ebcfefef_beaaa420 - 0xadcbef_afafef69 = 0xadf_eb222400_0efab4b7
+  *a.digits = 0xbeaaa420;
+  *(a.digits + 1) = 0xebcfefef;
+  *(a.digits + 2) = 0xadf;
+  *b.digits = 0xafafef69;
+  *(b.digits + 1) = 0xadcbef;
+  *expected.digits = 0x0efab4b7;
+  *(expected.digits + 1) = 0xeb222400;
+  *(expected.digits + 2) = 0xadf;
+  test_subtraction(a, b, expected);
+
+  resetBignums(3, 2, 3);
+  // 0xadf_ebcfefef_beaaa420 - 0xffffffff_ffffffff = 0xade_ebcfefef_beaaa421
+  *a.digits = 0xbeaaa420;
+  *(a.digits + 1) = 0xebcfefef;
+  *(a.digits + 2) = 0xadf;
+  *b.digits = 0xffffffff;
+  *(b.digits + 1) = 0xffffffff;
+  *expected.digits = 0xbeaaa421;
+  *(expected.digits + 1) = 0xebcfefef;
+  *(expected.digits + 2) = 0xade;
+  test_subtraction(a, b, expected);
+  
+  resetBignums(3, 1, 3);
+  // //test multiple overflow (subtraction)
+  // 0xffffffff_00000000_00000000 - 0x1 =
+  // 0xfffffffe_ffffffff_ffffffff
+  *a.digits = 0x0;
+  *(a.digits + 1) = 0x0;
+  *(a.digits + 2) = 0xffffffff;
+  *b.digits = 0x1;
+  *expected.digits = 0xffffffff;
+  *(expected.digits + 1) = 0xffffffff;
+  *(expected.digits + 2) = 0xfffffffe;
+  test_subtraction(a, b, expected);
+
+  
+  // TEST DIVISION
 
   resetBignums(1, 1, 1);
   // 2 / 5 = 0.4 with 10 fraction 
