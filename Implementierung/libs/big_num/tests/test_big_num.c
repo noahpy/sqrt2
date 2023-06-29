@@ -663,6 +663,13 @@ int main(void) {
   *expected.digits = 0x6A09E774;
   test_division(a, b, 32, expected);
 
+  resetBignums(1, 1, 1);
+  // 1 / 2 = 0.5 with 7 fraction 
+  *a.digits = 1;
+  *b.digits = 2;
+  *expected.digits = 0x40;
+  test_division(a, b, 7, expected);
+
   // print overall result
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
   printf("PASSED: %d, FAILED: %d, SUCCESS RATE: %.1f%%\n", test_passed,
