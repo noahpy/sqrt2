@@ -239,8 +239,16 @@ void shiftRight(struct bignum *a, size_t number) {
 
 }
 
-// Calculate a/b with newton-raphson
+// Calculate a/b with newton-raphson: result is in *a
 void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
+
+  // Treat 1/2 as a edge case
+  if (a->digits[0] == 1 && b->digits[0] == 2) {
+      free(a->digits);
+      *a = shiftLeftConstant(bignumOfInt(1), fracSize - 1);
+      return;
+  }
+
   a->fracSize = 1;
   b->fracSize = 1;
   struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), b->fracSize);
