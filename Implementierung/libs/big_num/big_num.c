@@ -89,22 +89,24 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
 
 void additionBignum(struct bignum *a, struct bignum b) {
   size_t newSize;
-  a->size++;
-  if(__builtin_umull_overflow(a->size, sizeof(*a->digits), &newSize)){
-    perror("Could not calculate new size\n");
-    exit(EXIT_FAILURE);
-  }
-
+  uint32_t overflowCheck;
   uint32_t *newDigits;  
-  if (!(newDigits = realloc(a->digits, newSize))) {
-    fprintf(stderr, "Could not allocate memory\n");
-    free(a->digits);
-    exit(EXIT_FAILURE);
-  }
-  // TODO: Check error
+  // check if extra space is needed
+  if(__builtin_uadd_overflow(a->digits[a->size-1], b.digits[b.size-1], &overflowCheck)){
+      a->size++;
+      if(__builtin_umull_overflow(a->size, sizeof(*a->digits), &newSize)){
+        perror("Could not calculate new size\n");
+        exit(EXIT_FAILURE);
+      }
 
-  a->digits = newDigits;
-  a->digits[a->size - 1] = 0;
+      if (!(newDigits = realloc(a->digits, newSize))) {
+        fprintf(stderr, "Could not allocate memory\n");
+        free(a->digits);
+        exit(EXIT_FAILURE);
+      }
+      a->digits = newDigits;
+      a->digits[a->size - 1] = 0;
+  }
  
   // Add the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
@@ -120,15 +122,6 @@ void additionBignum(struct bignum *a, struct bignum b) {
       }
     }
   }
-
-  // Remove leading zeros
-   for (int newSize = a->size-1; newSize >= -1; newSize--) {
-     if (newSize < 0 || a->digits[newSize] != 0) {
-      a->size = newSize + 1;
-      break;
-     }
-   }
-
 }
 
 
