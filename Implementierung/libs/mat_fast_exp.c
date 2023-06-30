@@ -34,6 +34,7 @@ struct matrix2x2 powMatrix2x2(struct matrix2x2 a, uint32_t n, struct bignum mult
         a = mulMatrix2x2(a, a, multiply);
         free2x2(old);
     }
+    free2x2(a);
 
     return result;
 }
@@ -73,6 +74,7 @@ struct cmp_matrix2x2 powCmpMatrix2x2(struct cmp_matrix2x2 a, uint32_t n, struct 
             freeCmp2x2(old);
         }
     }
+    freeCmp2x2(a);
 
     return result;
 }
