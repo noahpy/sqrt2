@@ -84,17 +84,19 @@ int test(uint32_t arr[]) {
     struct matrix2x2 second = createMatrix((arr + 4));
 
     // Multiply first in place
-    first = mulMatrix2x2(first, second, multiplicationBignum);
+    struct matrix2x2 result = mulMatrix2x2(first, second, multiplicationBignum);
+
 
     // Check for correct result
-    int result = compareTo(first, (arr + 8));
+    int r = compareTo(result, (arr + 8));
     free2x2(first);
     free2x2(second);
-    if (result) {
+    free2x2(result);
+    if (r) {
         printf("%s\n", "Successful");
     }
 
-    return result;
+    return r;
 }
 
 /*
@@ -117,17 +119,18 @@ int testCmp(uint32_t arr[]) {
     struct cmp_matrix2x2 second = createCmpMatrix((arr + 3));
 
     // Multiply first in place
-    first = mulCmpMatrix2x2(first, second, multiplicationBignum);
+    struct cmp_matrix2x2 result = mulCmpMatrix2x2(first, second, multiplicationBignum);
 
     // Check for correct result
-    int result = compareCmpTo(first, (arr + 6));
+    int r = compareCmpTo(result, (arr + 6));
     freeCmp2x2(first);
     freeCmp2x2(second);
-    if (result) {
+    freeCmp2x2(result);
+    if (r) {
         printf("%s\n", "Successful");
     }
 
-    return result;
+    return r;
 }
 
 int main(void) {
