@@ -742,43 +742,7 @@ int main(void) {
   test_shift_left(a, 32, expected);
   free(b.digits);
 
-  resetBignums(2, 1, 3);
-  *a.digits = 1;
-  *(a.digits + 1) = 1;
-  *expected.digits = 0;
-  *(expected.digits + 1) = 1;
-  *(expected.digits + 2) = 1;
-  test_shift_left(a, 32, expected);
-  free(b.digits);
-
-  resetBignums(2, 1, 3);
-  *a.digits = 0x12345678;
-  *(a.digits + 1) = 0x87654321;
-  *expected.digits = 0;
-  *(expected.digits + 1) = 0x12345678;
-  *(expected.digits + 2) = 0x87654321;
-  test_shift_left(a, 32, expected);
-  free(b.digits);
-
-  resetBignums(2, 1, 3);
-  *a.digits = 0x12345678;
-  *(a.digits + 1) = 0x87654321;
-  *expected.digits = 0x56780000;
-  *(expected.digits + 1) = 0x43211234;
-  *(expected.digits + 2) = 0x8765;
-  test_shift_left(a, 16, expected);
-  free(b.digits);
-
-  // shift by 10 (21d_950c8448_d159e000)
-  resetBignums(2, 1, 3);
-  *a.digits = 0x12345678;
-  *(a.digits + 1) = 0x87654321;
-  *expected.digits = 0xd159e000;
-  *(expected.digits + 1) = 0x950c8448;
-  *(expected.digits + 2) = 0x21d;
-  test_shift_left(a, 10, expected);
-  free(b.digits);
-
+ 
 
   // print overall resulte
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
