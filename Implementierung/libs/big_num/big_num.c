@@ -86,6 +86,22 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   return result;
 }
 
+void addVectors(struct bignum *a, struct bignum b, size_t offset) {
+    // Add the 32bit blocks of b to the corresponding blocks of a
+    for (size_t i = 0; i < b.size; i++) {
+        uint64_t b64 = (uint64_t) b.digits[i];
+
+        size_t overflowCount = 2;
+        // If there is an addition overflow, increment the third 32bit block
+        if (__builtin_uaddl_overflow(b64, *(uint64_t *)(a->digits + i + offset),
+                                     (uint64_t *)(a->digits + i + offset))) {
+            while((overflowCount) + i < a->size && __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i + offset),
+                                                                           (a->digits + (overflowCount) + i + offset))){
+                overflowCount++;
+            }
+        }
+    }
+}
 
 void additionBignum(struct bignum *a, struct bignum b) {
   size_t newSize;
@@ -109,20 +125,7 @@ void additionBignum(struct bignum *a, struct bignum b) {
       a->digits[a->size - 1] = 0;
   }
 
-  // Add the 32bit blocks of b to the corresponding blocks of a
-  for (size_t i = 0; i < b.size; i++) {
-    uint64_t b64 = (uint64_t) b.digits[i];
-
-    size_t overflowCount = 2;
-    // If there is an addition overflow, increment the third 32bit block
-    if (__builtin_uaddl_overflow(b64, *(uint64_t *)(a->digits + i),
-                                 (uint64_t *)(a->digits + i))) {
-      while((overflowCount) + i < a->size && __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
-                               (a->digits + (overflowCount) + i))){
-        overflowCount++;
-      }
-    }
-  }
+  addVectors(a, b, 0);
 }
 
 
@@ -331,13 +334,57 @@ void recKarazubaMultiplication(uint64_t *digits, uint32_t *x, uint32_t *y, size_
         digits[offset] = (uint64_t) x[offset] * y[offset];
     } else {
         size_t left = n / 2;
+        size_t right = n - left;
 
-        uint32_t x0[left+1];
-        addUint32_tVector(x0, left+1, x + offset, left, x + left + offset, left);
+        /* Compute x0 + x1 and y0 + y1, making sure that there is no overflow
+         * by assuming the worst case: n is odd and x0 = f...f, x1=f...f
+         *
+         * Example for size 3: left = 1 and right = 2
+         *
+         *                                 ffff
+         *                     +      ffff_ffff
+         *                     = 0001_0000_fffe
+         *
+         * -> The necessary size for the array is left + 2
+         * */
+        uint32_t x1[left+2];
+        uint32_t y1[left+2];
+        // Insert x1 in the array
+        for (size_t i = 0; i < left+2; i++) {
+            if (i < right) {
+                x1[i] = x[offset+left+i];
+                y1[i] = y[offset+left+i];
+            } else {
+                x1[i] = 0;
+                y1[i] = 0;
+            }
+        }
+        struct bignum x0px1 = {x1, left+2, 0};
+        struct bignum y0py1 = {y1, left+2, 0};
+        struct bignum x0 = {x+offset, left, 0};
+        struct bignum y0 = {y+offset, left, 0};
+        addVectors(&x0px1, x0, 0);
+        addVectors(&y0py1, y0, 0);
 
-        // Compute x0 * y0
+        //Removing leading zeros to not end up on an endless loop
+        while (x0px1.size > 0 && x0px1.digits[x0px1.size-1] == 0) x0px1.size--;
+        while (y0py1.size > 0 && y0py1.digits[y0py1.size-1] == 0) y0py1.size--;
+
+        uint32_t result[x0px1.size + y0py1.size];
+        recKarazubaMultiplication((uint64_t *) result, x1, y1, x0px1.size, 0);
+        struct bignum middle_value = {result, x0px1.size + y0py1.size, 0};
+
+        // Compute x0 * y0 and x1 * y1
         recKarazubaMultiplication(digits, x, y, left, offset);
-        recKarazubaMultiplication(digits, x, y, n - left, offset + left);
+        recKarazubaMultiplication(digits, x, y, right, offset + left);
+
+        // Subtract x0y0 and x1y1 from (x0+x1)(y0+y1)
+        subtractionBignum(&middle_value, (struct bignum) {(uint32_t *) (digits + offset), left, 0});
+        subtractionBignum(&middle_value, (struct bignum) {(uint32_t *) (digits + offset + left), right, 0});
+
+        // Add the middle part to digits
+        struct bignum d = {(uint32_t *) digits, (2 * n), 0};
+        addVectors(&d, middle_value, left);
     }
 }
 
@@ -351,22 +398,22 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
         fprintf(stderr, "Could not allocate memory\n");
         exit(EXIT_FAILURE);
     }
-    recKarazubaMultiplication(bignumDigits, x.digits, y.digits, x.size, 0);
-    return (struct bignum) {x.size + y.size, bignumDigits};
+    recKarazubaMultiplication((uint64_t *) bignumDigits, x.digits, y.digits, x.size, 0);
+    return (struct bignum) {bignumDigits, x.size + y.size, 0};
 }
 
 
 int main() {
     uint32_t first[4], second[4];
     first[0] = 1;
-    first[1] = 0xffffffff;
-    first[2] = 3;
-    first[3] = 4;
-    second[0] = 5;
-    second[1] = 6;
-    second[2] = 7;
-    second[3] = 8;
+    first[1] = 2;
+    //first[2] = 3;
+    //first[3] = 4;
+    second[0] = 3;
+    second[1] = 4;
+    //second[2] = 7;
+    //second[3] = 8;
     struct bignum a;
-    a = karazubaMultiplication((struct bignum) {4, first}, (struct bignum) {4, second});
+    a = karazubaMultiplication((struct bignum) {first, 2}, (struct bignum) {second, 2});
     return 0;
 }
