@@ -386,15 +386,15 @@ void recKarazubaMultiplication(struct bignum digits, struct bignum x, struct big
         // Subtract x0y0 and x1y1 from (x0+x1)(y0+y1)
         struct bignum x0y0 = digits;
         x0y0.digits += 2 * offset;
-        x0y0.size = left;
+        x0y0.size = 2 * left;
         subtractionBignum(&middle_value, x0y0);
         struct bignum x1y1 = digits;
         x1y1.digits += 2 * (offset + left);
-        x1y1.size = right;
+        x1y1.size = 2 * right;
         subtractionBignum(&middle_value, x1y1);
 
         // Add the middle part to digits
-        addVectors(&digits, middle_value, left);
+        addVectors(&digits, middle_value, left + 2*offset);
     }
 }
 
@@ -410,6 +410,10 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
     }
     struct bignum result = {bignumDigits, x.size + y.size, 0};
     recKarazubaMultiplication(result, x, y, x.size, 0);
+
+    // Remove leading zeros
+    while (result.size > 0 && result.digits[result.size-1] == 0)
+        result.size--;
     return result;
 }
 
@@ -418,13 +422,14 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
     uint32_t first[4], second[4];
     first[0] = 1;
     first[1] = 2;
-    //first[2] = 3;
+    first[2] = 3;
     //first[3] = 4;
-    second[0] = 3;
-    second[1] = 4;
-    //second[2] = 7;
+    second[0] = 1;
+    second[1] = 2;
+    second[2] = 3;
     //second[3] = 8;
-    struct bignum a;
-    a = karazubaMultiplication((struct bignum) {first, 2}, (struct bignum) {second, 2});
+    struct bignum a, b;
+    b = multiplicationBignum((struct bignum) {first, 3}, (struct bignum) {second, 3});
+    a = karazubaMultiplication((struct bignum) {first, 3}, (struct bignum) {second, 3});
     return 0;
 }*/
