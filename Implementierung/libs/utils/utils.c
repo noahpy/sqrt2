@@ -129,7 +129,7 @@ char* bin_to_hex(struct bignum num){
 
 void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, struct bignum)){
     struct bignum result = *num;
-        if(num->fracSize){
+    if(num->fracSize){
         size_t frac_hex = num->fracSize / 4;
         struct bignum multiplier = bignumOfInt(10000);
         for(size_t i = 0; i < frac_hex; i++){
@@ -151,5 +151,35 @@ void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, 
 }
 
 void print_bignum_hex(struct bignum *num){
-    (void) num;
+    char* hex_string;
+    // shift to left to fit in to hex digits
+    size_t shift = 4 - (num->fracSize % 4);
+    if(shift < 4){
+        // TODO: replace with real left shift
+        int lt[] = {2, 4, 8};
+        struct bignum multiplier = bignumOfInt(lt[shift-1]);
+        struct bignum result = multiplicationBignum(*num, multiplier);
+        hex_string = bin_to_hex(result);
+        free(multiplier.digits);
+        free(result.digits);
+    }
+    else{
+        shift = 0;
+        hex_string = bin_to_hex(*num);
+    }
+    // remove leading zeros, add dot if needed
+    size_t len = strlen(hex_string);
+    size_t lead_offset = 0;
+    while(hex_string[lead_offset] == '0'){
+        lead_offset++;
+    }
+    for (size_t i = lead_offset; i < len; i++){
+        if(i == len - (num->fracSize + shift) / 4){
+            hex_string[i - lead_offset] = '.';
+            lead_offset--;
+        }
+        hex_string[i - lead_offset] = hex_string[i];
+    }
+    printf("0x%s\n", hex_string);
+    free(hex_string);
 }
