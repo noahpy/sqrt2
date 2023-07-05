@@ -57,7 +57,7 @@ void test_print_bignum_hex(struct bignum input, char *expected) {
   pipe2(pipefd, 0); 
 
   // What used to be stdout will now go to the pipe.
-  /* dup2(pipefd[1], fileno(stdout)); */
+  dup2(pipefd[1], fileno(stdout));
 
   print_bignum_hex(&input);
 
@@ -72,7 +72,7 @@ void test_print_bignum_hex(struct bignum input, char *expected) {
 
   // compare output with expected
   if (strncmp(buf, expected, strlen(expected))) {
-    /* fprintf(stderr, "Test number %d failed: Expected\n\t%s\nbut got:\n\t%s\n", test_cases, expected, buf); */
+    fprintf(stderr, "Test number %d failed: Expected\n\t%s\nbut got:\n\t%s\n", test_cases, expected, buf);
     return;
   }
   fprintf(stderr, "Test passed: got %s\n", buf);
