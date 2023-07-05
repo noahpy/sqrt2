@@ -11,7 +11,7 @@ struct bignum sqrt2(size_t s){
         bignumOfInt(2)
     };
 
-    struct cmp_matrix2x2 r = powCmpMatrix2x2(m, 40, multiplicationBignum);
+    struct cmp_matrix2x2 r = powCmpMatrix2x2(m, 1000, multiplicationBignum);
 
     print_bignum_dec(&r.x, multiplicationBignum);
     print_bignum_dec(&r.xm1, multiplicationBignum);
