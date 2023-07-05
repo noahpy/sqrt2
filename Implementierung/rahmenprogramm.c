@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <errno.h>
+#include "sqrt2.h"
 
 
 const char* usage_msg = 
@@ -156,6 +157,7 @@ bool run_program(int argc, char *argv[]){
         return false;
     }
     // TODO: Execute program
+    sqrt2(0);
     return true;
 }
 
