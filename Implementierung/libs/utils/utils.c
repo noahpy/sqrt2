@@ -84,23 +84,21 @@ char* hex_to_dec(char* hex, size_t len, size_t fraction_len){
         bool trailing = true;
         size_t index = result_len - 1;
         while(index >= result_len - fraction_len && index < result_len){
-            if(result[index] == '0' && trailing){
-                result[index] = '\0';
-            }
-            else{
-                trailing = false;
+            if(result[index] != '0' || !trailing){
+                if(trailing) result[index + 2 + offset] = '\0';
                 result[index + 1 + offset] = result[index];
+                trailing = false;
             }
             index--;
         }
         result[index + 1 + offset] = '.';
-        if(!(result_len - fraction_len)){
+        if(offset){
             result[0] = '0';
         }
     }
 
     // add terminating null byte 
-    result[result_len + 1 + offset] = '\0';
+    if(!fraction_len) result[result_len] = '\0';
     return result;
 }
 

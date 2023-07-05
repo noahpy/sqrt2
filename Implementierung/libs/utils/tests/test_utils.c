@@ -100,6 +100,21 @@ int main() {
   test_print_bignum_dec(number2, "1.482208251953125");
   free(digits);
 
+  // 0x0.4ccd
+  digits = malloc(1 * sizeof(uint32_t));
+  digits[0] = 0x4ccd;
+  struct bignum number10 = {digits, 1, 16};
+  test_print_bignum_dec(number10, "0.3000030517578125");
+  free(digits);
+
+
+  // 0x5
+  digits = malloc(1 * sizeof(uint32_t));
+  digits[0] = 5;
+  struct bignum number9 = {digits, 1, 0};
+  test_print_bignum_dec(number9, "5");
+  free(digits);
+
   // 0x83989_89e89a89_401bbc90_90fed902
   digits = malloc(4 * sizeof(uint32_t));
   digits[0] = 0x90fed902;
