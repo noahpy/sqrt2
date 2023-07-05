@@ -171,13 +171,19 @@ void print_bignum_hex(struct bignum *num){
     while(hex_string[lead_offset] == '0'){
         lead_offset++;
     }
-    for (size_t i = lead_offset; i < len; i++){
+    if(lead_offset + (num->fracSize + shift)/4 == len){
+        lead_offset--;
+        hex_string[0] = '0';
+    }
+    size_t i = lead_offset;
+    for (; i < len; i++){
         if(i == len - (num->fracSize + shift) / 4){
             hex_string[i - lead_offset] = '.';
             lead_offset--;
         }
         hex_string[i - lead_offset] = hex_string[i];
     }
+    hex_string[i - lead_offset] = '\0';
     printf("0x%s\n", hex_string);
     free(hex_string);
 }
