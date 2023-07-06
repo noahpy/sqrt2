@@ -13,6 +13,8 @@
 % Diese Zeile bitte -nicht- aendern.
 \title{Gruppe \theGroup{} -- Abgabe zu Aufgabe \theNumber}
 
+\usepackage{amsfonts}
+\usepackage{amsmath}
 \begin{document}
 \maketitle
 
@@ -48,6 +50,35 @@ Diskussion über die Notwendigkeit von Bignums, Erklärung der Implementierung (
 Erklärung des Algorithmus und der Umsetzung im Code. \\
 (0,75 Seiten)
 
+\subsection{Schnelle Exponentiation}
+Die schnelle Exponentiation nutzt Assozitivität und Potenzgesetze, um die Zahl der der Multiplikationen bei der Exponentiation von $\mathcal{O}(n)$ auf $\mathcal{O}(\log{}n)$ zu verringern. 
+Naiv kann eine Potenz $a^n$ mit $n\in\mathbb{N}$ nach der Schulmethode mit \(\prod_{1}^{n} a \) berechnet werden. Dafür benötigt man allerdings $n-1$ Multiplikationen, was bei großen Werten für $n$ zu einer langen Berechnung ausartet.\\
+Um dieses Problem effizienter zu lösen, werfen wir erst einmal einen Blick auf die Potenzgesetze für assoziative Operatoren. Denn sowohl eine Multiplikation, als auch eine Addition im Exponenten kann aufgeteilt werden:
+\begin{equation}\label{exponenten_addition}
+    a^{n+m} = a^n * a^m
+\end{equation}
+\begin{equation}\label{exponenten_multiplikation}
+    a^{n*m} = (a^n)^{^m}
+\end{equation}
+Wenn man also $a^n$ und $a^m$ effizienter als mit $n+m$ Multiplikationen berechnen kann, kann man auch $a^{n+m}$ mit \ref{exponenten_addition} effizient berechnen.\\
+Bei der schnellen Exponentiation berechnet man durch wiederholtes Quadrieren alle $a^{(2^k)}$ mit $2^k \le n$. Denn nach \ref{exponenten_multiplikation} gilt:
+\[ {\left( a^{(2^k)} \right)}^2 = a^{(2^k*2)} = a^{(2^{k+1})}\]
+Um $a^n$ mit $n=2^k$ zu berechnen, sind damit nur noch $k=\log_2n$ Multiplikationen notwendig.
+\\Potenzen mit der Form $a^{(2^k)}$ können also effizient berechnet werden, um nun auch Potenzen mit $n\in\mathbb{N}$ berechnen zu können, nutzt man \ref{exponenten_addition}. 
+Jede Zahl $n\in\mathbb{N}$ kann durch Addition von Zweierpotenzen dargestellt werden (Binärsystem). \\
+Sei $n$ in Binärdarstellung $b_0*2^0+b_1*2^1+b_2*2^2\dots$, so erhält man $a^n$ mit:
+\[ a^n = a^{b_0*2^0+b_1*2^1+b_2*2^2\dots} = a^{b_0*2^0} * a^{b_1*2^1} * a^{b_2*2^2} \dots \]
+Da $b_i$ nur die Werte $0$ und $1$ annehmen kann, ist es am Ende eine boolsche Entscheidung, ob der aktuelle Wert von $a^{(2^k)}$ auf das Zwischenergebnis aufmultipliziert wird, oder nicht.\\
+Außerdem gilt:
+\begin{equation}\label{swap_exponents}
+      a^n*a^m = a^m*a^n
+\end{equation}
+Auch wenn diese Gleichung auf den ersten Blick nach Kommutativität aussieht, gilt sie aufgrund der Assozitivität in Gruppen, da nur die Klammerung geändert wird:
+\[ \overbrace{(a*\dots*a)}^n*\overbrace{(a*\dots*a)}^m = \overbrace{(a*\dots*a)}^m*\overbrace{(a*\dots*a)}^n \]
+Zum Beispiel:
+\[ 7^3*7^4 = \overbrace{(7*7*7)}^3*\overbrace{(7*7*7*7)}^4 = \overbrace{(7*7*7*7)}^4*\overbrace{(7*7*7)}^3 = 7^4*7^3 \]
+Demnach macht es keinen Unterschied, ob zuerst $a^{(2^k)}$ mit dem kleinsten oder dem größten $k$ aufmultipliziert wird.\\
+Da $(\mathbb{N}^{2\times 2}, *)$ eine Gruppe und damit assoziativ ist, kann die schnelle Exponentiation auch für das lösen von $a\in\mathbb{N}^{2\times 2}$ genutzt werden.
 \subsection{Newton-Raphson-Division}
 Erklärung des Algorithmus und der Umsetzung im Code. \\
 (1 Seite)
