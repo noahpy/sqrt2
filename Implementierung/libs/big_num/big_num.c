@@ -234,10 +234,12 @@ void shiftRight(struct bignum *a, size_t number) {
   }
 
   size_t restShifts = number % 32;
-  for (i = 0; i < a->size - blockShifts - 1; i++) {
-    *(a->digits + i) = (uint32_t)(*(uint64_t *)(a->digits + i) >> restShifts);
+  if (a->size > blockShifts + 1) {
+    for (i = 0; i < a->size - blockShifts - 1; i++) {
+      *(a->digits + i) = (uint32_t)(*(uint64_t *)(a->digits + i) >> restShifts);
+    }
+    *(a->digits + i) = (*(a->digits + i) >> restShifts);
   }
-  *(a->digits + i) = (*(a->digits + i) >> restShifts);
 }
 
 // Calculate a/b with newton-raphson: result is in *a
