@@ -76,7 +76,9 @@ char* hex_to_dec(char* hex, size_t len, size_t fraction_len){
     if(result_len < fraction_len){
         fprintf(stderr, "Error: The fraction length is greater than the decimal length\n");
         fprintf(stderr, "Fraction length was %zu, but only %zu digits were computed\n", fraction_len, result_len);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Here is still what was computed: \n");
+        fraction_len = result_len-1;
+        /* exit(EXIT_FAILURE); */
     }
     size_t offset = (result_len - fraction_len) ? 0 : 1;
 

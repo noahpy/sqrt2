@@ -300,7 +300,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   free(multt2b.digits);
   free(t2.digits);
 
-  size_t iterationCounter = 3;
+  size_t iterationCounter = 30;
   for (size_t i = fracSize; i >= 32; i /= 2) {
     iterationCounter++;
   }
