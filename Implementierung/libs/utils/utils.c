@@ -126,7 +126,7 @@ char* bin_to_hex(struct bignum num){
 }
 
 
-void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, struct bignum)){
+void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, struct bignum), bool isSqrt2){
     struct bignum result = *num;
     if(num->fracSize){
         size_t frac_hex = num->fracSize / 4;
@@ -142,6 +142,10 @@ void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, 
     }
     char* hex_string = bin_to_hex(result);
     char* dec_string = hex_to_dec(hex_string, strlen(hex_string), num->fracSize);
+
+    if(isSqrt2){
+        dec_string[0] = '1';
+    }
     
     printf("%s\n", dec_string);
     free(hex_string);

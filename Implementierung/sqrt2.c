@@ -1,4 +1,5 @@
 
+#include <stdbool.h>
 #include <stdio.h>
 #include "libs/big_num/big_num.h"
 #include "libs/mat_fast_exp.h"
@@ -18,5 +19,5 @@ struct bignum sqrt2(size_t s){
     /* print_bignum_dec(&r.xp1, multiplicationBignum); */
     /*  */
     divisionBignum(&r.x, &r.xp1, 1000);
-    print_bignum_dec(&r.x, multiplicationBignum);
+    print_bignum_dec(&r.x, multiplicationBignum, true);
 }
