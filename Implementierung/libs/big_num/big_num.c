@@ -44,11 +44,16 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
     perror("Could not calculate new size\n");
     exit(EXIT_FAILURE);
   }
+  size_t newFrac;
+  if(__builtin_uaddl_overflow(a.fracSize, b.fracSize, &newFrac)){
+    perror("Could not calculate new fraction size\n");
+    exit(EXIT_FAILURE);
+  }
   bignumDigits = allocateDigits(newSize);
 
-  struct bignum result = {.size = a.size + b.size,
+  struct bignum result = {.size = newSize,
                           .digits = bignumDigits,
-                          .fracSize = a.fracSize + b.fracSize};
+                          .fracSize = newFrac};
 
   // Zero all elements
   for (size_t i = 0; i < result.size; i++) {

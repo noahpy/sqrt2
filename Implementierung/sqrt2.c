@@ -11,12 +11,12 @@ struct bignum sqrt2(size_t s){
         bignumOfInt(2)
     };
 
-    struct cmp_matrix2x2 r = powCmpMatrix2x2(m, 1000, multiplicationBignum);
+    struct cmp_matrix2x2 r = powCmpMatrix2x2(m, 100, multiplicationBignum);
 
-    print_bignum_dec(&r.x, multiplicationBignum);
-    print_bignum_dec(&r.xm1, multiplicationBignum);
-    print_bignum_dec(&r.xp1, multiplicationBignum);
-
-    divisionBignum(&r.x, &r.xp1, 100);
+    /* print_bignum_dec(&r.x, multiplicationBignum); */
+    /* print_bignum_dec(&r.xm1, multiplicationBignum); */
+    /* print_bignum_dec(&r.xp1, multiplicationBignum); */
+    /*  */
+    divisionBignum(&r.x, &r.xp1, 1000);
     print_bignum_dec(&r.x, multiplicationBignum);
 }
