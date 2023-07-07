@@ -193,6 +193,34 @@ void test_shift_left(struct bignum a, size_t number, struct bignum expected){
     free(expected.digits);
 }
 
+void test_shift_right(struct bignum a, size_t number, struct bignum expected){
+    test_cases++;
+    printf("Test: shiftRight(0x");
+    for (size_t j = a.size - 1; j > 0; j--) {
+        printf("%08x_", a.digits[j]);
+    }
+    printf("%08x, ", a.digits[0]);
+    printf("%zu)", number);
+    shiftRight(&a, number);
+    if (a.size == expected.size) {
+        for (size_t i = 0; i < a.size; i++) {
+        if (a.digits[i] != expected.digits[i]) {
+            printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
+                 a.digits[i]);
+            free(a.digits);
+            free(expected.digits);
+            return;
+        }
+        }
+        printf(" passed\n");
+        test_passed++;
+    } else {
+        printf(" failed! size should be %zu, but was %zu\n", expected.size, a.size);
+    }
+    free(a.digits);
+    free(expected.digits);
+}
+
 
 int main(void) {
 
@@ -742,8 +770,14 @@ int main(void) {
   test_shift_left(a, 32, expected);
   free(b.digits);
 
- 
+  // TEST SHIFT RIGHT
 
+  resetBignums(1, 1, 1);
+  *a.digits = 8;
+  *expected.digits = 1;
+  test_shift_right(a, 3, expected);
+  free(b.digits);
+ 
   // print overall resulte
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
   printf("PASSED: %d, FAILED: %d, SUCCESS RATE: %.1f%%\n", test_passed,
