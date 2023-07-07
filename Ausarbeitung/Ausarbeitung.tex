@@ -47,8 +47,12 @@ Diskussion über die Notwendigkeit von Bignums, Erklärung der Implementierung (
 (1 Seite)
 
 \subsection{Karazuba-Multiplikation}
-Erklärung des Algorithmus und der Umsetzung im Code. \\
-(0,75 Seiten)
+Um zwei Zahlen miteinander zu multiplizieren läuft man bei der russischen Bauernmultiplikation des Multiplikators einmal den Multiplikanten ab, wenn man diesen auf das Zwischenergebnis addiert. 
+Für zwei Zahlen der Längen $n, m \in\mathbb{N}$ hat die Bauernmultiplikation also Laufzeit von $\mathcal{O}(n*m)$ und im häufigen Fall von $n=m$ $\mathcal{O}(n^2)$.
+Die Multiplikation spielt auf der untersten Ebene für die Matrixmultiplikation und somit auch für die Berechnung von $\sqrt{2}$ eine wichtige Rolle.\\
+Dank des Karazuba-Algorithmus kann die Laufzeit einer Multiplikation auf $\mathcal{O}(n^{1.59})$ verringert werden.
+Dafür werden die zu multiplizierenden Zahlen in die Form $a_0+a_1*2^m$ gebracht, wobei $a_0$ und $a_1$ maximal die größe $\lceil\frac{n}{2}\rceil$ haben.
+Durch folgende Umformung kann $a*b$ mit nur noch drei $\lceil\frac{n}{2}\rceil$ großen Multiplikationen und 6 zu vernachlässigenden Additionen/Subtraktionen und einigen shifts ermittelt werden:
 
 \subsection{Schnelle Exponentiation}
 Die schnelle Exponentiation nutzt Assozitivität und Potenzgesetze, um die Zahl der der Multiplikationen bei der Exponentiation von $\mathcal{O}(n)$ auf $\mathcal{O}(\log{}n)$ zu verringern. 
