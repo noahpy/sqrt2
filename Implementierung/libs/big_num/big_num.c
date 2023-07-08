@@ -283,6 +283,14 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
   return newBigNum;
 }
 
+void shiftLeftInplace(struct bignum* a, size_t n){
+    struct bignum tmp = shiftLeft(*a, n);
+    free(a->digits);
+    a->digits = tmp.digits;
+    a->size = tmp.size;
+    a->fracSize = tmp.fracSize;
+}
+
 void shiftRight(struct bignum *a, size_t number) {
   size_t blockShifts = number / 32;
   size_t i = 0;
@@ -394,3 +402,40 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
     }
   }
 }
+
+/* This division only works if a < b*/
+void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize){
+    size_t newSize = fracSize / 32 + 1;
+    // allocate result bignum
+    uint32_t* digits = allocateDigits(newSize);
+    // zero all elements of result bignum
+    for (size_t i = 0; i < newSize; i++){
+        digits[i] = 0;
+    }
+    // shift a by one to the left
+    shiftLeftInplace(a, 1); 
+    size_t mask = 1 << fracSize % 32;
+    while(fracSize){
+        // if a >= b
+        if (compareBigNum(*a, *b) == 1){
+            // set the bit in the result bignum
+            digits[fracSize / 32] |= mask;
+            // subtract b from a
+            subtractionBignum(a, *b);
+        }
+        // shift a by one to the left
+        shiftLeftInplace(a, 1);
+        // shift mask by one to the right
+        mask >>= 1;
+        if(!mask){
+            mask = 0x80000000;
+        }
+        // decrement fracSize
+        fracSize--;
+    }
+    // free a
+    free(a->digits);
+    a->digits = digits;
+    a->size = newSize;
+}
+
