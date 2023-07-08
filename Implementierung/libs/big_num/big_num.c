@@ -302,7 +302,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
 
   subtractionBignum(&t1, multt2b);
 
-  print_bignum_dec(&t1, multiplicationBignum, false); 
+  /* print_bignum_dec(&t1, multiplicationBignum, false);  */
 
   free(multt2b.digits);
   free(t2.digits);
