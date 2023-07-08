@@ -225,7 +225,7 @@ struct bignum shiftLeftConstant(struct bignum a, size_t number) {
 }
 
 struct bignum shiftLeft(struct bignum a, size_t n) {
-  int blockShifts = n / 32;
+  size_t blockShifts = n / 32;
   n %= 32;
   size_t newSize = blockShifts;
   if ((uint64_t)a.digits[a.size-1] << n > 4294967295) 
@@ -244,8 +244,8 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
     // relocate old elements
     for (size_t i = 0; i < a.size; i++) {
       newBigNum.digits[i + blockShifts] = a.digits[i];
-      return newBigNum;
     }
+    return newBigNum;
   }
   for (size_t i = a.size - 1; i < a.size; i--) {
     uint64_t tmp = a.digits[i];

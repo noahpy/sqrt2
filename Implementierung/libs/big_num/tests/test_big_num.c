@@ -812,6 +812,18 @@ int main(void) {
   test_shift_left(a, 16, expected);
   free(b.digits);
 
+  resetBignums(2, 1, 5);
+  *a.digits = 0xabcddcba;
+  *(a.digits + 1) = 0x12344321;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0x0;
+  *(expected.digits + 2) = 0x0;
+  *(expected.digits + 3) = 0xabcddcba;
+  *(expected.digits + 4) = 0x12344321;
+  test_shift_left(a, 96, expected);
+  free(b.digits);
+
+
   // 0xab5_5f8911dc_c9411d7c << 57 = 15_6abf1223_b992823a_f8000000_00000000
   resetBignums(3, 1, 5);
   *a.digits = 0xc9411d7c;
