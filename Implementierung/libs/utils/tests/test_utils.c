@@ -26,7 +26,7 @@ void test_print_bignum_dec(struct bignum input, char *expected) {
   // What used to be stdout will now go to the pipe.
   dup2(pipefd[1], fileno(stdout));
 
-  print_bignum_dec(&input, multiplicationBignum);
+  print_bignum_dec(&input, multiplicationBignum, false);
 
   fflush(stdout); // flushall();
   close(pipefd[1]);

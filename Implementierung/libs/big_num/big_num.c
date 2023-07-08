@@ -6,6 +6,15 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../utils/utils.h"
+
+void printBignum(struct bignum *a) {
+    printf("size of a: %zu\n", a->size);
+    printf("fracSize of a: %zu\n", a->fracSize);
+    for (int i = a->size-1; i >= 0; i--) {
+        printf("digits[%d]: %o\n", i, *(a->digits + i));
+    }
+}
 
 uint32_t *allocateDigits(size_t number) {
   uint32_t *bignumDigits;
@@ -286,6 +295,7 @@ void shiftRight(struct bignum *a, size_t number) {
   for (; i < a->size; i++) {
     a->digits[i] = 0;
   }
+  //a->size = i + 1;
 
   size_t restShifts = number % 32;
   if (a->size > blockShifts + 1) {
@@ -318,26 +328,21 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   }
   free(oneShift.digits);
 
-  // load constant 48 / 17
-  struct bignum t1 = {.digits = allocateDigits(9), .size = 9, .fracSize = 256};
-  *(t1.digits) = 0xD2D2D2D2;
-  *(t1.digits + 1) = 0xD2D2D2D2;
-  *(t1.digits + 2) = 0xD2D2D2D2;
-  *(t1.digits + 3) = 0xD2D2D2D2;
-  *(t1.digits + 4) = 0xD2D2D2D2;
-  *(t1.digits + 5) = 0xD2D2D2D2;
-  *(t1.digits + 6) = 0xD2D2D2D2;
-  *(t1.digits + 7) = 0xD2D2D2D2;
-  *(t1.digits + 8) = 2;
-
   // load constant 32 / 17
-  struct bignum t2 =
-      (struct bignum){.digits = allocateDigits(5), .size = 5, .fracSize = 128};
+  struct bignum t2 = (struct bignum){.digits = allocateDigits(5), .size = 5, .fracSize = 128};
   t2.digits[0] = 0xe1e1e1e1;
   t2.digits[1] = 0xe1e1e1e1;
   t2.digits[2] = 0xe1e1e1e1;
   t2.digits[3] = 0xe1e1e1e1;
   t2.digits[4] = 0x1;
+
+  // load constant 48 / 17
+  size_t numberBlocks = ((t2.fracSize + b->fracSize) / 32) + 2;
+  struct bignum t1 = {.digits = allocateDigits(numberBlocks), .size = numberBlocks, .fracSize = (numberBlocks - 1) * 32};
+  for (size_t i = 0; i < t1.size - 1; i++) {
+    *(t1.digits + i) = 0xD2D2D2D2;
+  }
+  *(t1.digits + t1.size - 1) = 2;
 
   // calculate first approximation: t1 + t2 * b
   struct bignum multt2b = multiplicationBignum(t2, *b);
@@ -346,10 +351,12 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
 
   subtractionBignum(&t1, multt2b);
 
+  /* print_bignum_dec(&t1, multiplicationBignum, false);  */
+
   free(multt2b.digits);
   free(t2.digits);
 
-  size_t iterationCounter = 10;
+  size_t iterationCounter = 2;
   for (size_t i = fracSize; i >= 32; i /= 2) {
     iterationCounter++;
   }
