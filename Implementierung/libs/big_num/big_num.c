@@ -9,8 +9,8 @@
 #include "../utils/utils.h"
 
 void printBignum(struct bignum *a) {
-    printf("size of a: %d\n", a->size);
-    printf("fracSize of a: %d\n", a->fracSize);
+    printf("size of a: %zu\n", a->size);
+    printf("fracSize of a: %zu\n", a->fracSize);
     for (int i = a->size-1; i >= 0; i--) {
         printf("digits[%d]: %o\n", i, *(a->digits + i));
     }
