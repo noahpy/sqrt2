@@ -816,7 +816,6 @@ int main(void) {
   test_shift_left(a, 32, expected);
   free(b.digits);
 
-<<<<<<< HEAD
   resetBignums(1, 1, 2);
   *a.digits = 0xabcddcba;
   *expected.digits = 0xdcba0000;
@@ -894,9 +893,7 @@ int main(void) {
   *(expected.digits + 12) = 0x7ea7aeb;
   test_shift_left(a, 123, expected);
   free(b.digits);
-=======
   // TEST SHIFT RIGHT
->>>>>>> e97c9508509f4a24aeb5db1437646078b3452a98
 
   resetBignums(1, 1, 1);
   *a.digits = 8;
