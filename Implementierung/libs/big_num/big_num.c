@@ -45,15 +45,14 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
     exit(EXIT_FAILURE);
   }
   size_t newFrac;
-  if(__builtin_uaddl_overflow(a.fracSize, b.fracSize, &newFrac)){
+  if (__builtin_uaddl_overflow(a.fracSize, b.fracSize, &newFrac)) {
     perror("Could not calculate new fraction size\n");
     exit(EXIT_FAILURE);
   }
   bignumDigits = allocateDigits(newSize);
 
-  struct bignum result = {.size = newSize,
-                          .digits = bignumDigits,
-                          .fracSize = newFrac};
+  struct bignum result = {
+      .size = newSize, .digits = bignumDigits, .fracSize = newFrac};
 
   // Zero all elements
   for (size_t i = 0; i < result.size; i++) {
@@ -225,6 +224,36 @@ struct bignum shiftLeftConstant(struct bignum a, size_t number) {
   return a;
 }
 
+struct bignum shiftLeft(struct bignum a, size_t n) {
+  int blockShifts = n / 32;
+  n %= 32;
+  size_t newSize = blockShifts;
+  if ((uint64_t)a.digits[a.size-1] << n > 4294967295) 
+    newSize++;
+  if (__builtin_uaddl_overflow(newSize, a.size, &newSize)) {
+    perror("Could not calculate new size");
+    exit(EXIT_FAILURE);
+  }
+  size_t new_fracSize = a.fracSize ? --a.fracSize : 0;
+  struct bignum newBigNum = {allocateDigits(newSize), newSize, new_fracSize};
+  // zero all elements
+  for (size_t i = 0; i < newSize; i++){
+      newBigNum.digits[i] = 0;
+  }
+  if (!n) {
+    // relocate old elements
+    for (size_t i = 0; i < a.size; i++) {
+      newBigNum.digits[i + blockShifts] = a.digits[i];
+      return newBigNum;
+    }
+  }
+  for (size_t i = a.size - 1; i < a.size; i--) {
+    uint64_t tmp = a.digits[i];
+    *(uint64_t *)(newBigNum.digits + i + blockShifts) += tmp << n;
+  }
+  return newBigNum;
+}
+
 void shiftRight(struct bignum *a, size_t number) {
   size_t blockShifts = number / 32;
   size_t i = 0;
@@ -300,7 +329,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   free(multt2b.digits);
   free(t2.digits);
 
-  size_t iterationCounter = 30;
+  size_t iterationCounter = 10;
   for (size_t i = fracSize; i >= 32; i /= 2) {
     iterationCounter++;
   }
