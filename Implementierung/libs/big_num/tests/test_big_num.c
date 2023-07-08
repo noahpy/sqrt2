@@ -659,105 +659,105 @@ int main(void) {
 
   // TEST DIVISION
 
-  /* resetBignums(1, 1, 1); */
-  /* // 2 / 5 = 0.4 with 10 fraction  */
-  /* *a.digits = 2; */
-  /* *b.digits = 5; */
-  /* *expected.digits = 409; */
-  /* test_division(a, b, 10, expected); */
-  /*  */
-  /* resetBignums(1, 1, 1); */
-  /* // 2 / 5 = 0.4 with 32 fraction  */
-  /* *a.digits = 2; */
-  /* *b.digits = 5; */
-  /* *expected.digits = 0x66666666; */
-  /* test_division(a, b, 32, expected); */
-  /*  */
-  /* resetBignums(1, 1, 3); */
-  /* // 2 / 5 = 0.4 with 96 fraction  */
-  /* *a.digits = 2; */
-  /* *b.digits = 5; */
-  /* *expected.digits = 0x66666666; */
-  /* *(expected.digits + 1) = 0x66666666; */
-  /* *(expected.digits + 2) = 0x66666666; */
-  /* test_division(a, b, 96, expected); */
-  /*  */
-  /* resetBignums(1, 1, 2); */
-  /* // 5 / 12 = 0.41667 with 64 fraction  */
-  /* *a.digits = 5; */
-  /* *b.digits = 12; */
-  /* *expected.digits = 0xAAAAAAAA; */
-  /* *(expected.digits + 1) = 0x6AAAAAAA; */
-  /* test_division(a, b, 64, expected); */
-  /*  */
-  /* resetBignums(1, 1, 3); */
-  /* // 5 / 12 = 0.41667 with 76 fraction  */
-  /* *a.digits = 5; */
-  /* *b.digits = 12; */
-  /* *expected.digits = 0xAAAAAAAA; */
-  /* *(expected.digits + 1) = 0xAAAAAAAA; */
-  /* *(expected.digits + 2) = 0x6AA; */
-  /* test_division(a, b, 76, expected); */
-  /*  */
-  /* resetBignums(1, 1, 4); */
-  /* // 985 / 2378 = 0.41421362 with 128 fraction  */
-  /* *a.digits = 985; */
-  /* *b.digits = 2378; */
-  /* *expected.digits = 0x2E1360AC; */
-  /* *(expected.digits + 1) = 0x4857D862; */
-  /* *(expected.digits + 2) = 0x7B27D4F0; */
-  /* *(expected.digits + 3) = 0x6A09E774; */
-  /* test_division(a, b, 128, expected); */
-  /*  */
-  /* resetBignums(1, 1, 8); */
-  /* // 985 / 2378 = 0.41421356421 with 256 fraction  */
-  /* *a.digits = 985; */
-  /* *b.digits = 2378; */
-  /* *expected.digits = 0x8622E136; */
-  /* *(expected.digits + 1) = 0x4F04857D; */
-  /* *(expected.digits + 2) = 0x7747B27D; */
-  /* *(expected.digits + 3) = 0x3EDEA09E; */
-  /* *(expected.digits + 4) = 0x2E1360AC; */
-  /* *(expected.digits + 5) = 0x4857D862; */
-  /* *(expected.digits + 6) = 0x7B27D4F0; */
-  /* *(expected.digits + 7) = 0x6A09E774; */
-  /* test_division(a, b, 256, expected); */
-  /*  */
-  /* resetBignums(1, 1, 1); */
-  /* // 985 / 2378 = 0.41421356421 with 32 fraction  */
-  /* *a.digits = 985; */
-  /* *b.digits = 2378; */
-  /* *expected.digits = 0x6A09E774; */
-  /* test_division(a, b, 32, expected); */
-  /*  */
-  /* resetBignums(1, 1, 1); */
-  /* // 1 / 2 = 0.5 with 7 fraction  */
-  /* *a.digits = 1; */
-  /* *b.digits = 2; */
-  /* *expected.digits = 0x40; */
-  /* test_division(a, b, 7, expected); */
-  /*  */
-  /* resetBignums(1, 1, 16); */
-  /* // 5741 / 13860 with 512 fraction */
-  /* *a.digits = 5741; */
-  /* *b.digits = 13860; */
-  /* *expected.digits = 0x2A09E66F; */
-  /* *(expected.digits + 1) = 0xFDB5ACCF; */
-  /* *(expected.digits + 2) = 0xF2A09E66; */
-  /* *(expected.digits + 3) = 0x6FDB5ACC; */
-  /* *(expected.digits + 4) = 0xCF2A09E6; */
-  /* *(expected.digits + 5) = 0x66FDB5AC; */
-  /* *(expected.digits + 6) = 0xCCF2A09E; */
-  /* *(expected.digits + 7) = 0xE66FDB5A; */
-  /* *(expected.digits + 8) = 0xACCF2A09; */
-  /* *(expected.digits + 9) = 0x9E66FDB5; */
-  /* *(expected.digits + 10) = 0x5ACCF2A0; */
-  /* *(expected.digits + 11) = 0x09E66FDB; */
-  /* *(expected.digits + 12) = 0xB5ACCF2A; */
-  /* *(expected.digits + 13) = 0xA09E66FD; */
-  /* *(expected.digits + 14) = 0xDB5ACCF2; */
-  /* *(expected.digits + 15) = 0x6A09E66F; */
-  /* test_division(a, b, 512, expected); */
+  resetBignums(1, 1, 1);
+  // 2 / 5 = 0.4 with 10 fraction 
+  *a.digits = 2;
+  *b.digits = 5;
+  *expected.digits = 409;
+  test_division(a, b, 10, expected);
+  
+  resetBignums(1, 1, 1);
+  // 2 / 5 = 0.4 with 32 fraction 
+  *a.digits = 2;
+  *b.digits = 5;
+  *expected.digits = 0x66666666;
+  test_division(a, b, 32, expected);
+  
+  resetBignums(1, 1, 3);
+  // 2 / 5 = 0.4 with 96 fraction 
+  *a.digits = 2;
+  *b.digits = 5;
+  *expected.digits = 0x66666666;
+  *(expected.digits + 1) = 0x66666666;
+  *(expected.digits + 2) = 0x66666666;
+  test_division(a, b, 96, expected);
+  
+  resetBignums(1, 1, 2);
+  // 5 / 12 = 0.41667 with 64 fraction 
+  *a.digits = 5;
+  *b.digits = 12;
+  *expected.digits = 0xAAAAAAAA;
+  *(expected.digits + 1) = 0x6AAAAAAA;
+  test_division(a, b, 64, expected);
+  
+  resetBignums(1, 1, 3);
+  // 5 / 12 = 0.41667 with 76 fraction 
+  *a.digits = 5;
+  *b.digits = 12;
+  *expected.digits = 0xAAAAAAAA;
+  *(expected.digits + 1) = 0xAAAAAAAA;
+  *(expected.digits + 2) = 0x6AA;
+  test_division(a, b, 76, expected);
+  
+  resetBignums(1, 1, 4);
+  // 985 / 2378 = 0.41421362 with 128 fraction 
+  *a.digits = 985;
+  *b.digits = 2378;
+  *expected.digits = 0x2E1360AC;
+  *(expected.digits + 1) = 0x4857D862;
+  *(expected.digits + 2) = 0x7B27D4F0;
+  *(expected.digits + 3) = 0x6A09E774;
+  test_division(a, b, 128, expected);
+  
+  resetBignums(1, 1, 8);
+  // 985 / 2378 = 0.41421356421 with 256 fraction 
+  *a.digits = 985;
+  *b.digits = 2378;
+  *expected.digits = 0x8622E136;
+  *(expected.digits + 1) = 0x4F04857D;
+  *(expected.digits + 2) = 0x7747B27D;
+  *(expected.digits + 3) = 0x3EDEA09E;
+  *(expected.digits + 4) = 0x2E1360AC;
+  *(expected.digits + 5) = 0x4857D862;
+  *(expected.digits + 6) = 0x7B27D4F0;
+  *(expected.digits + 7) = 0x6A09E774;
+  test_division(a, b, 256, expected);
+  
+  resetBignums(1, 1, 1);
+  // 985 / 2378 = 0.41421356421 with 32 fraction 
+  *a.digits = 985;
+  *b.digits = 2378;
+  *expected.digits = 0x6A09E774;
+  test_division(a, b, 32, expected);
+  
+  resetBignums(1, 1, 1);
+  // 1 / 2 = 0.5 with 7 fraction 
+  *a.digits = 1;
+  *b.digits = 2;
+  *expected.digits = 0x40;
+  test_division(a, b, 7, expected);
+  
+  resetBignums(1, 1, 16);
+  // 5741 / 13860 with 512 fraction
+  *a.digits = 5741;
+  *b.digits = 13860;
+  *expected.digits = 0x2A09E66F;
+  *(expected.digits + 1) = 0xFDB5ACCF;
+  *(expected.digits + 2) = 0xF2A09E66;
+  *(expected.digits + 3) = 0x6FDB5ACC;
+  *(expected.digits + 4) = 0xCF2A09E6;
+  *(expected.digits + 5) = 0x66FDB5AC;
+  *(expected.digits + 6) = 0xCCF2A09E;
+  *(expected.digits + 7) = 0xE66FDB5A;
+  *(expected.digits + 8) = 0xACCF2A09;
+  *(expected.digits + 9) = 0x9E66FDB5;
+  *(expected.digits + 10) = 0x5ACCF2A0;
+  *(expected.digits + 11) = 0x09E66FDB;
+  *(expected.digits + 12) = 0xB5ACCF2A;
+  *(expected.digits + 13) = 0xA09E66FD;
+  *(expected.digits + 14) = 0xDB5ACCF2;
+  *(expected.digits + 15) = 0x6A09E66F;
+  test_division(a, b, 512, expected);
 
   // TEST SHIFT LEFT CONSTANT
 
