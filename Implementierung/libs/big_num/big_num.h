@@ -18,3 +18,4 @@ void subtractionBignum(struct bignum *a, struct bignum b);
 struct bignum shiftLeftConstant(struct bignum a, size_t n);
 struct bignum shiftLeft(struct bignum a, size_t n);
 void shiftRight(struct bignum *a, size_t n);
+int compareBigNum(struct bignum a, struct bignum b);

@@ -176,6 +176,26 @@ int compareHighestDigits(struct bignum a, struct bignum b) {
   }
 }
 
+int compareBigNum(struct bignum a, struct bignum b){
+    if (a.size > b.size) {
+        return 1;
+    } else if (a.size < b.size) {
+        return -1;
+    }
+    size_t index = a.size - 1;
+    while(a.digits[index] == b.digits[index]){
+        if (index == 0) {
+            return 0;
+        }
+        index--;
+    }
+    if(a.digits[index] > b.digits[index]){
+        return 1;
+    }
+    return -1;
+}
+
+
 // Compact version of shiftLeft, where the constant "2" can be shifted
 struct bignum shiftLeftConstant(struct bignum a, size_t number) {
   // Calculate how much new 32Bit blocks are needed
