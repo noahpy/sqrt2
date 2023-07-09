@@ -306,12 +306,12 @@ void shiftRight(struct bignum *a, size_t number) {
   //a->size = i + 1;
 
   size_t restShifts = number % 32;
-  if (a->size > blockShifts + 1) {
+  //if (a->size > blockShifts + 1) {
     for (i = 0; i < a->size - blockShifts - 1; i++) {
       *(a->digits + i) = (uint32_t)(*(uint64_t *)(a->digits + i) >> restShifts);
     }
     *(a->digits + i) = (*(a->digits + i) >> restShifts);
-  }
+  //}
 }
 
 // Calculate a/b with newton-raphson: result is in *a
@@ -336,13 +336,9 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   }
   free(oneShift.digits);
 
-  // load constant 32 / 17
-  struct bignum t2 = (struct bignum){.digits = allocateDigits(5), .size = 5, .fracSize = 128};
-  t2.digits[0] = 0xe1e1e1e1;
-  t2.digits[1] = 0xe1e1e1e1;
-  t2.digits[2] = 0xe1e1e1e1;
-  t2.digits[3] = 0xe1e1e1e1;
-  t2.digits[4] = 0x1;
+  // load constant 32 / 17 (approx. 1.875)
+  struct bignum t2 = (struct bignum){.digits = allocateDigits(1), .size = 1, .fracSize = 3};
+  t2.digits[0] = 0xf;
 
   // load constant 48 / 17
   size_t numberBlocks = ((t2.fracSize + b->fracSize) / 32) + 2;
@@ -364,8 +360,8 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   free(multt2b.digits);
   free(t2.digits);
 
-  size_t iterationCounter = 2;
-  for (size_t i = fracSize; i >= 32; i /= 2) {
+  size_t iterationCounter = 0;
+  for (size_t i = fracSize; i > 1; i /= 2) {
     iterationCounter++;
   }
 
@@ -382,6 +378,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
     free(two.digits);
 
     t1 = t1t;
+    printf("t1.fracSize: %zu", t1.fracSize);
   }
 
   // multiply a with the approximated value to get a/b
