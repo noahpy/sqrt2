@@ -9,8 +9,8 @@
 #include "../utils/utils.h"
 
 void printBignum(struct bignum *a) {
-    printf("size of a: %d\n", a->size);
-    printf("fracSize of a: %d\n", a->fracSize);
+    printf("size of a: %ld\n", a->size);
+    printf("fracSize of a: %ld\n", a->fracSize);
     for (int i = a->size-1; i >= 0; i--) {
         printf("digits[%d]: %o\n", i, *(a->digits + i));
     }
@@ -249,12 +249,12 @@ void shiftRight(struct bignum *a, size_t number) {
   //a->size = i + 1;
 
   size_t restShifts = number % 32;
-  if (a->size > blockShifts + 1) {
+  //if (a->size > blockShifts + 1) {
     for (i = 0; i < a->size - blockShifts - 1; i++) {
       *(a->digits + i) = (uint32_t)(*(uint64_t *)(a->digits + i) >> restShifts);
     }
     *(a->digits + i) = (*(a->digits + i) >> restShifts);
-  }
+  //}
 }
 
 // Calculate a/b with newton-raphson: result is in *a
@@ -302,12 +302,12 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
 
   subtractionBignum(&t1, multt2b);
 
-  print_bignum_dec(&t1, multiplicationBignum, false); 
+  //print_bignum_dec(&t1, multiplicationBignum, false); 
 
   free(multt2b.digits);
   free(t2.digits);
 
-  size_t iterationCounter = 2;
+  size_t iterationCounter = 3;
   for (size_t i = fracSize; i >= 32; i /= 2) {
     iterationCounter++;
   }
