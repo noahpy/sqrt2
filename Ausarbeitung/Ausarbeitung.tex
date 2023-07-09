@@ -60,7 +60,8 @@ Nun werden verschiedene Arithmetische Operationen ausgeführt.
 
 \subsubsection*{Addition und Subtraktion}
 Bei der Addition und der Subtraktion werden die einzelnen Elemente aufeinander addiert bzw. subtrahiert. Entsteht ein Overflow, wird dieser auf die nächsten Blöcke übertragen. \\
-Seien $a$ und $b$ zwei Big-Nums, unterteilt in ihre Blöcke von $0$ bis $m$, so gilt:
+Seien $a$ und $b$ zwei Big-Nums, unterteilt in ihre Blöcke von $0$ bis $m$. Falls die digits eines Big-Nums kleiner sind als die des anderen, werden die entsprechenden Blöcke mit Nullen aufgefüllt. 
+Für die Addition und Subtraktion gilt:
 
 \begin{align}
   c &= \sum_{i=0}^m (2^{32i} (a_i + b_i)) \quad  \text{und} \label{eq:bignum_addition} \\ 
