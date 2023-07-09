@@ -7,6 +7,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include "sqrt2.h"
+#include "libs/decimal_place_converter/decimal_place_converter.h"
 
 
 const char* usage_msg = 
@@ -157,7 +158,8 @@ bool run_program(int argc, char *argv[]){
         return false;
     }
     // TODO: Execute program
-    sqrt2(0);
+    size_t binary_precision = decimal_to_binary_places(decimal_precision);
+    sqrt2(binary_precision);
     return true;
 }
 
