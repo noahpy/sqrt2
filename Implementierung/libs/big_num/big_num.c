@@ -9,8 +9,8 @@
 #include "../utils/utils.h"
 
 void printBignum(struct bignum *a) {
-    printf("size of a: %ld\n", a->size);
-    printf("fracSize of a: %ld\n", a->fracSize);
+    printf("size of a: %zu\n", a->size);
+    printf("fracSize of a: %zu\n", a->fracSize);
     for (int i = a->size-1; i >= 0; i--) {
         printf("digits[%d]: %o\n", i, *(a->digits + i));
     }
@@ -302,7 +302,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
 
   subtractionBignum(&t1, multt2b);
 
-  //print_bignum_dec(&t1, multiplicationBignum, false); 
+  /* print_bignum_dec(&t1, multiplicationBignum, false);  */
 
   free(multt2b.digits);
   free(t2.digits);
