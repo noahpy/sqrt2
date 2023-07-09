@@ -169,23 +169,6 @@ void subtractionBignum(struct bignum *a, struct bignum b) {
   }
 }
 
-int compareHighestDigits(struct bignum a, struct bignum b) {
-  size_t highestDigitA = a.size - 1;
-  while (a.digits[highestDigitA] == 0)
-    highestDigitA--;
-  if (highestDigitA == b.size - 1) {
-    if (a.digits[highestDigitA] == b.digits[b.size - 1])
-      return 0;
-    if (a.digits[highestDigitA] > b.digits[b.size - 1])
-      return 1;
-    return -1;
-  } else if (highestDigitA > b.size - 1) {
-    return 1;
-  } else {
-    return -1;
-  }
-}
-
 int compareBigNum(struct bignum a, struct bignum b) {
   if (a.size > b.size) {
     return 1;
@@ -304,7 +287,6 @@ void shiftRight(struct bignum *a, size_t number) {
   for (; i < a->size; i++) {
     a->digits[i] = 0;
   }
-  // a->size = i + 1;
 
   size_t restShifts = number % 32;
   // if (a->size > blockShifts + 1) {
@@ -330,7 +312,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), b->fracSize);
 
   // Calculates b * 0.5 until b < 1
-  while (compareHighestDigits(*b, oneShift) == 1) {
+  while (compareBigNum(*b, oneShift) == 1) {
     b->fracSize++;
     a->fracSize++;
     oneShift = shiftLeftConstant(oneShift, 1);
@@ -358,8 +340,6 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   t1.fracSize -= (t1.fracSize - multt2b.fracSize);
 
   subtractionBignum(&t1, multt2b);
-
-  /* print_bignum_dec(&t1, multiplicationBignum, false);  */
 
   free(multt2b.digits);
   free(t2.digits);
