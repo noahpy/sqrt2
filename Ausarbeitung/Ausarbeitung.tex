@@ -78,19 +78,25 @@ Dies wird mit jedem Block aus dem ersten Faktoren wiederholt. Mathematisch läss
 
 Damit funktioniert auch die triviale Multiplikation mit einer Laufzeit von $\mathcal{O}(n^2)$. Im Folgenden wird ein Algorithmus zur schnelleren Berechnung des Produkts erläutert.
 
-\subsection{Karazuba-Multiplikation} \label{sec:karazuba}
-Erklärung des Algorithmus und der Umsetzung im Code. \\
-(0,75 Seiten)
+\subsection{Karazuba-Multiplikation}
+Um zwei Zahlen miteinander zu multiplizieren läuft man bei der russischen Bauernmultiplikation des Multiplikators einmal den Multiplikanten ab, wenn man diesen auf das Zwischenergebnis addiert. 
+Für zwei Zahlen der Längen $n, m \in\mathbb{N}$ hat die Bauernmultiplikation also Laufzeit von $\mathcal{O}(n*m)$ und im häufigen Fall von $n=m$ $\mathcal{O}(n^2)$.
+Die Multiplikation spielt auf der untersten Ebene für die Matrixmultiplikation und somit auch für die Berechnung von $\sqrt{2}$ eine wichtige Rolle.\\
+Dank des Karazuba-Algorithmus kann die Laufzeit einer Multiplikation auf $\mathcal{O}(n^{1.59})$ verringert werden.
+Dafür werden die zu multiplizierenden Zahlen in die Form $a_0+a_1*2^m$ gebracht, wobei $a_0$ und $a_1$ maximal die größe $\lceil\frac{n}{2}\rceil$ haben.
+Durch folgende Umformung kann $a*b$ mit nur noch drei $\lceil\frac{n}{2}\rceil$ großen Multiplikationen und 6 zu vernachlässigenden Additionen/Subtraktionen und einigen shifts ermittelt werden:
 
-\subsection{Schnelle Exponentiation} \label{sec:schnelle_exponentiation}
-Die schnelle Exponentiation nutzt Assoziativität und Potenzgesetze, um die Zahl der der Multiplikationen bei der Exponentiation von $\mathcal{O}(n)$ auf $\mathcal{O}(\log{}n)$ zu verringern. 
-Naiv kann eine Potenz $a^n$ mit $n\in\mathbb{N}$ nach der Schulmethode mit \(\prod_{1}^{n} a \) berechnet werden. Dafür benötigt man allerdings $n-1$ Multiplikationen, was bei großen Werten für $n$ zu einer langen Berechnung ausartet.\\
+\subsection{Schnelle Exponentiation}
+Die schnelle Exponentiation nutzt Assozitivität und Potenzgesetze, um die Zahl der der Multiplikationen bei der Exponentiation von $\mathcal{O}(n)$ auf $\mathcal{O}(\log{}n)$ zu verringern. 
+Naiv kann eine Potenz $a^n$ mit $n\in\mathbb{N}$ nach der Schulmethode mit \(\prod_{1}^{n} a \) berechnet werden. 
+Dafür benötigt man allerdings $n-1$ Multiplikationen, was bei großen Werten für $n$ zu einer langen Berechnung ausartet.\\
+
 Um dieses Problem effizienter zu lösen, werfen wir erst einmal einen Blick auf die Potenzgesetze für assoziative Operatoren. Denn sowohl eine Multiplikation, als auch eine Addition im Exponenten kann aufgeteilt werden:
 \begin{equation}\label{exponenten_addition}
-    a^{n+m} = a^n * a^m
+    a^{n+m} = \overbrace{a*\dots*a}^{n+m} = \overbrace{(a*\dots*a)}^n * \overbrace{(a*\dots*a)}^m = a^n * a^m
 \end{equation}
 \begin{equation}\label{exponenten_multiplikation}
-    a^{n*m} = (a^n)^{^m}
+    a^{n*m} = \overbrace{a*\dots*a}^{n*m} = \underbrace{\overbrace{(a*\dots*a)}^n*\dots*\overbrace{(a*\dots*a)}^n}_m = (a^n)^{^m}
 \end{equation}
 Wenn man also $a^n$ und $a^m$ effizienter als mit $n+m$ Multiplikationen berechnen kann, kann man auch $a^{n+m}$ mit \ref{exponenten_addition} effizient berechnen.\\
 Bei der schnellen Exponentiation berechnet man durch wiederholtes Quadrieren alle $a^{(2^k)}$ mit $2^k \le n$. Denn nach \ref{exponenten_multiplikation} gilt:
@@ -105,7 +111,7 @@ Außerdem gilt:
 \begin{equation}\label{swap_exponents}
       a^n*a^m = a^m*a^n
 \end{equation}
-Auch wenn diese Gleichung auf den ersten Blick nach Kommutativität aussieht, gilt sie aufgrund der Assozitivität in Gruppen, da nur die Klammerung geändert wird:
+Auch wenn diese Gleichung auf den ersten Blick nach einem Kommutativitgesetz aussieht, gilt sie aufgrund der Assozitivität, da nur die Klammerung geändert wird:
 \[ \overbrace{(a*\dots*a)}^n*\overbrace{(a*\dots*a)}^m = \overbrace{(a*\dots*a)}^m*\overbrace{(a*\dots*a)}^n \]
 Ein Beispiel:
 \[ 7^3*7^4 = \overbrace{(7*7*7)}^3*\overbrace{(7*7*7*7)}^4 = \overbrace{(7*7*7*7)}^4*\overbrace{(7*7*7)}^3 = 7^4*7^3 \]
