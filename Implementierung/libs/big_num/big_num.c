@@ -382,7 +382,6 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
     free(two.digits);
 
     t1 = t1t;
-    printf("t1.fracSize: %zu", t1.fracSize);
   }
 
   // multiply a with the approximated value to get a/b
