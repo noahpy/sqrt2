@@ -279,10 +279,9 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   }
   free(oneShift.digits);
 
-  // load constant 32 / 17
-  struct bignum t2 = (struct bignum){.digits = allocateDigits(2), .size = 2, .fracSize = 32};
-  t2.digits[0] = 0xe1e1e1e1;
-  t2.digits[1] = 0x1;
+  // load constant 32 / 17 (approx. 1.875)
+  struct bignum t2 = (struct bignum){.digits = allocateDigits(1), .size = 1, .fracSize = 3};
+  t2.digits[0] = 0xf;
 
   // load constant 48 / 17
   size_t numberBlocks = ((t2.fracSize + b->fracSize) / 32) + 2;
@@ -304,8 +303,8 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   free(multt2b.digits);
   free(t2.digits);
 
-  size_t iterationCounter = 3;
-  for (size_t i = fracSize; i >= 32; i /= 2) {
+  size_t iterationCounter = 0;
+  for (size_t i = fracSize; i > 1; i /= 2) {
     iterationCounter++;
   }
 
@@ -342,4 +341,4 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
       break;
     }
   }
-}
+ }
