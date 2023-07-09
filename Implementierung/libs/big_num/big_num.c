@@ -280,12 +280,9 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   free(oneShift.digits);
 
   // load constant 32 / 17
-  struct bignum t2 = (struct bignum){.digits = allocateDigits(5), .size = 5, .fracSize = 128};
+  struct bignum t2 = (struct bignum){.digits = allocateDigits(2), .size = 2, .fracSize = 32};
   t2.digits[0] = 0xe1e1e1e1;
-  t2.digits[1] = 0xe1e1e1e1;
-  t2.digits[2] = 0xe1e1e1e1;
-  t2.digits[3] = 0xe1e1e1e1;
-  t2.digits[4] = 0x1;
+  t2.digits[1] = 0x1;
 
   // load constant 48 / 17
   size_t numberBlocks = ((t2.fracSize + b->fracSize) / 32) + 2;
@@ -325,6 +322,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
     free(two.digits);
 
     t1 = t1t;
+    printf("t1.fracSize: %zu", t1.fracSize);
   }
 
   // multiply a with the approximated value to get a/b
