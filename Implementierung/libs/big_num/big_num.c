@@ -409,27 +409,27 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
         exit(EXIT_FAILURE);
     }
     struct bignum result = {bignumDigits, x.size + y.size, 0};
-    recKarazubaMultiplication(result, x, y, x.size, 0);
+    recKarazubaMultiplication(result, x, y, x.size > y.size ? x.size : y.size, 0);
 
     // Remove leading zeros
     while (result.size > 0 && result.digits[result.size-1] == 0)
         result.size--;
+
     return result;
 }
 
 
-/*int main() {
+int main() {
     uint32_t first[4], second[4];
-    first[0] = 1;
-    first[1] = 2;
-    first[2] = 3;
-    //first[3] = 4;
-    second[0] = 1;
-    second[1] = 2;
-    second[2] = 3;
-    //second[3] = 8;
+    first[0] = 0xffffffff;
+    first[1] = 0xffffffff;
+    first[2] = 0xffffffff;
+    first[3] = 4;
+    second[0] = 0xffffffff;
+    second[1] = 0xffffffff;
+    second[2] = 0xffffffff;
     struct bignum a, b;
-    b = multiplicationBignum((struct bignum) {first, 3}, (struct bignum) {second, 3});
-    a = karazubaMultiplication((struct bignum) {first, 3}, (struct bignum) {second, 3});
+    b = multiplicationBignum((struct bignum) {first, 3}, (struct bignum) {second, 2});
+    a = karazubaMultiplication((struct bignum) {first, 3}, (struct bignum) {second, 2});
     return 0;
-}*/
+}
