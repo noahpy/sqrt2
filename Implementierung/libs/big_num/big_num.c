@@ -1,19 +1,19 @@
 
 #include "big_num.h"
+#include "../utils/utils.h"
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h> // do we need that?
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../utils/utils.h"
 
 void printBignum(struct bignum *a) {
-    printf("size of a: %zu\n", a->size);
-    printf("fracSize of a: %zu\n", a->fracSize);
-    for (int i = a->size-1; i >= 0; i--) {
-        printf("digits[%d]: %o\n", i, *(a->digits + i));
-    }
+  printf("size of a: %zu\n", a->size);
+  printf("fracSize of a: %zu\n", a->fracSize);
+  for (int i = a->size - 1; i >= 0; i--) {
+    printf("digits[%d]: %o\n", i, *(a->digits + i));
+  }
 }
 
 uint32_t *allocateDigits(size_t number) {
@@ -142,6 +142,7 @@ void additionBignum(struct bignum *a, struct bignum b) {
   }
 }
 
+/*Both a and b need to have the same fracSize*/
 void subtractionBignum(struct bignum *a, struct bignum b) {
 
   // Subtract the 32bit blocks of b to the corresponding blocks of a
@@ -185,25 +186,24 @@ int compareHighestDigits(struct bignum a, struct bignum b) {
   }
 }
 
-int compareBigNum(struct bignum a, struct bignum b){
-    if (a.size > b.size) {
-        return 1;
-    } else if (a.size < b.size) {
-        return -1;
-    }
-    size_t index = a.size - 1;
-    while(a.digits[index] == b.digits[index]){
-        if (index == 0) {
-            return 0;
-        }
-        index--;
-    }
-    if(a.digits[index] > b.digits[index]){
-        return 1;
-    }
+int compareBigNum(struct bignum a, struct bignum b) {
+  if (a.size > b.size) {
+    return 1;
+  } else if (a.size < b.size) {
     return -1;
+  }
+  size_t index = a.size - 1;
+  while (a.digits[index] == b.digits[index]) {
+    if (index == 0) {
+      return 0;
+    }
+    index--;
+  }
+  if (a.digits[index] > b.digits[index]) {
+    return 1;
+  }
+  return -1;
 }
-
 
 // Compact version of shiftLeft, where the constant "2" can be shifted
 struct bignum shiftLeftConstant(struct bignum a, size_t number) {
@@ -257,7 +257,8 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
   size_t blockShifts = n / 32;
   n %= 32;
   size_t newSize = blockShifts;
-  if ((uint64_t)a.digits[a.size-1] << n > 4294967295) 
+  uint64_t lastBlock = a.digits[a.size - 1];
+  if (lastBlock << n > 4294967295)
     newSize++;
   if (__builtin_uaddl_overflow(newSize, a.size, &newSize)) {
     perror("Could not calculate new size");
@@ -266,8 +267,8 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
   size_t new_fracSize = a.fracSize ? --a.fracSize : 0;
   struct bignum newBigNum = {allocateDigits(newSize), newSize, new_fracSize};
   // zero all elements
-  for (size_t i = 0; i < newSize; i++){
-      newBigNum.digits[i] = 0;
+  for (size_t i = 0; i < newSize; i++) {
+    newBigNum.digits[i] = 0;
   }
   if (!n) {
     // relocate old elements
@@ -283,12 +284,12 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
   return newBigNum;
 }
 
-void shiftLeftInplace(struct bignum* a, size_t n){
-    struct bignum tmp = shiftLeft(*a, n);
-    free(a->digits);
-    a->digits = tmp.digits;
-    a->size = tmp.size;
-    a->fracSize = tmp.fracSize;
+void shiftLeftInplace(struct bignum *a, size_t n) {
+  struct bignum tmp = shiftLeft(*a, n);
+  free(a->digits);
+  a->digits = tmp.digits;
+  a->size = tmp.size;
+  a->fracSize = tmp.fracSize;
 }
 
 void shiftRight(struct bignum *a, size_t number) {
@@ -303,14 +304,14 @@ void shiftRight(struct bignum *a, size_t number) {
   for (; i < a->size; i++) {
     a->digits[i] = 0;
   }
-  //a->size = i + 1;
+  // a->size = i + 1;
 
   size_t restShifts = number % 32;
-  //if (a->size > blockShifts + 1) {
-    for (i = 0; i < a->size - blockShifts - 1; i++) {
-      *(a->digits + i) = (uint32_t)(*(uint64_t *)(a->digits + i) >> restShifts);
-    }
-    *(a->digits + i) = (*(a->digits + i) >> restShifts);
+  // if (a->size > blockShifts + 1) {
+  for (i = 0; i < a->size - blockShifts - 1; i++) {
+    *(a->digits + i) = (uint32_t)(*(uint64_t *)(a->digits + i) >> restShifts);
+  }
+  *(a->digits + i) = (*(a->digits + i) >> restShifts);
   //}
 }
 
@@ -337,12 +338,15 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   free(oneShift.digits);
 
   // load constant 32 / 17 (approx. 1.875)
-  struct bignum t2 = (struct bignum){.digits = allocateDigits(1), .size = 1, .fracSize = 3};
+  struct bignum t2 =
+      (struct bignum){.digits = allocateDigits(1), .size = 1, .fracSize = 3};
   t2.digits[0] = 0xf;
 
   // load constant 48 / 17
   size_t numberBlocks = ((t2.fracSize + b->fracSize) / 32) + 2;
-  struct bignum t1 = {.digits = allocateDigits(numberBlocks), .size = numberBlocks, .fracSize = (numberBlocks - 1) * 32};
+  struct bignum t1 = {.digits = allocateDigits(numberBlocks),
+                      .size = numberBlocks,
+                      .fracSize = (numberBlocks - 1) * 32};
   for (size_t i = 0; i < t1.size - 1; i++) {
     *(t1.digits + i) = 0xD2D2D2D2;
   }
@@ -401,38 +405,48 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
 }
 
 /* This division only works if a < b*/
-void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize){
-    size_t newSize = fracSize / 32 + 1;
-    // allocate result bignum
-    uint32_t* digits = allocateDigits(newSize);
-    // zero all elements of result bignum
-    for (size_t i = 0; i < newSize; i++){
-        digits[i] = 0;
+void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize) {
+  b->fracSize = fracSize;
+  size_t newSize = fracSize / 32 + (fracSize % 32 != 0);
+  // allocate result bignum
+  uint32_t *digits = allocateDigits(newSize);
+  // zero all elements of result bignum
+  for (size_t i = 0; i < newSize; i++) {
+    digits[i] = 0;
+  }
+  // shift a by one to the left
+  shiftLeftInplace(a, 1);
+  uint32_t mask = 1 << ((fracSize % 32) - 1);
+  while (fracSize) {
+    // decrement fracSize
+    fracSize--;
+    // if a >= b
+    switch (compareBigNum(*a, *b)) {
+    case 1:
+      // set the bit in the result bignum
+      digits[fracSize / 32] |= mask;
+      // subtract b from a
+      subtractionBignum(a, *b);
+      break;
+    case 0:
+      // set the bit in the result bignum
+      digits[fracSize / 32] |= mask;
+      goto end;
+    case -1:
+      break;
     }
     // shift a by one to the left
-    shiftLeftInplace(a, 1); 
-    size_t mask = 1 << fracSize % 32;
-    while(fracSize){
-        // if a >= b
-        if (compareBigNum(*a, *b) == 1){
-            // set the bit in the result bignum
-            digits[fracSize / 32] |= mask;
-            // subtract b from a
-            subtractionBignum(a, *b);
-        }
-        // shift a by one to the left
-        shiftLeftInplace(a, 1);
-        // shift mask by one to the right
-        mask >>= 1;
-        if(!mask){
-            mask = 0x80000000;
-        }
-        // decrement fracSize
-        fracSize--;
+    shiftLeftInplace(a, 1);
+    // shift mask by one to the right
+    mask >>= 1;
+    if (!mask) {
+      mask = 0x80000000;
     }
-    // free a
-    free(a->digits);
-    a->digits = digits;
-    a->size = newSize;
+  }
+end:
+  // free a
+  free(a->digits);
+  a->digits = digits;
+  a->size = newSize;
+  a->fracSize = b->fracSize;
 }
-

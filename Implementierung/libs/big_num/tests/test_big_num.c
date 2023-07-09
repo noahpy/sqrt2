@@ -1,9 +1,11 @@
 
 #include "../big_num.h"
+#include "../../utils/utils.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 
 int test_cases = 0;
 int test_passed = 0;
@@ -224,6 +226,7 @@ void test_shift_left(struct bignum a, size_t number, struct bignum expected) {
     printf(" failed! size should be %zu, but was %zu\n", expected.size,
            result.size);
   }
+  free(a.digits);
   free(result.digits);
   free(expected.digits);
 }
@@ -253,6 +256,47 @@ void test_shift_right(struct bignum a, size_t number, struct bignum expected){
         printf(" failed! size should be %zu, but was %zu\n", expected.size, a.size);
     }
     free(a.digits);
+    free(expected.digits);
+}
+
+void test_division2(struct bignum a, struct bignum b, struct bignum expected){
+    test_cases++;
+    printf("Test: division2(0x");
+    for (size_t j = a.size - 1; j > 0; j--) {
+        printf("%08x_", a.digits[j]);
+    }
+    printf("%08x, 0x", a.digits[0]);
+    for (size_t j = b.size - 1; j > 0; j--) {
+        printf("%08x_", b.digits[j]);
+    }
+    printf("%08x, ", b.digits[0]);
+    printf("%zu)", expected.fracSize);
+    divisionBignum2(&a, &b, expected.fracSize);
+    if (a.size == expected.size) {
+        if (a.fracSize != expected.fracSize) {
+            printf(" failed! fracSize should be %zu, but was %zu\n", expected.fracSize, a.fracSize);
+            free(a.digits);
+            free(b.digits);
+            free(expected.digits);
+            return;
+        }
+        for (size_t i = 0; i < a.size; i++) {
+        if (a.digits[i] != expected.digits[i]) {
+            printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
+                 a.digits[i]);
+            free(a.digits);
+            free(b.digits);
+            free(expected.digits);
+            return;
+        }
+        }
+        printf(" passed\n");
+        test_passed++;
+    } else {
+        printf(" failed! size should be %zu, but was %zu\n", expected.size, a.size);
+    }
+    free(a.digits);
+    free(b.digits);
     free(expected.digits);
 }
 
@@ -900,6 +944,70 @@ int main(void) {
   *expected.digits = 1;
   test_shift_right(a, 3, expected);
   free(b.digits);
+
+  // TEST DIVISION 2
+
+  //0x3333 / 0x8acd = 0x0.5
+  resetBignums(1, 1, 1);
+  *a.digits = 0x3333;
+  *b.digits = 0x8acd;
+  *expected.digits = 0x5;
+  expected.fracSize = 4;
+  test_division2(a, b, expected);
+
+  //0x3333 / 0x8acd = 0x0.5e6e_286aea73_7d405f72
+  resetBignums(1, 1, 3);
+  *a.digits = 0x3333;
+  *b.digits = 0x8acd;
+  *expected.digits = 0x7d405f72;
+  *(expected.digits + 1) = 0x286aea73;
+  *(expected.digits + 2) = 0x5e6e;
+  expected.fracSize = 80;
+  test_division2(a, b, expected);
+
+  // 0x11111111_00000001 / 0x1_00000000_00000000 = 0x0.11111111_00000001
+  resetBignums(2, 3, 2);
+  *a.digits = 0x00000001;
+  *(a.digits + 1) = 0x11111111;
+  *b.digits = 0x00000000;
+  *(b.digits + 1) = 0x00000000;
+  *(b.digits + 2) = 0x1;
+  *expected.digits = 0x00000001;
+  *(expected.digits + 1) = 0x11111111;
+  expected.fracSize = 64;
+  test_division2(a, b, expected);
+
+  // 0x289d8_c98e98f8_98a8aaa8_98f98482 / 0x11111111111111111111111111111111 =
+  // 0x0.002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e
+  resetBignums(4,4,16);
+  *a.digits = 0x98f98482;
+  *(a.digits + 1) = 0x98a8aaa8;
+  *(a.digits + 2) = 0xc98e98f8;
+  *(a.digits + 3) = 0x289d8;
+
+  *b.digits = 0x11111111;
+  *(b.digits + 1) = 0x11111111;
+  *(b.digits + 2) = 0x11111111;
+  *(b.digits + 3) = 0x11111111;
+
+  *expected.digits = 0xf69ec39e;
+  *(expected.digits + 1) = 0xf1e1ffe0;
+  *(expected.digits + 2) = 0xcf5af690;
+  *(expected.digits + 3) = 0x002613b3;
+  *(expected.digits + 4) = 0xf69ec39e;
+  *(expected.digits + 5) = 0xf1e1ffe0;
+  *(expected.digits + 6) = 0xcf5af690;
+  *(expected.digits + 7) = 0x002613b3;
+  *(expected.digits + 8) = 0xf69ec39e;
+  *(expected.digits + 9) = 0xf1e1ffe0;
+  *(expected.digits + 10) = 0xcf5af690;
+  *(expected.digits + 11) = 0x002613b3;
+  *(expected.digits + 12) = 0xf69ec39e;
+  *(expected.digits + 13) = 0xf1e1ffe0;
+  *(expected.digits + 14) = 0xcf5af690;
+  *(expected.digits + 15) = 0x002613b3;
+  expected.fracSize = 512;
+  test_division2(a, b, expected); 
  
   // print overall resulte
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
