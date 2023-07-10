@@ -39,7 +39,7 @@ char get_hex_value(char hex){
  *        which is equal to the number of bits after the decimal point
  * @return char* The decimal string
  */
-char* hex_to_dec(char* hex, size_t len, size_t fraction_len){
+char* hex_to_dec(char* hex, size_t len, size_t fraction_len, bool is_sqrt2){
     // determine the length of the decimal string with magic number 1.204119983 (ln(16) / ln(10))
     size_t string_len;
     size_t fraction = (size_t) ceil(((double) len) * 0.204119983);
@@ -72,6 +72,9 @@ char* hex_to_dec(char* hex, size_t len, size_t fraction_len){
     for(size_t i = 0; i < result_len; i++){
         result[i] += '0';
     }
+
+    if(is_sqrt2) return result;
+
 
     if(result_len < fraction_len){
         fprintf(stderr, "Error: The fraction length is greater than the decimal length\n");
@@ -143,10 +146,10 @@ void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, 
         shiftRight(&result, result.fracSize);  
     }
     char* hex_string = bin_to_hex(result);
-    char* dec_string = hex_to_dec(hex_string, strlen(hex_string), num->fracSize);
+    char* dec_string = hex_to_dec(hex_string, strlen(hex_string), num->fracSize, isSqrt2);
 
     if(isSqrt2){
-        dec_string[0] = '1';
+        printf("1.");
     }
     
     printf("%s\n", dec_string);
