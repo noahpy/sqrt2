@@ -127,12 +127,13 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
   }
 
   int j = 1;
-  __m128i ov = _mm_loadu_si32 (&j);
+  __m128i ov = _mm_loadu_si32(&j);
   ov = _mm_shuffle_epi32 (ov, _MM_SHUFFLE(0,0,0,0));
 
   size_t i = 0;
   size_t size;
-  for (; !(__builtin_usubl_overflow(b.size, 4, &size)) && i < size; i += 4) {
+  bool subOverflow = __builtin_usubl_overflow(b.size, 4, &size);
+  for (; !subOverflow && i <= size; i += 4) {
       __m128i am = _mm_loadu_si128((__m128i_u*) (a->digits + i));
       __m128i bm = _mm_loadu_si128((__m128i_u*) (b.digits + i));
 
