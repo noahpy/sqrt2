@@ -1,7 +1,6 @@
 
 #include "libs/big_num/big_num.h"
 #include "libs/mat_fast_exp.h"
-#include "libs/utils/utils.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -17,6 +16,7 @@ struct bignum sqrt2(size_t s) {
   // 2.5 * n ist ein Approximatives Minimum für die Anzahl der Stellen, um alle 
   // konvergenten Nachkommastellen zu berechnen
   divisionBignum2(&r.x, &r.xp1, 2.5 * n);
-  print_bignum_dec(&r.x, multiplicationBignum, true);
-  freeCmp2x2(r);
+  free(r.xp1.digits);
+  free(r.xm1.digits);
+  return r.x;
 }

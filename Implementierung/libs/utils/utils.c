@@ -131,7 +131,7 @@ char* bin_to_hex(struct bignum num){
 }
 
 
-void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, struct bignum), bool isSqrt2){
+void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, struct bignum), long isSqrt2){
     struct bignum result = *num;
     if(num->fracSize){
         size_t frac_hex = num->fracSize / 4;
@@ -150,6 +150,7 @@ void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, 
 
     if(isSqrt2){
         printf("1.");
+        dec_string[isSqrt2] = '\0';
     }
     
     printf("%s\n", dec_string);
@@ -158,7 +159,7 @@ void print_bignum_dec(struct bignum *num, struct bignum multiply(struct bignum, 
     if(num->fracSize) free(result.digits);
 }
 
-void print_bignum_hex(struct bignum *num){
+void print_bignum_hex(struct bignum *num, long isSqrt2){
     char* hex_string;
     // shift to left to fit in to hex digits
     size_t shift = 4 - (num->fracSize % 4);
@@ -180,6 +181,12 @@ void print_bignum_hex(struct bignum *num){
     size_t lead_offset = 0;
     while(hex_string[lead_offset] == '0'){
         lead_offset++;
+    }
+    if(isSqrt2){
+        hex_string[lead_offset + isSqrt2] = '\0';
+        printf("0x1.%s\n", hex_string + lead_offset);
+        free(hex_string);
+        return;
     }
     if(lead_offset + (num->fracSize + shift)/4 == len){
         lead_offset--;
