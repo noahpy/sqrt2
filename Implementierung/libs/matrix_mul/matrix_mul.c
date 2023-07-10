@@ -68,6 +68,9 @@ void freeCmp2x2(struct cmp_matrix2x2 a) {
  * the number of arithmetic operations from 12 to 8
  *
  * multiply is a function for multiplying two bignums
+ *
+ * ONLY WORKS WITH | 0 1 | AS BASE MATRIX DUE TO OPTIMIZATION OF X+1
+ *                 | 1 2 |
  * */
 struct cmp_matrix2x2 mulCmpMatrix2x2(struct cmp_matrix2x2 a, struct cmp_matrix2x2 b, struct bignum multiply(struct bignum, struct bignum)) {
 
