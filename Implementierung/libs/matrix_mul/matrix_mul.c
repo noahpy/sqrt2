@@ -70,35 +70,13 @@ void freeCmp2x2(struct cmp_matrix2x2 a) {
  * multiply is a function for multiplying two bignums
  * */
 struct cmp_matrix2x2 mulCmpMatrix2x2(struct cmp_matrix2x2 a, struct cmp_matrix2x2 b, struct bignum multiply(struct bignum, struct bignum)) {
-    // a.x * b.x is used for x-1 and x+1
-    struct bignum square_of_xs = multiply(a.x, b.x);
 
     // x-1 = a.x-1 * b.x-1 + a.x * b.x
     struct bignum xm1 = multiplicationBignum(a.xm1, b.xm1);
-    if (xm1.size < square_of_xs.size) {
-        // Save a copy of square_of_xs to use in the last multiplication
-        uint32_t *digit = NULL;
-        if (!(digit = malloc(sizeof(uint32_t) * square_of_xs.size))) {
-            fprintf(stderr, "Could not allocate memory\n");
-            exit(EXIT_FAILURE);
-        }
-
-        for(size_t i = 0; i < square_of_xs.size; i++) {
-            digit[i] = square_of_xs.digits[i];
-        }
-        struct bignum copy = {digit, square_of_xs.size, 0};
-
-        // Compute with swapped values
-        swap(&xm1, &square_of_xs);
-        additionBignum(&xm1, square_of_xs);
-
-        // Free the old value of xm1 in square_of_xs and correct the value
-        free(square_of_xs.digits);
-        square_of_xs = copy;
-    } else {
-        // Compute x-1 normally
-        additionBignum(&xm1, square_of_xs);
-    }
+    struct bignum ax_mul_bx = multiply(a.x, b.x);
+    if (xm1.size < ax_mul_bx.size) swap(&xm1, &ax_mul_bx);
+    additionBignum(&xm1, ax_mul_bx);
+    free(ax_mul_bx.digits);
 
     //  x  = a.x-1 * b.x + a.x * b.x+1 or a,x * bx-1 + a.x+1 * b.x
     struct bignum x = multiply(a.xm1, b.x);
@@ -108,13 +86,11 @@ struct cmp_matrix2x2 mulCmpMatrix2x2(struct cmp_matrix2x2 a, struct cmp_matrix2x
     free(ax_mul_bxp1.digits);
 
     // x+1 = a.x * b.x + a.x+1 * b.x+1
-    /* TODO: x+1 can also be computed by 2 * x + x-1 if | 0 1 | is the base matrix (one bitshift and one addition)
-     *                                                  | 1 2 |
+    /* x+1 can also be computed by 2 * x + x-1 if | 0 1 | is the base matrix (one bitshift and one addition)
+     *                                            | 1 2 |
      * */
-    struct bignum xp1 =  multiply(a.xp1, b.xp1);
-    if (xp1.size < square_of_xs.size) swap(&xp1, &square_of_xs);
-    additionBignum(&xp1, square_of_xs);
-    free(square_of_xs.digits);
+    struct bignum xp1 = shiftLeft(x, 1);
+    additionBignum(&xp1, xm1);
 
     return (struct cmp_matrix2x2) {xm1, x, xp1};
 }
