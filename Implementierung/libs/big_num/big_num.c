@@ -330,7 +330,11 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
 
 void recKarazubaMultiplication(struct bignum digits, struct bignum x, struct bignum y, size_t n, size_t offset) {
     if (n == 1) {
-        ((uint64_t *) digits.digits)[offset] = (uint64_t) x.digits[offset] * y.digits[offset];
+        if (offset < x.size && offset < y.size) {
+            ((uint64_t *) digits.digits)[offset] = (uint64_t) x.digits[offset] * y.digits[offset];
+        } else {
+            ((uint64_t *) digits.digits)[offset] = 0;
+        }
     } else {
         size_t left = n / 2;
         size_t right = n - left;
@@ -351,8 +355,16 @@ void recKarazubaMultiplication(struct bignum digits, struct bignum x, struct big
         // Insert x1 and y1 in the arrays
         for (size_t i = 0; i < left+2; i++) {
             if (i < right) {
-                x1[i] = x.digits[offset+left+i];
-                y1[i] = y.digits[offset+left+i];
+                if (offset+left+i < x.size) {
+                    x1[i] = x.digits[offset+left+i];
+                } else {
+                    x1[i] = 0;
+                }
+                if (offset+left+i < y.size) {
+                    y1[i] = y.digits[offset+left+i];
+                } else {
+                    y1[i] = 0;
+                }
             } else {
                 x1[i] = 0;
                 y1[i] = 0;
@@ -403,6 +415,11 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
     /*if (x.size == 1 && y.size == 1) {
 
     }*/
+    if (y.size > x.size) {
+        struct bignum tmp = x;
+        x = y;
+        y = tmp;
+    }
     uint32_t *bignumDigits = NULL;
     if (!(bignumDigits = malloc((x.size + y.size) * sizeof(*bignumDigits)))) {
         fprintf(stderr, "Could not allocate memory\n");
@@ -429,7 +446,7 @@ int main() {
     second[1] = 0xffffffff;
     second[2] = 0xffffffff;
     struct bignum a, b;
-    b = multiplicationBignum((struct bignum) {first, 3}, (struct bignum) {second, 2});
-    a = karazubaMultiplication((struct bignum) {first, 3}, (struct bignum) {second, 2});
+    b = multiplicationBignum((struct bignum) {first, 4}, (struct bignum) {second, 3});
+    a = karazubaMultiplication((struct bignum) {first, 4}, (struct bignum) {second, 3});
     return 0;
 }
