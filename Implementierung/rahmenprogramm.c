@@ -14,11 +14,11 @@ const char *usage_msg = "Usage: %s [options]   Compute the square root of 2\n";
 
 const char *help_msg =
     "Optional arguments:\n"
-    "  -V X   The version of the progam (default: X = 0)\n"
+    "  -VX    The version of the progam (default: X = 0)\n"
     "  -B     Time the runtime\n"
-    "  -B X   Time the runtime with X > 0 repetitions (default: X = 1)\n"
-    "  -d X   Expected number of decimal places with X > 0 (default: X = 2)\n"
-    "  -h X   Expected number hexadecimal places with X > 0(default: X = 2)\n"
+    "  -BX    Time the runtime with X > 0 repetitions (default: X = 1)\n"
+    "  -dX    Expected number of decimal places with X > 0 (default: X = 2)\n"
+    "  -hX    Expected number hexadecimal places with X > 0 (default: X = 2)\n"
     "  -h     Show help message (this text) and exit\n"
     "  --help Show help message (this text) and exit\n";
 

@@ -16,8 +16,7 @@ size_t decimal_to_binary_places(size_t decimal_places) {
         fprintf(stderr, "Error: Can not represent decimal places\n");
         return 0;
     }
-    return decimal_places;
-}
+    return decimal_places; }
 
 size_t hex_to_binary_places(size_t hex_places) {
   if (__builtin_umull_overflow(hex_places, 4, &hex_places)) {
