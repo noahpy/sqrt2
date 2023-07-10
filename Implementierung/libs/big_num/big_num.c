@@ -336,77 +336,85 @@ void recKarazubaMultiplication(struct bignum digits, struct bignum x, struct big
             ((uint64_t *) digits.digits)[offset] = 0;
         }
     } else {
-        size_t left = n / 2;
-        size_t right = n - left;
+        if (offset >= x.size || offset >= y.size) {
+            for (size_t i = 0; i < n; i++) {
+                digits.digits[2*offset+i] = 0;
+            }
+        } else {
+            size_t left = n / 2;
+            size_t right = n - left;
 
-        /* Compute x0 + x1 and y0 + y1, making sure that there is no overflow
-         * by assuming the worst case: n is odd and x0 = f...f, x1=f...f
-         *
-         * Example for size 3: left = 1 and right = 2
-         *
-         *                                 ffff
-         *                     +      ffff_ffff
-         *                     = 0001_0000_fffe
-         *
-         * -> The necessary size for the array is left + 2
-         * */
-        uint32_t x1[left+2];
-        uint32_t y1[left+2];
-        // Insert x1 and y1 in the arrays
-        for (size_t i = 0; i < left+2; i++) {
-            if (i < right) {
-                if (offset+left+i < x.size) {
-                    x1[i] = x.digits[offset+left+i];
+            /* Compute x0 + x1 and y0 + y1, making sure that there is no overflow
+             * by assuming the worst case: n is odd and x0 = f...f, x1=f...f
+             *
+             * Example for size 3: left = 1 and right = 2
+             *
+             *                                 ffff
+             *                     +      ffff_ffff
+             *                     = 0001_0000_fffe
+             *
+             * -> The necessary size for the array is left + 2
+             * */
+            uint32_t x1[left + 2];
+            uint32_t y1[left + 2];
+            // Insert x1 and y1 in the arrays
+            for (size_t i = 0; i < left + 2; i++) {
+                if (i < right) {
+                    if (offset + left + i < x.size) {
+                        x1[i] = x.digits[offset + left + i];
+                    } else {
+                        x1[i] = 0;
+                    }
+                    if (offset + left + i < y.size) {
+                        y1[i] = y.digits[offset + left + i];
+                    } else {
+                        y1[i] = 0;
+                    }
                 } else {
                     x1[i] = 0;
-                }
-                if (offset+left+i < y.size) {
-                    y1[i] = y.digits[offset+left+i];
-                } else {
                     y1[i] = 0;
                 }
-            } else {
-                x1[i] = 0;
-                y1[i] = 0;
             }
+            struct bignum x0px1 = {x1, left + 2, 0};
+            struct bignum y0py1 = {y1, left + 2, 0};
+            struct bignum x0 = x;
+            struct bignum y0 = y;
+            x0.digits += offset;
+            y0.digits += offset;
+            x0.size = left < (x.size-offset) ? left : x.size-offset;
+            y0.size = left < (y.size-offset) ? left : y.size-offset;
+            // Add x0 or x1, they are in the correct order because left <= right
+            addVectors(&x0px1, x0, 0);
+            addVectors(&y0py1, y0, 0);
+
+            // Removing leading zeros to not end up on an endless loop
+            while (x0px1.size > 0 && x0px1.digits[x0px1.size - 1] == 0) x0px1.size--;
+            while (y0py1.size > 0 && y0py1.digits[y0py1.size - 1] == 0) y0py1.size--;
+
+            // Finally, calculate the product (x0 + x1)(y0 + y1)
+            uint32_t tmp_digits[x0px1.size + y0py1.size];
+            struct bignum middle_value = {tmp_digits, x0px1.size + y0py1.size, 0};
+            recKarazubaMultiplication(middle_value, x0px1, y0py1, x0px1.size, 0);
+
+
+            // Compute x0 * y0 and x1 * y1
+            recKarazubaMultiplication(digits, x, y, left, offset);
+            recKarazubaMultiplication(digits, x, y, right, offset + left);
+
+            // Subtract x0y0 and x1y1 from (x0+x1)(y0+y1)
+            struct bignum x0y0 = digits;
+            x0y0.digits += 2 * offset;
+            x0y0.size = 2 * left;
+            subtractionBignum(&middle_value, x0y0);
+            struct bignum x1y1 = digits;
+            x1y1.digits += 2 * (offset + left);
+            x1y1.size = 2 * right < ((x.size + y.size) - 2*(offset + left)) ? 2 * right : ((x.size + y.size) - 2*(offset + left));
+            //x1y1.size = (2 * right) < ((x.size + y.size)-offset-left);
+            subtractionBignum(&middle_value, x1y1);
+
+            // Add the middle part to digits
+            addVectors(&digits, middle_value, left + 2 * offset);
         }
-        struct bignum x0px1 = {x1, left+2, 0};
-        struct bignum y0py1 = {y1, left+2, 0};
-        struct bignum x0 = x;
-        struct bignum y0 = y;
-        x0.digits += offset;
-        y0.digits += offset;
-        x0.size = y0.size = left;
-        // Add x0 or x1, they are in the correct order because left <= right
-        addVectors(&x0px1, x0, 0);
-        addVectors(&y0py1, y0, 0);
-
-        // Removing leading zeros to not end up on an endless loop
-        while (x0px1.size > 0 && x0px1.digits[x0px1.size-1] == 0) x0px1.size--;
-        while (y0py1.size > 0 && y0py1.digits[y0py1.size-1] == 0) y0py1.size--;
-
-        // Finally, calculate the product (x0 + x1)(y0 + y1)
-        uint32_t tmp_digits[x0px1.size + y0py1.size];
-        struct bignum middle_value = {tmp_digits, x0px1.size + y0py1.size, 0};
-        recKarazubaMultiplication(middle_value, x0px1, y0py1, x0px1.size, 0);
-
-
-        // Compute x0 * y0 and x1 * y1
-        recKarazubaMultiplication(digits, x, y, left, offset);
-        recKarazubaMultiplication(digits, x, y, right, offset + left);
-
-        // Subtract x0y0 and x1y1 from (x0+x1)(y0+y1)
-        struct bignum x0y0 = digits;
-        x0y0.digits += 2 * offset;
-        x0y0.size = 2 * left;
-        subtractionBignum(&middle_value, x0y0);
-        struct bignum x1y1 = digits;
-        x1y1.digits += 2 * (offset + left);
-        x1y1.size = 2 * right;
-        subtractionBignum(&middle_value, x1y1);
-
-        // Add the middle part to digits
-        addVectors(&digits, middle_value, left + 2*offset);
     }
 }
 
@@ -425,6 +433,9 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
         fprintf(stderr, "Could not allocate memory\n");
         exit(EXIT_FAILURE);
     }
+    for (size_t i = 0; i < x.size + y.size; i++) {
+        bignumDigits[i] = 0;
+    }
     struct bignum result = {bignumDigits, x.size + y.size, 0};
     recKarazubaMultiplication(result, x, y, x.size > y.size ? x.size : y.size, 0);
 
@@ -436,17 +447,19 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
 }
 
 
-int main() {
-    uint32_t first[4], second[4];
+/*int main() {
+    uint32_t first[6], second[3];
     first[0] = 0xffffffff;
     first[1] = 0xffffffff;
     first[2] = 0xffffffff;
-    first[3] = 4;
-    second[0] = 0xffffffff;
-    second[1] = 0xffffffff;
-    second[2] = 0xffffffff;
+    first[3] = 0xffffffff;
+    first[4] = 0xffffffff;
+    first[5] = 0xffffffff;
+    second[0] = 1;
+    second[1] = 1;
+    second[2] = 1;
     struct bignum a, b;
-    b = multiplicationBignum((struct bignum) {first, 4}, (struct bignum) {second, 3});
-    a = karazubaMultiplication((struct bignum) {first, 4}, (struct bignum) {second, 3});
+    b = multiplicationBignum((struct bignum) {first, 6}, (struct bignum) {second, 3});
+    a = karazubaMultiplication((struct bignum) {first, 6}, (struct bignum) {second, 3});
     return 0;
-}
+}*/
