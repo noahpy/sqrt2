@@ -215,6 +215,54 @@ void additionBignum(struct bignum *a, struct bignum b) {
   }
 }
 
+void subractionBignumSIMD(struct bignum *a, struct bignum b) {
+  int j = 1;
+  __m128i ov = _mm_loadu_si32(&j);
+  ov = _mm_shuffle_epi32 (ov, _MM_SHUFFLE(0,0,0,0));
+
+  size_t i = 0;
+  size_t size;
+  bool subOverflow = __builtin_usubl_overflow(b.size, 4, &size);
+  for (; !subOverflow && i <= size; i += 4) {
+      __m128i am = _mm_loadu_si128((__m128i_u*) (a->digits + i));
+      __m128i bm = _mm_loadu_si128((__m128i_u*) (b.digits + i));
+
+      __m128i sum = _mm_add_epi32(am, bm);
+      __m128i overflow = _mm_or_si128(_mm_cmple_epi32(am, sum), _mm_cmple_epi32(bm, sum));
+
+      overflow = _mm_and_si128 (overflow, ov);
+
+      __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
+      uint32_t lastBlockOverflow;
+      _mm_storeu_si128((__m128i_u*) &lastBlockOverflow, zw);
+      if (lastBlockOverflow) {
+        size_t overflowCount = 4;
+        while (overflowCount + i < a->size &&
+               __builtin_usub_overflow(*(a->digits + (overflowCount) + i), 1,
+                                       (a->digits + (overflowCount) + i))) {
+          overflowCount++;
+        }
+      }
+
+      overflow = _mm_slli_si128 (overflow, 4);
+      sum = _mm_add_epi32(sum, overflow);
+      _mm_storeu_si128((__m128i_u*) (a->digits + i), sum);
+  }
+
+  for (; i < b.size; i++) {
+    size_t overflowCount = 1;
+    // If there is an subtraction overflow, decrement the third 32bit block
+    if (__builtin_usub_overflow(*(a->digits + i), *(b.digits + i),
+                                (a->digits + i))) {
+      while (overflowCount + i < a->size &&
+             __builtin_usub_overflow(*(a->digits + (overflowCount) + i), 1,
+                                     (a->digits + (overflowCount) + i))) {
+        overflowCount++;
+      }
+    }
+  }
+}
+
 /*Both a and b need to have the same fracSize*/
 void subtractionBignum(struct bignum *a, struct bignum b) {
 

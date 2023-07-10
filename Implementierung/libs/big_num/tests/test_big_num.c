@@ -106,9 +106,13 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected, boo
 }
 
 void test_subtraction(struct bignum a, struct bignum b,
-                      struct bignum expected) {
+                      struct bignum expected, bool simd) {
   test_cases++;
-  printf("Test: subtractionBignum(0x");
+  if (simd) {
+    printf("Test: subtractionBignumSIMD(0x");
+  } else {
+    printf("Test: subtractionBignum(0x");
+  }
   for (size_t j = a.size - 1; j > 0; j--) {
     printf("%08x_", a.digits[j]);
   }
@@ -118,7 +122,11 @@ void test_subtraction(struct bignum a, struct bignum b,
     printf("%08x_", b.digits[j]);
   }
   printf("%08x)", b.digits[0]);
-  subtractionBignum(&a, b);
+  if (simd) {
+    subtractionBignumSIMD(&a, b);
+  } else {
+    subtractionBignum(&a, b);
+  }
   struct bignum result = a;
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
@@ -834,7 +842,7 @@ int main(void) {
   *a.digits = 9;
   *b.digits = 1;
   *expected.digits = 8;
-  test_subtraction(a, b, expected);
+  test_subtraction(a, b, expected, false);
 
   resetBignums(2, 1, 1);
   // 4294967296 - 1 = 4294967295
@@ -843,7 +851,7 @@ int main(void) {
   *b.digits = 1;
   *expected.digits = 0xffffffff;
   *(expected.digits + 1) = 0;
-  test_subtraction(a, b, expected);
+  test_subtraction(a, b, expected, false);
 
   resetBignums(2, 2, 0);
   // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
@@ -853,7 +861,7 @@ int main(void) {
   *(b.digits + 1) = 0x13214ab1;
   *expected.digits = 0x0;
   *(expected.digits + 1) = 0x0;
-  test_subtraction(a, b, expected);
+  test_subtraction(a, b, expected, false);
 
   resetBignums(3, 2, 3);
   // 0xffffffff_ffffffff_ffffffff - 0xffffffff_ffffffff =
@@ -866,7 +874,7 @@ int main(void) {
   *expected.digits = 0x0;
   *(expected.digits + 1) = 0x0;
   *(expected.digits + 2) = 0xffffffff;
-  test_subtraction(a, b, expected);
+  test_subtraction(a, b, expected, false);
 
   resetBignums(2, 1, 2);
   // 0x5234ad_94724362 - 0x3abf = 0x5234ad_947208a3
@@ -875,7 +883,7 @@ int main(void) {
   *b.digits = 0x3abf;
   *expected.digits = 0x947208a3;
   *(expected.digits + 1) = 0x5234ad;
-  test_subtraction(a, b, expected);
+  test_subtraction(a, b, expected, false);
 
   resetBignums(3, 2, 3);
   // 0xadf_ebcfefef_beaaa420 - 0xadcbef_afafef69 = 0xadf_eb222400_0efab4b7
@@ -887,7 +895,7 @@ int main(void) {
   *expected.digits = 0x0efab4b7;
   *(expected.digits + 1) = 0xeb222400;
   *(expected.digits + 2) = 0xadf;
-  test_subtraction(a, b, expected);
+  test_subtraction(a, b, expected, false);
 
   resetBignums(3, 2, 3);
   // 0xadf_ebcfefef_beaaa420 - 0xffffffff_ffffffff = 0xade_ebcfefef_beaaa421
@@ -899,7 +907,7 @@ int main(void) {
   *expected.digits = 0xbeaaa421;
   *(expected.digits + 1) = 0xebcfefef;
   *(expected.digits + 2) = 0xade;
-  test_subtraction(a, b, expected);
+  test_subtraction(a, b, expected, false);
 
   resetBignums(3, 1, 3);
   // //test multiple overflow (subtraction)
@@ -912,7 +920,142 @@ int main(void) {
   *expected.digits = 0xffffffff;
   *(expected.digits + 1) = 0xffffffff;
   *(expected.digits + 2) = 0xfffffffe;
-  test_subtraction(a, b, expected);
+  test_subtraction(a, b, expected, false);
+
+  resetBignums(7, 5, 7);
+  // //test multiple overflow (subtraction)
+  // 0xffffffff_00000000_00000000_00000000_00000000_00000000_00000000 - 0x00000001_00000001_00000001_00000001_00000001 =
+  // 0xfffffffe_ffffffff_ffffffff
+  *a.digits = 0x0;
+  *(a.digits + 1) = 0x0;
+  *(a.digits + 2) = 0x0;
+  *(a.digits + 3) = 0x0;
+  *(a.digits + 4) = 0x0;
+  *(a.digits + 5) = 0x0;
+  *(a.digits + 6) = 0xffffffff;
+  *b.digits = 0x1;
+  *(b.digits + 1) = 0x1;
+  *(b.digits + 2) = 0x1;
+  *(b.digits + 3) = 0x1;
+  *(b.digits + 4) = 0x1;
+  *expected.digits = 0xffffffff;
+  *(expected.digits + 1) = 0xfffffffe;
+  *(expected.digits + 2) = 0xfffffffe;
+  *(expected.digits + 3) = 0xfffffffe;
+  *(expected.digits + 4) = 0xfffffffe;
+  *(expected.digits + 5) = 0xffffffff;
+  *(expected.digits + 6) = 0xfffffffe;
+  test_subtraction(a, b, expected, false);
+
+  resetBignums(1, 1, 1);
+  // 9 - 1 = 8
+  *a.digits = 9;
+  *b.digits = 1;
+  *expected.digits = 8;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(2, 1, 1);
+  // 4294967296 - 1 = 4294967295
+  *a.digits = 0;
+  *(a.digits + 1) = 1;
+  *b.digits = 1;
+  *expected.digits = 0xffffffff;
+  *(expected.digits + 1) = 0;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(2, 2, 0);
+  // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
+  *a.digits = 0x13214ab1;
+  *(a.digits + 1) = 0x13214ab1;
+  *b.digits = 0x13214ab1;
+  *(b.digits + 1) = 0x13214ab1;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0x0;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(3, 2, 3);
+  // 0xffffffff_ffffffff_ffffffff - 0xffffffff_ffffffff =
+  // 0xffffffff_00000000_00000000
+  *a.digits = 0xffffffff;
+  *(a.digits + 1) = 0xffffffff;
+  *(a.digits + 2) = 0xffffffff;
+  *b.digits = 0xffffffff;
+  *(b.digits + 1) = 0xffffffff;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0x0;
+  *(expected.digits + 2) = 0xffffffff;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(2, 1, 2);
+  // 0x5234ad_94724362 - 0x3abf = 0x5234ad_947208a3
+  *a.digits = 0x94724362;
+  *(a.digits + 1) = 0x5234ad;
+  *b.digits = 0x3abf;
+  *expected.digits = 0x947208a3;
+  *(expected.digits + 1) = 0x5234ad;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(3, 2, 3);
+  // 0xadf_ebcfefef_beaaa420 - 0xadcbef_afafef69 = 0xadf_eb222400_0efab4b7
+  *a.digits = 0xbeaaa420;
+  *(a.digits + 1) = 0xebcfefef;
+  *(a.digits + 2) = 0xadf;
+  *b.digits = 0xafafef69;
+  *(b.digits + 1) = 0xadcbef;
+  *expected.digits = 0x0efab4b7;
+  *(expected.digits + 1) = 0xeb222400;
+  *(expected.digits + 2) = 0xadf;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(3, 2, 3);
+  // 0xadf_ebcfefef_beaaa420 - 0xffffffff_ffffffff = 0xade_ebcfefef_beaaa421
+  *a.digits = 0xbeaaa420;
+  *(a.digits + 1) = 0xebcfefef;
+  *(a.digits + 2) = 0xadf;
+  *b.digits = 0xffffffff;
+  *(b.digits + 1) = 0xffffffff;
+  *expected.digits = 0xbeaaa421;
+  *(expected.digits + 1) = 0xebcfefef;
+  *(expected.digits + 2) = 0xade;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(3, 1, 3);
+  // //test multiple overflow (subtraction)
+  // 0xffffffff_00000000_00000000 - 0x1 =
+  // 0xfffffffe_ffffffff_ffffffff
+  *a.digits = 0x0;
+  *(a.digits + 1) = 0x0;
+  *(a.digits + 2) = 0xffffffff;
+  *b.digits = 0x1;
+  *expected.digits = 0xffffffff;
+  *(expected.digits + 1) = 0xffffffff;
+  *(expected.digits + 2) = 0xfffffffe;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(7, 5, 7);
+  // //test multiple overflow (subtraction)
+  // 0xffffffff_00000000_00000000_00000000_00000000_00000000_00000000 - 0x00000001_00000001_00000001_00000001_00000001 =
+  // 0xfffffffe_ffffffff_ffffffff
+  *a.digits = 0x0;
+  *(a.digits + 1) = 0x0;
+  *(a.digits + 2) = 0x0;
+  *(a.digits + 3) = 0x0;
+  *(a.digits + 4) = 0x0;
+  *(a.digits + 5) = 0x0;
+  *(a.digits + 6) = 0xffffffff;
+  *b.digits = 0x1;
+  *(b.digits + 1) = 0x1;
+  *(b.digits + 2) = 0x1;
+  *(b.digits + 3) = 0x1;
+  *(b.digits + 4) = 0x1;
+  *expected.digits = 0xffffffff;
+  *(expected.digits + 1) = 0xfffffffe;
+  *(expected.digits + 2) = 0xfffffffe;
+  *(expected.digits + 3) = 0xfffffffe;
+  *(expected.digits + 4) = 0xfffffffe;
+  *(expected.digits + 5) = 0xffffffff;
+  *(expected.digits + 6) = 0xfffffffe;
+  test_subtraction(a, b, expected, true);
 
   // TEST DIVISION
 
