@@ -15,6 +15,7 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b);
 void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize);
 void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize);
 void additionBignum(struct bignum *a, struct bignum b);
+void additionBignumSIMD(struct bignum *a, struct bignum b);
 void subtractionBignum(struct bignum *a, struct bignum b);
 struct bignum shiftLeftConstant(struct bignum a, size_t n);
 struct bignum shiftLeft(struct bignum a, size_t n);
