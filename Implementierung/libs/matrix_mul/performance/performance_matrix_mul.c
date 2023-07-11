@@ -1,7 +1,3 @@
-//
-// Created by knif on 7/11/23.
-//
-
 #include <time.h>
 #include <stdio.h>
 #include "../../mat_fast_exp.h"
