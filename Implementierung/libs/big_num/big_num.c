@@ -126,39 +126,47 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
     a->digits[a->size - 1] = 0;
   }
 
+  // load constant '1' into all doublewords
   int j = 1;
   __m128i ov = _mm_loadu_si32(&j);
   ov = _mm_shuffle_epi32(ov, _MM_SHUFFLE(0, 0, 0, 0));
 
+  // calculate loopcounter for simd
   size_t i = 0;
   size_t size;
   bool subOverflow = __builtin_usubl_overflow(b.size, 4, &size);
   for (; !subOverflow && i <= size; i += 4) {
+    // calculate the sum of doublewords
     __m128i am = _mm_loadu_si128((__m128i *)(a->digits + i));
     __m128i bm = _mm_loadu_si128((__m128i *)(b.digits + i));
 
     __m128i sum = _mm_add_epi32(am, bm);
+
+    // check in which doublewords there is an overflow
     __m128i overflow = _mm_or_si128(_mm_cmpgt_epi32(am, sum), _mm_cmpgt_epi32(bm, sum));
 
     overflow = _mm_and_si128(overflow, ov);
 
-      __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
-      uint32_t lastBlockOverflow;
-      _mm_storeu_si32(&lastBlockOverflow, zw);
-      if (lastBlockOverflow) {
-          size_t overflowCount = 4;
-          while ((overflowCount) + i < a->size &&
-                 __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
-                                         (a->digits + (overflowCount) + i))) {
-            overflowCount++;
-          }
-      }
+    // if there is an overflow in the highest block, add the overflow sequential
+    __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
+    uint32_t lastBlockOverflow;
+    _mm_storeu_si32(&lastBlockOverflow, zw);
+    if (lastBlockOverflow) {
+        size_t overflowCount = 4;
+        while ((overflowCount) + i < a->size &&
+               __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
+                                       (a->digits + (overflowCount) + i))) {
+          overflowCount++;
+        }
+    }
 
+    // add overflow to the result and store variable
     overflow = _mm_slli_si128(overflow, 4);
     sum = _mm_add_epi32(sum, overflow);
     _mm_storeu_si128((__m128i *)(a->digits + i), sum);
   }
 
+  // do the last computations without simd
   for (; i < b.size; i++) {
     uint64_t b64 = (uint64_t)b.digits[i];
 
@@ -216,44 +224,50 @@ void additionBignum(struct bignum *a, struct bignum b) {
 }
 
 void subtractionBignumSIMD(struct bignum *a, struct bignum b) {
+  // load constant '1' into all doublewords
   int j = 1;
   __m128i ov = _mm_loadu_si32(&j);
   ov = _mm_shuffle_epi32(ov, _MM_SHUFFLE(0, 0, 0, 0));
 
+  // compute loop counter
   size_t i = 0;
   size_t size;
   bool subOverflow = __builtin_usubl_overflow(b.size, 4, &size);
   for (; !subOverflow && i <= size; i += 4) {
+    // calculate subtraction 
     __m128i am = _mm_loadu_si128((__m128i *)(a->digits + i));
     __m128i bm = _mm_loadu_si128((__m128i *)(b.digits + i));
-
+    
     __m128i sub = _mm_sub_epi32(am, bm);
 
-      __m128i pow = _mm_set1_epi32(-2147483648);
-      
-      __m128i amu = _mm_add_epi32(am,pow);
-      __m128i subu = _mm_add_epi32(sub, pow);
-      __m128i overflow = _mm_cmplt_epi32(amu,subu);
+    // check for overflow in each doubleword
+    __m128i pow = _mm_set1_epi32(-2147483648);
+    __m128i amu = _mm_add_epi32(am,pow);
+    __m128i subu = _mm_add_epi32(sub, pow);
+    __m128i overflow = _mm_cmplt_epi32(amu,subu);
 
-      overflow = _mm_and_si128 (overflow, ov);
+    overflow = _mm_and_si128 (overflow, ov);
 
-      __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
-      uint32_t lastBlockOverflow;
-      _mm_storeu_si32(&lastBlockOverflow, zw);
-      if (lastBlockOverflow) {
-        size_t overflowCount = 4;
-        while (overflowCount + i < a->size &&
-               __builtin_usub_overflow(*(a->digits + (overflowCount) + i), 1,
-                                       (a->digits + (overflowCount) + i))) {
-          overflowCount++;
-        }
+    // if there is an overflow in the highest block, subtract the overflow sequential
+    __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
+    uint32_t lastBlockOverflow;
+    _mm_storeu_si32(&lastBlockOverflow, zw);
+    if (lastBlockOverflow) {
+      size_t overflowCount = 4;
+      while (overflowCount + i < a->size &&
+             __builtin_usub_overflow(*(a->digits + (overflowCount) + i), 1,
+                                     (a->digits + (overflowCount) + i))) {
+        overflowCount++;
       }
+    }
 
+    // subtract the overflows and store result
     overflow = _mm_slli_si128(overflow, 4);
     sub = _mm_sub_epi32(sub, overflow);
     _mm_storeu_si128((__m128i *)(a->digits + i), sub);
   }
 
+  // do the rest without simd
   for (; i < b.size; i++) {
     size_t overflowCount = 1;
     // If there is an subtraction overflow, decrement the third 32bit block
