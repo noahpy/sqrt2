@@ -82,8 +82,32 @@ int main () {
     clock_gettime(CLOCK_MONOTONIC, &end_nmul);
     double time_nmul = end_nmul.tv_sec - start_nmul.tv_sec + 1e-9 * (end_nmul.tv_nsec - start_nmul.tv_nsec);
     printf("Normal multiplication took %f seconds.\n", time_nmul);
+
+    // Karazuba Multiplication
+    struct bignum results_kmul[n_mul];
+    struct timespec start_kmul;
+    clock_gettime(CLOCK_MONOTONIC, &start_kmul);
+    for (size_t i = 0; i < 2 * n_mul; i += 2) {
+        results_kmul[i/2] = multiplicationBignum(tests[i], tests[i+1]);
+    }
+    struct timespec end_kmul;
+    clock_gettime(CLOCK_MONOTONIC, &end_kmul);
+    double time_kmul = end_kmul.tv_sec - start_kmul.tv_sec + 1e-9 * (end_kmul.tv_nsec - start_kmul.tv_nsec);
+    printf("Karazuba multiplication took %f seconds.\n", time_kmul);
+    for (size_t i = 0; i < n_mul; i++) {
+        if (!compareBignum(results_nmul[i], results_kmul[i])
+                ) {
+            printf("%s\n", "Results do not match.");
+            freeArray(2 * n_mul, tests);
+            freeArray(n_mul, results_nmul);
+            freeArray(n_mul, results_kmul);
+            return EXIT_FAILURE;
+        }
+    }
+    printf("%s\n_mul", "Results are the same.");
     freeArray(2 * n_mul, tests);
     freeArray(n_mul, results_nmul);
+    freeArray(n_mul, results_kmul);
 
     struct bignum add_tests[2 * n_add];
     printf("%s\n", "Generating test bignums, this may take some time...");
@@ -102,6 +126,7 @@ int main () {
     printf("Normal addition took %f seconds.\n", time_nadd);
     freeArray(2 * n_add, add_tests);
 
+    /*
     struct bignum results_ndiv[2 * n_div];
     struct bignum results_sdiv[2 * n_div];
     printf("%s\n", "Generating test bignums, this may take some time...");
@@ -119,21 +144,7 @@ int main () {
     clock_gettime(CLOCK_MONOTONIC, &end_ndiv);
     double time_ndiv = end_ndiv.tv_sec - start_ndiv.tv_sec + 1e-9 * (end_ndiv.tv_nsec - start_ndiv.tv_nsec);
     printf("Newton-Raphson divisiom took %f seconds.\n", time_ndiv);
-    
+    */
 
-    /*for (size_t i = 0; i < n_mul * iterations; i++) {
-        struct matrix2x2 normal = results_normal[i];
-        struct cmp_matrix2x2 compact = results_cmp[i];
-        if (!compareBignum(normal.a12, normal.a21)
-            | !compareBignum(normal.a11, compact.xm1)
-            | !compareBignum(normal.a12, compact.x)
-            | !compareBignum(normal.a22, compact.xp1)
-                ) {
-            printf("%s\n_mul", "Results do not match.");
-            freeResults(n_mul * iterations, results_normal, results_cmp);
-            return EXIT_FAILURE;
-        }
-    }
-    printf("%s\n_mul", "Results are the same.");*/
     return EXIT_SUCCESS;
 }
