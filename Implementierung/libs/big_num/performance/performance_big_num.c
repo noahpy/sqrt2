@@ -19,7 +19,7 @@ void generate_testset(unsigned int seed, size_t n, struct bignum array[], int ma
 
 void generate_ascending(unsigned int seed, size_t n, struct bignum array[], int maxsize) {
     srand(seed);
-    size_t stepsize = n / maxsize - 1;
+    size_t stepsize = maxsize / n - 1;
     size_t size = 1;
     for (size_t i = 1; i < n; i++) {
         uint32_t *digits = allocateDigits(size);
@@ -82,7 +82,7 @@ int main () {
     size_t n_div = 300;
     struct bignum tests[2 * n_mul];
     printf("%s\n", "Generating test bignums, this may take some time...");
-    generate_ascending(1234, 2 * n_mul, tests, 50000);
+    generate_ascending(1234, 2 * n_mul, tests, 10000);
     printf("Running tests for %zu multiplications\n", n_mul);
 
     // Normal Multiplication
@@ -102,7 +102,7 @@ int main () {
     struct timespec start_kmul;
     clock_gettime(CLOCK_MONOTONIC, &start_kmul);
     for (size_t i = 0; i < 2 * n_mul; i += 2) {
-        results_kmul[i/2] = multiplicationBignum(tests[i], tests[i+1]);
+        results_kmul[i/2] = karazubaMultiplication(tests[i], tests[i+1]);
     }
     struct timespec end_kmul;
     clock_gettime(CLOCK_MONOTONIC, &end_kmul);
