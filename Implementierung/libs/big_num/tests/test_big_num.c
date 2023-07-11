@@ -1,9 +1,11 @@
 
 #include "../big_num.h"
+#include "../../utils/utils.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 
 int test_cases = 0;
 int test_passed = 0;
@@ -13,14 +15,15 @@ struct bignum b;
 struct bignum expected;
 
 void resetBignums(size_t as, size_t bs, size_t expecteds) {
-  a = (struct bignum) {.size = as, .digits = malloc(16 * sizeof(uint32_t))};
-  b = (struct bignum) {.size = bs, .digits = malloc(16 * sizeof(uint32_t))};
-  expected = (struct bignum) {.size = expecteds, .digits = malloc(16 * sizeof(uint32_t))};
+  a = (struct bignum){.size = as, .digits = malloc(16 * sizeof(uint32_t))};
+  b = (struct bignum){.size = bs, .digits = malloc(16 * sizeof(uint32_t))};
+  expected = (struct bignum){.size = expecteds,
+                             .digits = malloc(16 * sizeof(uint32_t))};
 
   for (size_t i = 0; i < 16; i++) {
-      a.digits[i] = 0;
-      b.digits[i] = 0;
-      expected.digits[i] = 0;
+    a.digits[i] = 0;
+    b.digits[i] = 0;
+    expected.digits[i] = 0;
   }
 }
 
@@ -41,8 +44,8 @@ void test_multiplication(struct bignum a, struct bignum b,
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
       if (result.digits[i] != expected.digits[i]) {
-        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
-               result.digits[i]);
+        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i,
+               expected.digits[i], result.digits[i]);
         free(result.digits);
         free(a.digits);
         free(b.digits);
@@ -53,7 +56,8 @@ void test_multiplication(struct bignum a, struct bignum b,
     test_passed++;
     printf(" passed\n");
   } else {
-    printf(" failed! size should be %zu, but was %zu\n", expected.size, result.size);
+    printf(" failed! size should be %zu, but was %zu\n", expected.size,
+           result.size);
   }
   free(result.digits);
   free(a.digits);
@@ -78,8 +82,8 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
   if (a.size == expected.size) {
     for (size_t i = 0; i < a.size; i++) {
       if (a.digits[i] != expected.digits[i]) {
-        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
-               a.digits[i]);
+        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i,
+               expected.digits[i], a.digits[i]);
         return;
       }
     }
@@ -93,7 +97,8 @@ void test_addition(struct bignum a, struct bignum b, struct bignum expected) {
   free(b.digits);
 }
 
-void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) {
+void test_subtraction(struct bignum a, struct bignum b,
+                      struct bignum expected) {
   test_cases++;
   printf("Test: subtractionBignum(0x");
   for (size_t j = a.size - 1; j > 0; j--) {
@@ -110,8 +115,8 @@ void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) 
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
       if (result.digits[i] != expected.digits[i]) {
-        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
-               result.digits[i]);
+        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i,
+               expected.digits[i], result.digits[i]);
         free(a.digits);
         free(b.digits);
         free(expected.digits);
@@ -121,7 +126,8 @@ void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) 
     test_passed++;
     printf(" passed\n");
   } else {
-    printf(" failed! size should be %zu, but was %zu\n", expected.size, result.size);
+    printf(" failed! size should be %zu, but was %zu\n", expected.size,
+           result.size);
   }
   free(a.digits);
   free(b.digits);
@@ -129,7 +135,7 @@ void test_subtraction(struct bignum a, struct bignum b, struct bignum expected) 
 }
 
 void test_division(struct bignum a, struct bignum b, size_t number,
-                         struct bignum expected) {
+                   struct bignum expected) {
   test_cases++;
   printf("Test: divisionBignum(0x");
   for (size_t j = a.size - 1; j > 0; j--) {
@@ -146,8 +152,8 @@ void test_division(struct bignum a, struct bignum b, size_t number,
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
       if (result.digits[i] != expected.digits[i]) {
-        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
-               result.digits[i]);
+        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i,
+               expected.digits[i], result.digits[i]);
         free(a.digits);
         free(b.digits);
         free(expected.digits);
@@ -157,29 +163,89 @@ void test_division(struct bignum a, struct bignum b, size_t number,
     printf(" passed\n");
     test_passed++;
   } else {
-    printf(" failed! size should be %zu, but was %zu\n", expected.size, result.size);
+    printf(" failed! size should be %zu, but was %zu\n", expected.size,
+           result.size);
   }
   free(a.digits);
   free(b.digits);
   free(expected.digits);
 }
 
+void test_shift_left_constant(struct bignum a, size_t number,
+                              struct bignum expected) {
+  test_cases++;
+  printf("Test: shiftLeftConstant(0x");
+  for (size_t j = a.size - 1; j > 0; j--) {
+    printf("%08x_", a.digits[j]);
+  }
+  printf("%08x, ", a.digits[0]);
+  printf("%zu)", number);
+  struct bignum result = shiftLeftConstant(a, number);
+  if (result.size == expected.size) {
+    for (size_t i = 0; i < result.size; i++) {
+      if (result.digits[i] != expected.digits[i]) {
+        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i,
+               expected.digits[i], result.digits[i]);
+        free(result.digits);
+        free(expected.digits);
+        return;
+      }
+    }
+    printf(" passed\n");
+    test_passed++;
+  } else {
+    printf(" failed! size should be %zu, but was %zu\n", expected.size,
+           result.size);
+  }
+  free(result.digits);
+  free(expected.digits);
+}
 
-void test_shift_left(struct bignum a, size_t number, struct bignum expected){
+void test_shift_left(struct bignum a, size_t number, struct bignum expected) {
+  test_cases++;
+  printf("Test: shiftLeft(0x");
+  for (size_t j = a.size - 1; j > 0; j--) {
+    printf("%08x_", a.digits[j]);
+  }
+  printf("%08x, ", a.digits[0]);
+  printf("%zu)", number);
+  struct bignum result = shiftLeft(a, number);
+  if (result.size == expected.size) {
+    for (size_t i = 0; i < result.size; i++) {
+      if (result.digits[i] != expected.digits[i]) {
+        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i,
+               expected.digits[i], result.digits[i]);
+        free(result.digits);
+        free(expected.digits);
+        return;
+      }
+    }
+    printf(" passed\n");
+    test_passed++;
+  } else {
+    printf(" failed! size should be %zu, but was %zu\n", expected.size,
+           result.size);
+  }
+  free(a.digits);
+  free(result.digits);
+  free(expected.digits);
+}
+
+void test_shift_right(struct bignum a, size_t number, struct bignum expected){
     test_cases++;
-    printf("Test: shiftLeftConstant(0x");
+    printf("Test: shiftRight(0x");
     for (size_t j = a.size - 1; j > 0; j--) {
         printf("%08x_", a.digits[j]);
     }
     printf("%08x, ", a.digits[0]);
     printf("%zu)", number);
-    struct bignum result = shiftLeftConstant(a, number);
-    if (result.size == expected.size) {
-        for (size_t i = 0; i < result.size; i++) {
-        if (result.digits[i] != expected.digits[i]) {
+    shiftRight(&a, number);
+    if (a.size == expected.size) {
+        for (size_t i = 0; i < a.size; i++) {
+        if (a.digits[i] != expected.digits[i]) {
             printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
-                 result.digits[i]);
-            free(result.digits);
+                 a.digits[i]);
+            free(a.digits);
             free(expected.digits);
             return;
         }
@@ -187,17 +253,57 @@ void test_shift_left(struct bignum a, size_t number, struct bignum expected){
         printf(" passed\n");
         test_passed++;
     } else {
-        printf(" failed! size should be %zu, but was %zu\n", expected.size, result.size);
+        printf(" failed! size should be %zu, but was %zu\n", expected.size, a.size);
     }
-    free(result.digits);
+    free(a.digits);
     free(expected.digits);
 }
 
+void test_division2(struct bignum a, struct bignum b, struct bignum expected){
+    test_cases++;
+    printf("Test: division2(0x");
+    for (size_t j = a.size - 1; j > 0; j--) {
+        printf("%08x_", a.digits[j]);
+    }
+    printf("%08x, 0x", a.digits[0]);
+    for (size_t j = b.size - 1; j > 0; j--) {
+        printf("%08x_", b.digits[j]);
+    }
+    printf("%08x, ", b.digits[0]);
+    printf("%zu)", expected.fracSize);
+    divisionBignum2(&a, &b, expected.fracSize);
+    if (a.size == expected.size) {
+        if (a.fracSize != expected.fracSize) {
+            printf(" failed! fracSize should be %zu, but was %zu\n", expected.fracSize, a.fracSize);
+            free(a.digits);
+            free(b.digits);
+            free(expected.digits);
+            return;
+        }
+        for (size_t i = 0; i < a.size; i++) {
+        if (a.digits[i] != expected.digits[i]) {
+            printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i, expected.digits[i],
+                 a.digits[i]);
+            free(a.digits);
+            free(b.digits);
+            free(expected.digits);
+            return;
+        }
+        }
+        printf(" passed\n");
+        test_passed++;
+    } else {
+        printf(" failed! size should be %zu, but was %zu\n", expected.size, a.size);
+    }
+    free(a.digits);
+    free(b.digits);
+    free(expected.digits);
+}
 
 int main(void) {
 
   // TESTS FOR MULTIPLICATION
- 
+
   resetBignums(1, 1, 1);
   // 4 * 8 = 32
   *a.digits = 4;
@@ -432,8 +538,7 @@ int main(void) {
   *(expected.digits + 2) = 0x69696969;
   *(expected.digits + 3) = 0x69696969;
   *(expected.digits + 4) = 0x9;
-  test_multiplication(a,b,expected);
-
+  test_multiplication(a, b, expected);
 
   // TESTS FOR ADDITION
 
@@ -443,13 +548,13 @@ int main(void) {
   *b.digits = 8;
   *expected.digits = 12;
   test_addition(a, b, expected);
- 
+
   resetBignums(1, 1, 1);
   // 4 + 8 = 12, but a.size is 2
   *a.digits = 4;
   *b.digits = 8;
   *expected.digits = 12;
-  test_addition(a, b, expected); 
+  test_addition(a, b, expected);
 
   resetBignums(1, 1, 1);
   // 9 + 1 = 10
@@ -539,7 +644,9 @@ int main(void) {
 
   resetBignums(4, 4, 5);
   // multiple overflow (addition)
-  // 0xffffffff_ffffffff_ffffffff_ffffffff + 0xffffffff_ffffffff_ffffffff_ffffffff = 0x1_ffffffff_ffffffff_ffffffff_fffffffe
+  // 0xffffffff_ffffffff_ffffffff_ffffffff +
+  // 0xffffffff_ffffffff_ffffffff_ffffffff =
+  // 0x1_ffffffff_ffffffff_ffffffff_fffffffe
   *a.digits = 0xffffffff;
   *(a.digits + 1) = 0xffffffff;
   *(a.digits + 2) = 0xffffffff;
@@ -553,8 +660,8 @@ int main(void) {
   *(expected.digits + 2) = 0xffffffff;
   *(expected.digits + 3) = 0xffffffff;
   *(expected.digits + 4) = 0x1;
-  test_addition(a,b,expected);
-  
+  test_addition(a, b, expected);
+
   resetBignums(2, 1, 3);
   // addition size overflow
   // 0xffffffff_ffffffff + 0x1 = 0x1_00000000_00000000
@@ -564,8 +671,7 @@ int main(void) {
   *expected.digits = 0x0;
   *(expected.digits + 1) = 0x0;
   *(expected.digits + 2) = 0x1;
-  test_addition(a,b,expected);
-
+  test_addition(a, b, expected);
 
   // TESTS FOR SUBTRACTION
 
@@ -575,7 +681,7 @@ int main(void) {
   *b.digits = 1;
   *expected.digits = 8;
   test_subtraction(a, b, expected);
- 
+
   resetBignums(2, 1, 1);
   // 4294967296 - 1 = 4294967295
   *a.digits = 0;
@@ -594,7 +700,7 @@ int main(void) {
   *expected.digits = 0x0;
   *(expected.digits + 1) = 0x0;
   test_subtraction(a, b, expected);
-  
+
   resetBignums(3, 2, 3);
   // 0xffffffff_ffffffff_ffffffff - 0xffffffff_ffffffff =
   // 0xffffffff_00000000_00000000
@@ -607,7 +713,7 @@ int main(void) {
   *(expected.digits + 1) = 0x0;
   *(expected.digits + 2) = 0xffffffff;
   test_subtraction(a, b, expected);
-  
+
   resetBignums(2, 1, 2);
   // 0x5234ad_94724362 - 0x3abf = 0x5234ad_947208a3
   *a.digits = 0x94724362;
@@ -616,7 +722,7 @@ int main(void) {
   *expected.digits = 0x947208a3;
   *(expected.digits + 1) = 0x5234ad;
   test_subtraction(a, b, expected);
-  
+
   resetBignums(3, 2, 3);
   // 0xadf_ebcfefef_beaaa420 - 0xadcbef_afafef69 = 0xadf_eb222400_0efab4b7
   *a.digits = 0xbeaaa420;
@@ -640,7 +746,7 @@ int main(void) {
   *(expected.digits + 1) = 0xebcfefef;
   *(expected.digits + 2) = 0xade;
   test_subtraction(a, b, expected);
-  
+
   resetBignums(3, 1, 3);
   // //test multiple overflow (subtraction)
   // 0xffffffff_00000000_00000000 - 0x1 =
@@ -654,7 +760,6 @@ int main(void) {
   *(expected.digits + 2) = 0xfffffffe;
   test_subtraction(a, b, expected);
 
-  
   // TEST DIVISION
 
   resetBignums(1, 1, 1);
@@ -663,14 +768,14 @@ int main(void) {
   *b.digits = 5;
   *expected.digits = 409;
   test_division(a, b, 10, expected);
-
+  
   resetBignums(1, 1, 1);
   // 2 / 5 = 0.4 with 32 fraction 
   *a.digits = 2;
   *b.digits = 5;
   *expected.digits = 0x66666666;
   test_division(a, b, 32, expected);
-
+  
   resetBignums(1, 1, 3);
   // 2 / 5 = 0.4 with 96 fraction 
   *a.digits = 2;
@@ -679,7 +784,7 @@ int main(void) {
   *(expected.digits + 1) = 0x66666666;
   *(expected.digits + 2) = 0x66666666;
   test_division(a, b, 96, expected);
-
+  
   resetBignums(1, 1, 2);
   // 5 / 12 = 0.41667 with 64 fraction 
   *a.digits = 5;
@@ -687,7 +792,7 @@ int main(void) {
   *expected.digits = 0xAAAAAAAA;
   *(expected.digits + 1) = 0x6AAAAAAA;
   test_division(a, b, 64, expected);
-
+  
   resetBignums(1, 1, 3);
   // 5 / 12 = 0.41667 with 76 fraction 
   *a.digits = 5;
@@ -696,7 +801,7 @@ int main(void) {
   *(expected.digits + 1) = 0xAAAAAAAA;
   *(expected.digits + 2) = 0x6AA;
   test_division(a, b, 76, expected);
-
+  
   resetBignums(1, 1, 4);
   // 985 / 2378 = 0.41421362 with 128 fraction 
   *a.digits = 985;
@@ -706,7 +811,7 @@ int main(void) {
   *(expected.digits + 2) = 0x7B27D4F0;
   *(expected.digits + 3) = 0x6A09E774;
   test_division(a, b, 128, expected);
-
+  
   resetBignums(1, 1, 8);
   // 985 / 2378 = 0.41421356421 with 256 fraction 
   *a.digits = 985;
@@ -720,21 +825,21 @@ int main(void) {
   *(expected.digits + 6) = 0x7B27D4F0;
   *(expected.digits + 7) = 0x6A09E774;
   test_division(a, b, 256, expected);
-
+  
   resetBignums(1, 1, 1);
   // 985 / 2378 = 0.41421356421 with 32 fraction 
   *a.digits = 985;
   *b.digits = 2378;
   *expected.digits = 0x6A09E774;
   test_division(a, b, 32, expected);
-
+  
   resetBignums(1, 1, 1);
   // 1 / 2 = 0.5 with 7 fraction 
   *a.digits = 1;
   *b.digits = 2;
   *expected.digits = 0x40;
   test_division(a, b, 7, expected);
-
+  
   resetBignums(1, 1, 16);
   // 5741 / 13860 with 512 fraction
   *a.digits = 5741;
@@ -757,9 +862,22 @@ int main(void) {
   *(expected.digits + 15) = 0x6A09E66F;
   test_division(a, b, 512, expected);
 
+  // TEST SHIFT LEFT CONSTANT
+
+  resetBignums(1, 1, 1);
+  *a.digits = 1;
+  *expected.digits = 2;
+  test_shift_left_constant(a, 1, expected);
+  free(b.digits);
+
+  resetBignums(1, 1, 2);
+  *a.digits = 1;
+  *expected.digits = 0;
+  *(expected.digits + 1) = 1;
+  test_shift_left_constant(a, 32, expected);
+  free(b.digits);
 
   // TEST SHIFT LEFT
-
   resetBignums(1, 1, 1);
   *a.digits = 1;
   *expected.digits = 2;
@@ -773,8 +891,155 @@ int main(void) {
   test_shift_left(a, 32, expected);
   free(b.digits);
 
- 
+  resetBignums(1, 1, 2);
+  *a.digits = 0xabcddcba;
+  *expected.digits = 0xdcba0000;
+  *(expected.digits + 1) = 0xabcd;
+  test_shift_left(a, 16, expected);
+  free(b.digits);
 
+  resetBignums(1, 1, 3);
+  *a.digits = 0xabcddcba;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0xdcba0000;
+  *(expected.digits + 2) = 0xabcd;
+  test_shift_left(a, 48, expected);
+  free(b.digits);
+
+  resetBignums(2, 1, 3);
+  *a.digits = 0xabcddcba;
+  *(a.digits + 1) = 0x12344321;
+  *expected.digits = 0xdcba0000;
+  *(expected.digits + 1) = 0x4321abcd;
+  *(expected.digits + 2) = 0x1234;
+  test_shift_left(a, 16, expected);
+  free(b.digits);
+
+  resetBignums(2, 1, 5);
+  *a.digits = 0xabcddcba;
+  *(a.digits + 1) = 0x12344321;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0x0;
+  *(expected.digits + 2) = 0x0;
+  *(expected.digits + 3) = 0xabcddcba;
+  *(expected.digits + 4) = 0x12344321;
+  test_shift_left(a, 96, expected);
+  free(b.digits);
+
+
+  // 0xab5_5f8911dc_c9411d7c << 57 = 15_6abf1223_b992823a_f8000000_00000000
+  resetBignums(3, 1, 5);
+  *a.digits = 0xc9411d7c;
+  *(a.digits + 1) = 0x5f8911dc;
+  *(a.digits + 2) = 0xab5;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0xf8000000;
+  *(expected.digits + 2) = 0xb992823a;
+  *(expected.digits + 3) = 0x6abf1223;
+  *(expected.digits + 4) = 0x15;
+  test_shift_left(a, 57, expected);
+  free(b.digits);
+
+  // 0xfd4f5d67_7d3c2a13_53757828_781787c7_878a787f_8787d87d_78d8d7d8_7a87f87c_87e7eee2
+  // << 123 =
+  // 7ea7aeb_3be9e150_9a9babc1_43c0bc3e_3c3c53c3_fc3c3ec3_ebc6c6be_c3d43fc3_e43f3f77_10000000_00000000_00000000_00000000
+  resetBignums(9, 1, 13);
+  *a.digits = 0x87e7eee2;
+  *(a.digits + 1) = 0x7a87f87c;
+  *(a.digits + 2) = 0x78d8d7d8;
+  *(a.digits + 3) = 0x8787d87d;
+  *(a.digits + 4) = 0x878a787f;
+  *(a.digits + 5) = 0x781787c7;
+  *(a.digits + 6) = 0x53757828;
+  *(a.digits + 7) = 0x7d3c2a13;
+  *(a.digits + 8) = 0xfd4f5d67;
+  *expected.digits = 0x0;
+  *(expected.digits + 1) = 0x0;
+  *(expected.digits + 2) = 0x0;
+  *(expected.digits + 3) = 0x10000000;
+  *(expected.digits + 4) = 0xe43f3f77;
+  *(expected.digits + 5) = 0xc3d43fc3;
+  *(expected.digits + 6) = 0xebc6c6be;
+  *(expected.digits + 7) = 0xfc3c3ec3;
+  *(expected.digits + 8) = 0x3c3c53c3;
+  *(expected.digits + 9) = 0x43c0bc3e;
+  *(expected.digits + 10) = 0x9a9babc1;
+  *(expected.digits + 11) = 0x3be9e150;
+  *(expected.digits + 12) = 0x7ea7aeb;
+  test_shift_left(a, 123, expected);
+  free(b.digits);
+  // TEST SHIFT RIGHT
+
+  resetBignums(1, 1, 1);
+  *a.digits = 8;
+  *expected.digits = 1;
+  test_shift_right(a, 3, expected);
+  free(b.digits);
+
+  // TEST DIVISION 2
+
+  //0x3333 / 0x8acd = 0x0.5
+  resetBignums(1, 1, 1);
+  *a.digits = 0x3333;
+  *b.digits = 0x8acd;
+  *expected.digits = 0x5;
+  expected.fracSize = 4;
+  test_division2(a, b, expected);
+
+  //0x3333 / 0x8acd = 0x0.5e6e_286aea73_7d405f72
+  resetBignums(1, 1, 3);
+  *a.digits = 0x3333;
+  *b.digits = 0x8acd;
+  *expected.digits = 0x7d405f72;
+  *(expected.digits + 1) = 0x286aea73;
+  *(expected.digits + 2) = 0x5e6e;
+  expected.fracSize = 80;
+  test_division2(a, b, expected);
+
+  // 0x11111111_00000001 / 0x1_00000000_00000000 = 0x0.11111111_00000001
+  resetBignums(2, 3, 2);
+  *a.digits = 0x00000001;
+  *(a.digits + 1) = 0x11111111;
+  *b.digits = 0x00000000;
+  *(b.digits + 1) = 0x00000000;
+  *(b.digits + 2) = 0x1;
+  *expected.digits = 0x00000001;
+  *(expected.digits + 1) = 0x11111111;
+  expected.fracSize = 64;
+  test_division2(a, b, expected);
+
+  // 0x289d8_c98e98f8_98a8aaa8_98f98482 / 0x11111111111111111111111111111111 =
+  // 0x0.002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e
+  resetBignums(4,4,16);
+  *a.digits = 0x98f98482;
+  *(a.digits + 1) = 0x98a8aaa8;
+  *(a.digits + 2) = 0xc98e98f8;
+  *(a.digits + 3) = 0x289d8;
+
+  *b.digits = 0x11111111;
+  *(b.digits + 1) = 0x11111111;
+  *(b.digits + 2) = 0x11111111;
+  *(b.digits + 3) = 0x11111111;
+
+  *expected.digits = 0xf69ec39e;
+  *(expected.digits + 1) = 0xf1e1ffe0;
+  *(expected.digits + 2) = 0xcf5af690;
+  *(expected.digits + 3) = 0x002613b3;
+  *(expected.digits + 4) = 0xf69ec39e;
+  *(expected.digits + 5) = 0xf1e1ffe0;
+  *(expected.digits + 6) = 0xcf5af690;
+  *(expected.digits + 7) = 0x002613b3;
+  *(expected.digits + 8) = 0xf69ec39e;
+  *(expected.digits + 9) = 0xf1e1ffe0;
+  *(expected.digits + 10) = 0xcf5af690;
+  *(expected.digits + 11) = 0x002613b3;
+  *(expected.digits + 12) = 0xf69ec39e;
+  *(expected.digits + 13) = 0xf1e1ffe0;
+  *(expected.digits + 14) = 0xcf5af690;
+  *(expected.digits + 15) = 0x002613b3;
+  expected.fracSize = 512;
+  test_division2(a, b, expected); 
+ 
   // print overall resulte
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
   printf("PASSED: %d, FAILED: %d, SUCCESS RATE: %.1f%%\n", test_passed,
