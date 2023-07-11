@@ -23,3 +23,4 @@ struct bignum shiftLeft(struct bignum a, size_t n);
 void shiftLeftInplace(struct bignum* a, size_t n);
 void shiftRight(struct bignum *a, size_t n);
 int compareBigNum(struct bignum a, struct bignum b);
+uint32_t *allocateDigits(size_t number);
