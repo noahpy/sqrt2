@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <immintrin.h>
+#include <emmintrin.h>
+#include <smmintrin.h>
 
 void printBignum(struct bignum *a) {
   printf("size of a: %zu\n", a->size);
@@ -144,7 +146,7 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
 
       __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
       uint32_t lastBlockOverflow;
-      _mm_storeu_si128((__m128i*) &lastBlockOverflow, zw);
+      _mm_storeu_si32(&lastBlockOverflow, zw);
       if (lastBlockOverflow) {
           size_t overflowCount = 4;
           while ((overflowCount) + i < a->size &&
@@ -188,7 +190,7 @@ void additionBignum(struct bignum *a, struct bignum b) {
       perror("Could not calculate new size\n");
       exit(EXIT_FAILURE);
     }
-
+    
     if (!(newDigits = realloc(a->digits, newSize))) {
       fprintf(stderr, "Could not allocate memory\n");
       free(a->digits);
@@ -229,15 +231,17 @@ void subtractionBignumSIMD(struct bignum *a, struct bignum b) {
 
       __m128i sub = _mm_sub_epi32(am, bm);
 
-      __m128i overflow = _mm_cmplt_epi32(am,sub);
+      __m128i pow = _mm_set1_epi32(-2147483648);
+      
+      __m128i amu = _mm_add_epi32(am,pow);
+      __m128i subu = _mm_add_epi32(sub, pow);
+      __m128i overflow = _mm_cmplt_epi32(amu,subu);
 
       overflow = _mm_and_si128 (overflow, ov);
-      _mm_storeu_si128((__m128i*) (a->digits + i), overflow);
-      printBignum(a);
 
       __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
       uint32_t lastBlockOverflow;
-      _mm_storeu_si128((__m128i*) &lastBlockOverflow, zw);
+      _mm_storeu_si32(&lastBlockOverflow, zw);
       if (lastBlockOverflow) {
         size_t overflowCount = 4;
         while (overflowCount + i < a->size &&
