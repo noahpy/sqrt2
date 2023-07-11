@@ -138,8 +138,7 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
     __m128i bm = _mm_loadu_si128((__m128i *)(b.digits + i));
 
     __m128i sum = _mm_add_epi32(am, bm);
-    __m128i overflow =
-        _mm_or_si128(_mm_cmpgt_epi32(am, sum), _mm_cmpgt_epi32(bm, sum));
+    __m128i overflow = _mm_or_si128(_mm_cmpgt_epi32(am, sum), _mm_cmpgt_epi32(bm, sum));
 
     overflow = _mm_and_si128(overflow, ov);
 
@@ -154,7 +153,6 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
             overflowCount++;
           }
       }
-    }
 
     overflow = _mm_slli_si128(overflow, 4);
     sum = _mm_add_epi32(sum, overflow);
@@ -250,7 +248,6 @@ void subtractionBignumSIMD(struct bignum *a, struct bignum b) {
           overflowCount++;
         }
       }
-    }
 
     overflow = _mm_slli_si128(overflow, 4);
     sub = _mm_sub_epi32(sub, overflow);
