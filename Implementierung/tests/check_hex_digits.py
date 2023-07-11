@@ -1,7 +1,7 @@
 import subprocess
 
 
-TEST_RANGE = 100
+TEST_RANGE = 10000
 STEP = 1
 
 counts = []  # Store the count values

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 int test_cases = 0;
 int test_passed = 0;
@@ -59,7 +60,7 @@ void test_print_bignum_hex(struct bignum input, char *expected) {
   // What used to be stdout will now go to the pipe.
   dup2(pipefd[1], fileno(stdout));
 
-  print_bignum_hex(&input);
+  print_bignum_hex(&input, false);
 
   fflush(stdout); // flushall();
   close(pipefd[1]);
