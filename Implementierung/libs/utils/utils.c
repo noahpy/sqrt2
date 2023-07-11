@@ -146,13 +146,23 @@ void print_bignum_dec(struct bignum *num,
   if (num->fracSize) {
     size_t frac_hex = num->fracSize / 4;
     struct bignum multiplier = bignumOfInt(10000);
-    for (size_t i = 0; i < frac_hex; i++) {
-      struct bignum new_result = multiply(result, multiplier);
-      if (i > 0)
+    struct bignum doble_multiplier = bignumOfInt(100000000);
+    struct bignum new_result;
+    while (frac_hex) {
+      if(frac_hex > 2){
+        new_result = multiply(result, doble_multiplier);
+        frac_hex -= 2;
+      }
+      else{
+        new_result = multiply(result, multiplier);
+        frac_hex--;
+      }
+      if (result.digits != num->digits)
         free(result.digits);
       result = new_result;
     }
     free(multiplier.digits);
+    free(doble_multiplier.digits);
     // remove fraction zeros
     shiftRight(&result, result.fracSize);
   }
