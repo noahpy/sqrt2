@@ -6,8 +6,8 @@ import numpy as np
 with open("digit.txt", "r") as f:
     lookup = f.read()
 
-TEST_RANGE = 10000
-STEP = 50
+TEST_RANGE = 1000
+STEP = 5
 
 counts = []  # Store the count values
 iterations = []  # Store the i values

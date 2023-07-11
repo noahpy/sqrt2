@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 
 const char *usage_msg = "Usage: %s [options]   Compute the square root of 2\n";
@@ -114,8 +115,7 @@ bool run_program(int argc, char *argv[]) {
         return false;
       }
       if (decimal_precision <= 0) {
-        fprintf(stderr,
-                "Decimal precision must be greater than zero.\n");
+        fprintf(stderr, "Decimal precision must be greater than zero.\n");
         print_help(progname);
         return false;
       }
@@ -128,8 +128,7 @@ bool run_program(int argc, char *argv[]) {
           return false;
         }
         if (hex_precision <= 0) {
-          fprintf(stderr,
-                  "Hex precision must be greater than zero.\n");
+          fprintf(stderr, "Hex precision must be greater than zero.\n");
           print_help(progname);
           return false;
         }
@@ -155,17 +154,33 @@ bool run_program(int argc, char *argv[]) {
     print_help(progname);
     return false;
   }
-  // TODO: Execute program
+
   struct bignum sqrt2_bignum;
 
-  if (hex_places && !decimal_places) {
-    sqrt2_bignum = sqrt2(hex_to_binary_places(hex_precision));
-    print_bignum_hex(&sqrt2_bignum, hex_precision);
-  } else {
-    sqrt2_bignum = sqrt2(decimal_to_binary_places(decimal_precision));
-    print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision); 
+  if (!timing) {
+    if (hex_places && !decimal_places) {
+      sqrt2_bignum = sqrt2(hex_to_binary_places(hex_precision));
+      print_bignum_hex(&sqrt2_bignum, hex_precision);
+    } else {
+      sqrt2_bignum = sqrt2(decimal_to_binary_places(decimal_precision));
+      print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
+    }
+    free(sqrt2_bignum.digits);
+    return true;
   }
-  free(sqrt2_bignum.digits);
-
+  clock_t start = clock();
+  while(repetitions--){
+    if (hex_places && !decimal_places) {
+      sqrt2_bignum = sqrt2(hex_to_binary_places(hex_precision));
+      print_bignum_hex(&sqrt2_bignum, hex_precision);
+    } else {
+      sqrt2_bignum = sqrt2(decimal_to_binary_places(decimal_precision));
+      print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
+    }
+    free(sqrt2_bignum.digits);
+  }
+  clock_t end = clock();
+  double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
+  printf("Time spent: %fs\n", time_spent);
   return true;
 }
