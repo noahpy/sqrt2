@@ -40,7 +40,7 @@ void test_multiplication(struct bignum a, struct bignum b,
     printf("%08x_", b.digits[j]);
   }
   printf("%08x)", b.digits[0]);
-  struct bignum result = karazubaMultiplication(a, b);
+  struct bignum result = karazubaMultiplicationV2(a, b);
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
       if (result.digits[i] != expected.digits[i]) {

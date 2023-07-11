@@ -18,6 +18,7 @@ void additionBignum(struct bignum *a, struct bignum b);
 void subtractionBignum(struct bignum *a, struct bignum b);
 struct bignum shiftLeftConstant(struct bignum a, size_t n);
 struct bignum karazubaMultiplication(struct bignum, struct bignum);
+struct bignum karazubaMultiplicationV2(struct bignum, struct bignum);
 struct bignum shiftLeft(struct bignum a, size_t n);
 void shiftLeftInplace(struct bignum* a, size_t n);
 void shiftRight(struct bignum *a, size_t n);
