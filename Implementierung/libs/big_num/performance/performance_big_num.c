@@ -17,6 +17,20 @@ void generate_testset(unsigned int seed, size_t n, struct bignum array[], int ma
     }
 }
 
+void generate_ascending(unsigned int seed, size_t n, struct bignum array[], int maxsize) {
+    srand(seed);
+    size_t stepsize = n / maxsize - 1;
+    size_t size = 1;
+    for (size_t i = 1; i < n; i++) {
+        uint32_t *digits = allocateDigits(size);
+        for (size_t j = 0; j < size; j++) {
+            digits[j] = (uint32_t) rand();
+        }
+        array[i] = (struct bignum){digits, size, 0};
+        size += stepsize;
+    }
+}
+
 void sortPairs(size_t n, struct bignum array[], int firstlarge) {
     for (size_t i = 0; i < n; i += 2) {
         if (firstlarge) {
@@ -63,12 +77,12 @@ void freeArray(size_t n, struct bignum array[]) {
 int main () {
     // Inspired by the example from slide 4
     // https://gra.caps.in.tum.de/b/9a48e342ee6b6a950c3b5102a9e18ddc9b5ccb5c750110e8ee507345d263fb6a/v8-0.pdf
-    size_t n_mul = 500;
+    size_t n_mul = 100;
     size_t n_add = 50000;
     size_t n_div = 300;
     struct bignum tests[2 * n_mul];
     printf("%s\n", "Generating test bignums, this may take some time...");
-    generate_testset(1234, 2 * n_mul, tests, 1500);
+    generate_ascending(1234, 2 * n_mul, tests, 50000);
     printf("Running tests for %zu multiplications\n", n_mul);
 
     // Normal Multiplication
@@ -104,7 +118,7 @@ int main () {
             return EXIT_FAILURE;
         }
     }
-    printf("%s\n_mul", "Results are the same.");
+    printf("%s\n", "Results are the same.");
     freeArray(2 * n_mul, tests);
     freeArray(n_mul, results_nmul);
     freeArray(n_mul, results_kmul);
