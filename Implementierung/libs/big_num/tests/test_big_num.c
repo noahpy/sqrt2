@@ -835,6 +835,40 @@ int main(void) {
   *(expected.digits + 10) = 0x1;
   test_addition(a, b, expected, true);
 
+  resetBignums(10, 8, 10);
+  // addition size overflow
+  // 0xffffffff_ffffffff + 0x1 = 0x1_00000000_00000000
+  *a.digits = 0x0;
+  *(a.digits + 1) = 0x0;
+  *(a.digits + 2) = 0x0;
+  *(a.digits + 3) = 0x0;
+  *(a.digits + 4) = 0x0;
+  *(a.digits + 5) = 0x0;
+  *(a.digits + 6) = 0x0;
+  *(a.digits + 7) = 0x0;
+  *(a.digits + 8) = 0x0;
+  *(a.digits + 9) = 0x0;
+  *b.digits = 0x1;
+  *(b.digits + 1) = 0x1;
+  *(b.digits + 2) = 0x1;
+  *(b.digits + 3) = 0x1;
+  *(b.digits + 4) = 0x1;
+  *(b.digits + 5) = 0x1;
+  *(b.digits + 6) = 0x1;
+  *(b.digits + 7) = 0x1;
+  *expected.digits = 0x1;
+  *(expected.digits + 1) = 0x1;
+  *(expected.digits + 2) = 0x1;
+  *(expected.digits + 3) = 0x1;
+  *(expected.digits + 4) = 0x1;
+  *(expected.digits + 5) = 0x1;
+  *(expected.digits + 6) = 0x1;
+  *(expected.digits + 7) = 0x1;
+  *(expected.digits + 8) = 0x0;
+  *(expected.digits + 9) = 0x0;
+  *(expected.digits + 10) = 0x0;
+  test_addition(a, b, expected, true);
+
   // TESTS FOR SUBTRACTION
 
   resetBignums(1, 1, 1);
@@ -947,6 +981,8 @@ int main(void) {
   *(expected.digits + 6) = 0xfffffffe;
   test_subtraction(a, b, expected, false);
 
+  // SUBTRACTION WITH SIMD
+
   resetBignums(1, 1, 1);
   // 9 - 1 = 8
   *a.digits = 9;
@@ -1055,6 +1091,31 @@ int main(void) {
   *(expected.digits + 4) = 0xfffffffe;
   *(expected.digits + 5) = 0xffffffff;
   *(expected.digits + 6) = 0xfffffffe;
+  test_subtraction(a, b, expected, true);
+
+  resetBignums(7, 5, 7);
+  // //test multiple overflow (subtraction)
+  // 0xffffffff_00000000_00000000_00000000_00000000_00000000_00000000 - 0x00000001_00000001_00000001_00000001_00000001 =
+  // 0xfffffffe_ffffffff_ffffffff
+  *a.digits = 0xffffffff;
+  *(a.digits + 1) = 0xffffffff;
+  *(a.digits + 2) = 0xffffffff;
+  *(a.digits + 3) = 0xffffffff;
+  *(a.digits + 4) = 0xffffffff;
+  *(a.digits + 5) = 0xffffffff;
+  *(a.digits + 6) = 0xffffffff;
+  *b.digits = 0x1;
+  *(b.digits + 1) = 0x1;
+  *(b.digits + 2) = 0x1;
+  *(b.digits + 3) = 0x1;
+  *(b.digits + 4) = 0x1;
+  *expected.digits = 0xfffffffe;
+  *(expected.digits + 1) = 0xfffffffe;
+  *(expected.digits + 2) = 0xfffffffe;
+  *(expected.digits + 3) = 0xfffffffe;
+  *(expected.digits + 4) = 0xfffffffe;
+  *(expected.digits + 5) = 0xffffffff;
+  *(expected.digits + 6) = 0xffffffff;
   test_subtraction(a, b, expected, true);
 
   // TEST DIVISION

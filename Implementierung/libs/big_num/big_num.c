@@ -134,8 +134,8 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
   size_t size;
   bool subOverflow = __builtin_usubl_overflow(b.size, 4, &size);
   for (; !subOverflow && i <= size; i += 4) {
-      __m128i am = _mm_loadu_si128((__m128i_u*) (a->digits + i));
-      __m128i bm = _mm_loadu_si128((__m128i_u*) (b.digits + i));
+      __m128i am = _mm_loadu_si128((__m128i*) (a->digits + i));
+      __m128i bm = _mm_loadu_si128((__m128i*) (b.digits + i));
 
       __m128i sum = _mm_add_epi32(am, bm);
       __m128i overflow = _mm_or_si128(_mm_cmpgt_epi32(am, sum), _mm_cmpgt_epi32(bm, sum));
@@ -144,7 +144,7 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
 
       __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
       uint32_t lastBlockOverflow;
-      _mm_storeu_si128((__m128i_u*) &lastBlockOverflow, zw);
+      _mm_storeu_si128((__m128i*) &lastBlockOverflow, zw);
       if (lastBlockOverflow) {
           size_t overflowCount = 4;
           while ((overflowCount) + i < a->size &&
@@ -156,7 +156,7 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
 
       overflow = _mm_slli_si128 (overflow, 4);
       sum = _mm_add_epi32(sum, overflow);
-      _mm_storeu_si128((__m128i_u*) (a->digits + i), sum);
+      _mm_storeu_si128((__m128i*) (a->digits + i), sum);
   }
 
   for (; i < b.size; i++) {
@@ -215,7 +215,7 @@ void additionBignum(struct bignum *a, struct bignum b) {
   }
 }
 
-void subractionBignumSIMD(struct bignum *a, struct bignum b) {
+void subtractionBignumSIMD(struct bignum *a, struct bignum b) {
   int j = 1;
   __m128i ov = _mm_loadu_si32(&j);
   ov = _mm_shuffle_epi32 (ov, _MM_SHUFFLE(0,0,0,0));
@@ -224,17 +224,20 @@ void subractionBignumSIMD(struct bignum *a, struct bignum b) {
   size_t size;
   bool subOverflow = __builtin_usubl_overflow(b.size, 4, &size);
   for (; !subOverflow && i <= size; i += 4) {
-      __m128i am = _mm_loadu_si128((__m128i_u*) (a->digits + i));
-      __m128i bm = _mm_loadu_si128((__m128i_u*) (b.digits + i));
+      __m128i am = _mm_loadu_si128((__m128i*) (a->digits + i));
+      __m128i bm = _mm_loadu_si128((__m128i*) (b.digits + i));
 
-      __m128i sum = _mm_add_epi32(am, bm);
-      __m128i overflow = _mm_or_si128(_mm_cmple_epi32(am, sum), _mm_cmple_epi32(bm, sum));
+      __m128i sub = _mm_sub_epi32(am, bm);
+
+      __m128i overflow = _mm_cmplt_epi32(am,sub);
 
       overflow = _mm_and_si128 (overflow, ov);
+      _mm_storeu_si128((__m128i*) (a->digits + i), overflow);
+      printBignum(a);
 
       __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0,0,0,3));
       uint32_t lastBlockOverflow;
-      _mm_storeu_si128((__m128i_u*) &lastBlockOverflow, zw);
+      _mm_storeu_si128((__m128i*) &lastBlockOverflow, zw);
       if (lastBlockOverflow) {
         size_t overflowCount = 4;
         while (overflowCount + i < a->size &&
@@ -245,8 +248,8 @@ void subractionBignumSIMD(struct bignum *a, struct bignum b) {
       }
 
       overflow = _mm_slli_si128 (overflow, 4);
-      sum = _mm_add_epi32(sum, overflow);
-      _mm_storeu_si128((__m128i_u*) (a->digits + i), sum);
+      sub = _mm_sub_epi32(sub, overflow);
+      _mm_storeu_si128((__m128i*) (a->digits + i), sub);
   }
 
   for (; i < b.size; i++) {
@@ -261,11 +264,18 @@ void subractionBignumSIMD(struct bignum *a, struct bignum b) {
       }
     }
   }
+
+  // Remove leading zeros
+  for (int newSize = a->size - 1; newSize >= -1; newSize--) {
+    if (newSize < 0 || a->digits[newSize] != 0) {
+      a->size = newSize + 1;
+      break;
+    }
+  }
 }
 
 /*Both a and b need to have the same fracSize*/
 void subtractionBignum(struct bignum *a, struct bignum b) {
-
   // Subtract the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
 
