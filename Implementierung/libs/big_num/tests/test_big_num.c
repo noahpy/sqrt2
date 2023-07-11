@@ -365,6 +365,37 @@ int main(void) {
   *(expected.digits + 6) = 0x1;
   test_multiplication(a, b, expected);
 
+    resetBignums(2, 11, 13);
+    // 0xffffffff_ffffffff_ffffffff * 0xffffffff_ffffffff_ffffffff =
+    // 0xffffffff_ffffffff_fffffffe_00000000_00000000_00000001
+    *a.digits = 1;
+    *(a.digits + 1) = 1;
+    *b.digits = 0xffffffff;
+    *(b.digits + 1) = 0xffffffff;
+    *(b.digits + 2) = 0xffffffff;
+    *(b.digits + 3) = 0xffffffff;
+    *(b.digits + 4) = 0xffffffff;
+    *(b.digits + 5) = 0xffffffff;
+    *(b.digits + 6) = 0xffffffff;
+    *(b.digits + 7) = 0xffffffff;
+    *(b.digits + 8) = 0xffffffff;
+    *(b.digits + 9) = 0xffffffff;
+    *(b.digits + 10) = 0xffffffff;
+    *expected.digits = 0xffffffff;
+    *(expected.digits + 1) = 0xfffffffe;
+    *(expected.digits + 2) = 0xffffffff;
+    *(expected.digits + 3) = 0xffffffff;
+    *(expected.digits + 4) = 0xffffffff;
+    *(expected.digits + 5) = 0xffffffff;
+    *(expected.digits + 6) = 0xffffffff;
+    *(expected.digits + 7) = 0xffffffff;
+    *(expected.digits + 8) = 0xffffffff;
+    *(expected.digits + 9) = 0xffffffff;
+    *(expected.digits + 10) = 0xffffffff;
+    *(expected.digits + 11) = 0;
+    *(expected.digits + 12) = 1;
+    test_multiplication(a, b, expected);
+
   resetBignums(3, 6, 9);
   // 0x00000001_00000001_00000001 *
   // 0xffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff =

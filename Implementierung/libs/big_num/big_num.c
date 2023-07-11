@@ -337,7 +337,7 @@ void recKarazubaMultiplication(struct bignum digits, struct bignum x, struct big
         }
     } else {
         if (offset >= x.size || offset >= y.size) {
-            for (size_t i = 0; i < n; i++) {
+            for (size_t i = 0; i < n && 2*offset+i < (x.size + y.size); i++) {
                 digits.digits[2*offset+i] = 0;
             }
         } else {
@@ -448,18 +448,21 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
 
 
 /*int main() {
-    uint32_t first[6], second[3];
+    uint32_t first[8], second[2];
     first[0] = 0xffffffff;
     first[1] = 0xffffffff;
     first[2] = 0xffffffff;
     first[3] = 0xffffffff;
     first[4] = 0xffffffff;
     first[5] = 0xffffffff;
+    first[6] = 0xffffffff;
+    first[7] = 0xffffffff;
     second[0] = 1;
     second[1] = 1;
-    second[2] = 1;
     struct bignum a, b;
-    b = multiplicationBignum((struct bignum) {first, 6}, (struct bignum) {second, 3});
-    a = karazubaMultiplication((struct bignum) {first, 6}, (struct bignum) {second, 3});
+    b = multiplicationBignum((struct bignum) {first, 8}, (struct bignum) {second, 2});
+    a = karazubaMultiplication((struct bignum) {first, 8}, (struct bignum) {second, 2});
+    free(b.digits);
+    free(a.digits);
     return 0;
 }*/
