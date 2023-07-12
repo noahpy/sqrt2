@@ -1,5 +1,7 @@
 #include "matrix_mul.h"
-#include "stdio.h"
+#include "../utils/utils.h"
+#include <stdio.h>
+
 
 // Swaps two bignums
 void swap(struct bignum *a, struct bignum *b) {
@@ -83,7 +85,9 @@ struct cmp_matrix2x2 mulCmpMatrix2x2(struct cmp_matrix2x2 a, struct cmp_matrix2x
 
     //  x  = a.x-1 * b.x + a.x * b.x+1 or a,x * bx-1 + a.x+1 * b.x
     struct bignum x = multiply(a.xm1, b.x);
+    printf("size of x: %zu\n", x.size);
     struct bignum ax_mul_bxp1 = multiply(a.x, b.xp1);
+    printf("size of ax: %zu\n", ax_mul_bxp1.size);
     if (x.size < ax_mul_bxp1.size) swap(&x, &ax_mul_bxp1);
     additionBignum(&x, ax_mul_bxp1);
     free(ax_mul_bxp1.digits);

@@ -92,7 +92,7 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
 
   // Remove leading zeros
   for (int newSize = result.size - 1; newSize >= -1; newSize--) {
-    if (newSize < 0 || result.digits[newSize] != 0) {
+    if (newSize < 1 || result.digits[newSize] != 0) {
       result.size = newSize + 1;
       break;
     }
@@ -108,7 +108,7 @@ void addVectors(struct bignum *a, struct bignum b) {
 
         size_t overflowCount = 2;
         // If there is an addition overflow, increment the third 32bit block
-        if (__builtin_uaddl_overflow(b64, *(uint64_t *)(a->digits + i),
+        if (i < a->size && __builtin_uaddl_overflow(b64, *(uint64_t *)(a->digits + i),
                                      (uint64_t *)(a->digits + i))) {
             while((overflowCount) + i < a->size && __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
                                                                            (a->digits + (overflowCount) + i))){
@@ -164,7 +164,7 @@ void subtractionBignum(struct bignum *a, struct bignum b) {
 
   // Remove leading zeros
   for (int newSize = a->size - 1; newSize >= -1; newSize--) {
-    if (newSize < 0 || a->digits[newSize] != 0) {
+    if (newSize < 1 || a->digits[newSize] != 0) {
       a->size = newSize + 1;
       break;
     }
@@ -415,7 +415,7 @@ struct bignum splitAndAdd(struct bignum a, size_t split) {
         addVectors(&result, most);
 
         // Remove leading zeros
-        while (result.size > 0 && result.digits[result.size - 1] == 0) {
+        while (result.size > 1 && result.digits[result.size - 1] == 0) {
             result.size--;
         }
 
@@ -435,7 +435,7 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
         size_t size = 2;
 
         // Remove leading zeros
-        while (size > 0 && digits[size-1] == 0) {
+        while (size > 1 && digits[size-1] == 0) {
             size--;
         }
         return (struct bignum) {digits, size, 0};
@@ -506,7 +506,7 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
 
         struct bignum result = {digits, x.size + y.size, 0};
         // Remove leading zeros
-        while (result.size > 0 && result.digits[result.size-1] == 0) {
+        while (result.size > 1 && result.digits[result.size-1] == 0) {
             result.size--;
         }
 
