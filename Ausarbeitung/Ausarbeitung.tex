@@ -83,9 +83,9 @@ Im Folgenden wird ein Algorithmus zur schnelleren Berechnung des Produkts erläu
 \subsection{Karazuba-Multiplikation}
 Dank des Karazuba-Algorithmus kann die Laufzeit der Multiplikation auf $\mathcal{O}(n^{1.59})$ verringert werden.
 Dafür werden die zu multiplizierenden Zahlen in die Form $a_0+a_1*2^m$ gebracht, wobei $a_0$ und $a_1$ maximal die größe $\lceil\frac{n}{2}\rceil$ haben.
-Durch folgende Umformung kann $a*b$ mit nur noch drei $\lceil\frac{n}{2}\rceil$ großen Multiplikationen und 6 zu vernachlässigenden Additionen/Subtraktionen und einigen shifts ermittelt werden:
+Durch folgende Umformung kann $ab$ mit nur noch drei $\lceil\frac{n}{2}\rceil$ großen Multiplikationen und 6 zu vernachlässigenden Additionen/Subtraktionen und einigen shifts ermittelt werden:
 \begin{align*}
-a * b &= (a_0+2^ma_1) * (b_0+2^mb_1)\\
+a b &= (a_0+2^ma_1) (b_0+2^mb_1)\\
       &= a_0b_0 + 2^ma_0a_1 + 2^ma_1b_0 + 2^m2^ma_1b_2\\
       &= a_0b_0 + 2^m(\mathbf{a_0a_1 + a_1b_0}) + 2^{2m}a_1b_1\\
       &= a_0b_0 + 2^m(\mathbf{a_0a_1 + a_1b_0 + a_0b_0 + a_1b_1} - a_0b_0 - a_1b_1) + 2^{2m}a_1b_1\\
