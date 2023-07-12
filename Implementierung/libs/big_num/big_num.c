@@ -260,7 +260,12 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
     }
     return newBigNum;
   }
-  for (size_t i = a.size - 1; i < a.size; i--) {
+  if(newBigNum.size == 1){
+    newBigNum.digits[0] = lastBlock << n;
+    return newBigNum;
+  }
+  newBigNum.digits[blockShifts + a.size - 1] = lastBlock << n;
+  for (size_t i = a.size - 2; i < a.size; i--) {
     uint64_t tmp = a.digits[i];
     *(uint64_t *)(newBigNum.digits + i + blockShifts) += tmp << n;
   }
