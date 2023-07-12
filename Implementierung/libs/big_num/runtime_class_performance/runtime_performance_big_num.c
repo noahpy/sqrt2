@@ -1,20 +1,22 @@
+#include <stddef.h>
 #include <time.h>
 #include <stdio.h>
 #include "../../mat_fast_exp.h"
 
 uint32_t *allocateDigits(size_t number);
 
-void generate_testset(unsigned int seed, size_t n, struct bignum array[]) {
+void generate_testset(unsigned int seed, size_t n, struct bignum array[], size_t points) {
     srand(seed);
-    for (size_t i = 0; i < n; i=+2) {
-        uint32_t *digits1 = allocateDigits(i);
-        uint32_t *digits2 = allocateDigits(i);
-        for (size_t j = 0; j < i; j++) {
+    
+    for (size_t i = 0; i < points*2; i=i+2) {
+        uint32_t *digits1 = allocateDigits((i/2) * n/points);
+        uint32_t *digits2 = allocateDigits((i/2) * n/points);
+        for (size_t j = 0; j < (i/2) * n/points; j++) {
             digits1[j] = (uint32_t) rand();
             digits2[j] = (uint32_t) rand();
         }
-        array[i] = (struct bignum){digits1, i, 0};
-        array[i+1] = (struct bignum){digits2, i, 0};
+        array[i] = (struct bignum){digits1, (i/2) * n/points, 0};
+        array[i+1] = (struct bignum){digits2, (i/2) * n/points, 0};
     }
 }
 
@@ -63,43 +65,54 @@ void freeArray(size_t n, struct bignum array[]) {
 
 // argv[0]: iterations
 // argv[1]: maxSize
-int main(int argc, char *argv[]) {
-  int iterations = *argv[1] - '0';
-  int maxSize = *argv[2] - '0';
-  printf("hello\n");
-  uint32_t *digits1 = allocateDigits(maxSize);
-  uint32_t *digits2 = allocateDigits(maxSize);
-  for (size_t j = 0; j < maxSize; j++) {
-      digits1[j] = (uint32_t) rand();
-      digits2[j] = (uint32_t) rand();
-  }
-  struct bignum a = (struct bignum){digits1, maxSize, 0};
-  struct bignum b = (struct bignum){digits2, maxSize, 0};
-  for (int i = 0; i < iterations; i++) {
-    multiplicationBignum(a, b);
-  }
-}
-
-// int main () {
-//     // Inspired by the example from slide 4
-//     // https://gra.caps.in.tum.de/b/9a48e342ee6b6a950c3b5102a9e18ddc9b5ccb5c750110e8ee507345d263fb6a/v8-0.pdf
-//     size_t n_mul = 100;
-//     struct bignum tests[2 * n_mul];
-//     printf("%s\n", "Generating test bignums, this may take some time...");
-//     generate_testset(1234, 2 * n_mul, tests);
-//     printf("Running tests for %zu multiplications\n", n_mul);
-//
-//     for (size_t i = 0; i < 2 * n_mul; i += 2) {
-//       // Normal Multiplication
-//       struct bignum results_nmul[n_mul];
-//       struct timespec start_nmul;
-//       clock_gettime(CLOCK_MONOTONIC, &start_nmul);
-//       results_nmul[i/2] = multiplicationBignum(tests[i], tests[i+1]);
-//       struct timespec end_nmul;
-//       clock_gettime(CLOCK_MONOTONIC, &end_nmul);
-//       double time_nmul = end_nmul.tv_sec - start_nmul.tv_sec + 1e-9 * (end_nmul.tv_nsec - start_nmul.tv_nsec);
-//       printf("Normal multiplication with size %ld took %f seconds.\n", i/2, time_nmul);
-//     }
-//
-//     freeArray(2 * n_mul, tests);
+// int main(int argc, char *argv[]) {
+//   int iterations = *argv[1] - '0';
+//   int maxSize = *argv[2] - '0';
+//   printf("hello\n");
+//   uint32_t *digits1 = allocateDigits(maxSize);
+//   uint32_t *digits2 = allocateDigits(maxSize);
+//   for (size_t j = 0; j < maxSize; j++) {
+//       digits1[j] = (uint32_t) rand();
+//       digits2[j] = (uint32_t) rand();
+//   }
+//   struct bignum a = (struct bignum){digits1, maxSize, 0};
+//   struct bignum b = (struct bignum){digits2, maxSize, 0};
+//   struct bignum c;
+//   for (int i = 0; i < iterations; i++) {
+//     c = multiplicationBignum(a, b);
+//   }
+//   free(c.digits);
+//   free(a.digits);
+//   free(b.digits);
 // }
+
+int main () {
+    // Inspired by the example from slide 4
+    // https://gra.caps.in.tum.de/b/9a48e342ee6b6a950c3b5102a9e18ddc9b5ccb5c750110e8ee507345d263fb6a/v8-0.pdf
+    size_t iterations = 5;
+    size_t n_mul = 10000;
+    size_t points = 6;
+    struct bignum tests[2 * points];
+    printf("%s\n", "Generating test bignums, this may take some time...");
+    generate_testset(1234, 2 * n_mul, tests, points);
+    printf("Running tests for %zu multiplications\n", n_mul);
+    struct bignum results_nmul[n_mul];
+
+    for (size_t i = 0; i < 2 * points; i += 2) {
+      // Normal Multiplication
+      struct timespec start_nmul;
+      clock_gettime(CLOCK_MONOTONIC, &start_nmul);
+
+      for (size_t j = 0; j < iterations; j++) {
+        results_nmul[i/2] = multiplicationBignum(tests[i], tests[i+1]);
+        // additionBignum(&tests[i], tests[i+1]);
+      }
+
+      struct timespec end_nmul;
+      clock_gettime(CLOCK_MONOTONIC, &end_nmul);
+      double time_nmul = end_nmul.tv_sec - start_nmul.tv_sec + 1e-9 * (end_nmul.tv_nsec - start_nmul.tv_nsec);
+      printf("Normal multiplication with size %ld took %f seconds.\n", i/2, time_nmul);
+    }
+
+    freeArray(2 * points, tests);
+}
