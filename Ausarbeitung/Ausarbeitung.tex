@@ -20,25 +20,16 @@
 
 \section{Einleitung} \label{sec:einleitung}
 
-Verwendung von Wurzel 2:
-\begin{itemize}
-  \item Das verhältnis der beiden seitenlängen eines blattes im din-a-format beträgt 1 / sqrt(2) mit rundung auf 
-        ganze millimeter. Dadurch ist sichergestellt, dass bei halbierung des blattes entlang der längeren seite wieder 
-        ein blatt im din-a-format (mit um eins erhöhter nummerierung) entsteht.
-  \item Die wurzel aus 2 ist das frequenzverhältnis zweier töne in der musik bei gleichschwebender stimmung, die einen tritonus, 
-        also eine halbe oktave bilden.
-  \item In der elektrotechnik enthält die beziehung zwischen scheitelwert und effektivwert von sinusförmiger wechselspannung ebenfalls die konstante 
-        sqrt(2).
-\end{itemize}
+Schon im 1800 Jahrhundert v. Chr. beschäftigten sich die Babylonier mit der Quadratwurzel aus zwei. Mit $\tfrac {30547}{21600} = 1,\textbf{41421}2962\dots$ schafften sie eine Näherung, die nur
+ab der fünften Nachkommastelle vom eigentlichen Ergebnis abweichte \cite{quadratwurzel_aus_2}. Außerdem schafften sie es, mit dem Beweis der Irrationalität der Wurzel aus 2, den ersten Beweis 
+dieser Art aufzustellen, der abseits von Intuition, eine Überlegung und genaue Beweisführung erforderte \cite{lemonde_wurzel_2}. \par
 
-Geschichte über Näherung der Wurzel:
-\begin{itemize}
-  \item Die alten Inder schätzen $\sqrt{2} \approx \tfrac {577}{408} = 1,414215686$… . Stimmt auf 5 Nachkommastellen. Abweichung beträgt nur +0,0001502 Prozent.
-  \item Babylonier aus 1800 v. Chr.: $\tfrac {30547}{21600} = 1,414212962$… . Abweichung von -0,0000424 Prozent.
-\end{itemize}
+Der Nutzen der bekanntesten irrationalen Zahl ist heute im Alltag weitreichend. So ist beim internationalen Standard für Papierformate das Seitenverhältnis stets $\frac{1}{\sqrt{2}}$ \cite{papierformat}. 
+Dies hat zur Folge, dass beim Halbieren "des Blattes entlang der längeren Seite wieder ein Blatt im DIN-A-Format [...] entsteht" \cite{quadratwurzel_aus_2}. \par
 
-Möglichkeit, $\sqrt{2}$ mit einer unendlichen Präzision zu berechnen. Vorwegnahme: Bignums, Newton-Raphson-Division, Karazuba, Matrixexponentiation. \\
-(0,75 Seiten)
+In dieser Arbeit werden wir uns damit beschäftigen, wie man eine beliebige Anzahl an Nachkommastellen aus der Quadratwurzel aus zwei berechnet. Zu Beginn setzen wir uns dafür damit auseinander, 
+wie man Zahlen mit beliebiger Größe speichern kann und arithmetische Operationen ausführen kann. Als nächstes wird beleuchtet, wie wir mithilfe von Matrizen und der schnellen Exponentiation
+an den Wert von $\sqrt{2}$ approximieren. Es wird erläutert, wie genau die Endergebnisse sind und zum Schluss wird die Performanz des Programms mithilfe von Vergleichsimplementierungen bewertet.
 
 \section{Lösungsansatz} \label{sec:loesungsansatz}
 \subsection{Big-Num} \label{sec:bignum}
