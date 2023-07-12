@@ -929,7 +929,7 @@ int main(void) {
   *(expected.digits + 1) = 0;
   test_subtraction(a, b, expected);
 
-  resetBignums(2, 2, 0);
+  resetBignums(2, 2, 1);
   // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
   *a.digits = 0x13214ab1;
   *(a.digits + 1) = 0x13214ab1;

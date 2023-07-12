@@ -104,12 +104,10 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
 void addVectors(struct bignum *a, struct bignum b) {
     // Add the 32bit blocks of b to the corresponding blocks of a
     for (size_t i = 0; i < b.size; i++) {
-        uint64_t b64 = (uint64_t) b.digits[i];
-
-        size_t overflowCount = 2;
+        size_t overflowCount = 1;
         // If there is an addition overflow, increment the third 32bit block
-        if (i < a->size && __builtin_uaddl_overflow(b64, *(uint64_t *)(a->digits + i),
-                                     (uint64_t *)(a->digits + i))) {
+        if (i < a->size && __builtin_uadd_overflow(b.digits[i], *(a->digits + i),
+                                     (a->digits + i))) {
             while((overflowCount) + i < a->size && __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
                                                                            (a->digits + (overflowCount) + i))){
                 overflowCount++;
