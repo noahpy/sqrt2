@@ -1,5 +1,6 @@
 #include <time.h>
 #include <stdio.h>
+#include <string.h>
 #include "../mat_fast_exp.h"
 
 int compareBignum(struct bignum a, struct bignum b) {
@@ -17,11 +18,28 @@ void freeResults(size_t n, struct matrix2x2 normal[], struct cmp_matrix2x2 compa
     }
 }
 
+// Source: https://gra.caps.in.tum.de/material/ERA_Blatt_07_Lsg.pdf
+static void write_file(const char *path, const char *string) {
+    // Write the string to the file specified by path.
+    FILE *file;
+    if (!(file = fopen(path, "w"))) {
+        perror("Error opening file");
+        return;
+    }
+
+    const size_t stringlen = strlen(string);
+    if (fwrite(string, 1, stringlen, file) != stringlen) {
+        fprintf(stderr, "Error writing to file\n");
+    }
+    fclose(file);
+}
+
 int main () {
     // Inspired by the example from slide 4
     // https://gra.caps.in.tum.de/b/9a48e342ee6b6a950c3b5102a9e18ddc9b5ccb5c750110e8ee507345d263fb6a/v8-0.pdf
-    size_t n = 10000;
-    size_t stepsize = 5;
+    size_t n = 10001;
+    size_t iterations = 1000;
+    size_t stepsize = 200;
     printf("Running tests for matrix exponentiation for n up to %zu in steps of size %zu: %zu exponentiation in total\n", n, stepsize, n / stepsize);
 
     struct matrix2x2 results_normal[n/stepsize];
@@ -63,5 +81,46 @@ int main () {
     }
     printf("%s\n", "Results are the same.");
     freeResults(n / stepsize, results_normal, results_cmp);
+
+    printf("%s\n", "Generating benchmark results");
+    printf("This will take about %f seconds, because there are %zu iterations\n", iterations * (time_normal + time_cmp),
+            iterations);
+    struct timespec start;
+    struct timespec end;
+    char results[sizeof (char ) * 25 * (n / stepsize)];
+    char converter[100];
+    results[0] = 0;
+    for (size_t i = 0; i < n / stepsize; i++) {
+        // Add n size
+        sprintf(converter, "%zu", i * stepsize);
+        strcat(results, converter);
+
+        // Calculate normal
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        for (size_t j = 0; j < iterations; j++) {
+            struct matrix2x2 base = {bignumOfInt(0), bignumOfInt(1), bignumOfInt(1), bignumOfInt(2)};
+            free2x2(powMatrix2x2(base, i * stepsize, multiplicationBignum));
+        }
+        clock_gettime(CLOCK_MONOTONIC, &end);
+
+        // Add normal average
+        double avg = (end.tv_sec - start.tv_sec + 1e-9 * (end.tv_nsec - start.tv_nsec));
+        sprintf(converter, ";%f", avg);
+        strcat(results, converter);
+
+        // Calculate normal
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        for (size_t j = 0; j < iterations; j++) {
+            struct cmp_matrix2x2 base = {bignumOfInt(0), bignumOfInt(1), bignumOfInt(2)};
+            freeCmp2x2(powCmpMatrix2x2(base, i * stepsize, multiplicationBignum));
+        }
+        clock_gettime(CLOCK_MONOTONIC, &end);
+
+        // Add compact average
+        avg = (end.tv_sec - start.tv_sec + 1e-9 * (end.tv_nsec - start.tv_nsec));
+        sprintf(converter, ";%f\n", avg);
+        strcat(results, converter);
+    }
+    write_file("results.csv", results);
     return EXIT_SUCCESS;
 }
