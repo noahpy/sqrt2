@@ -414,7 +414,13 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
     newBigNum.digits[0] = lastBlock << n;
     return newBigNum;
   }
-  newBigNum.digits[blockShifts + a.size - 1] = lastBlock << n;
+  if(a.size-1+blockShifts == newBigNum.size-1){
+    newBigNum.digits[newBigNum.size-1] = lastBlock << n;
+  }
+  else{
+    newBigNum.digits[newBigNum.size-1] = lastBlock >> (32-n);
+    newBigNum.digits[newBigNum.size-2] = lastBlock << n;
+  }
   for (size_t i = a.size - 2; i < a.size; i--) {
     uint64_t tmp = a.digits[i];
     *(uint64_t *)(newBigNum.digits + i + blockShifts) += tmp << n;

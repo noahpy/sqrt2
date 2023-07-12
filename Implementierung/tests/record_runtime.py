@@ -8,9 +8,9 @@ plt.ion()  # Enable interactive mode
 
 fig, ax = plt.subplots()
 
-TEST_RANGE = 10000
-STEP = 10
-ITERATION = 100
+TEST_RANGE = 100000
+STEP = 1000
+ITERATION = 10
 
 times = []  # Store the count values
 precisions = []  # Store the i values
@@ -47,6 +47,7 @@ for i in range(1, TEST_RANGE + 1, STEP):
     ax.legend()
     plt.draw()
     plt.pause(0.001)
+    print(f"Done {(i / (TEST_RANGE-STEP) * 100):.2f}%", end="\r", flush=True)
 
 file_name = "runtime_graph.png"
 if len(sys.argv) >= 2:
