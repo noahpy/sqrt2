@@ -172,13 +172,16 @@ bool run_program(int argc, char *argv[]) {
   while(repetitions--){
     if (hex_places && !decimal_places) {
       sqrt2_bignum = sqrt2(hex_to_binary_places(hex_precision));
-      print_bignum_hex(&sqrt2_bignum, hex_precision);
     } else {
       sqrt2_bignum = sqrt2(decimal_to_binary_places(decimal_precision));
-      print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
     }
-    free(sqrt2_bignum.digits);
   }
+  if (hex_places && !decimal_places) {
+    print_bignum_hex(&sqrt2_bignum, hex_precision);
+  } else {
+    print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
+  }
+  free(sqrt2_bignum.digits);
   clock_t end = clock();
   double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
   printf("Time spent: %fs\n", time_spent);
