@@ -1,6 +1,7 @@
 
 #include "../utils/utils.h"
 #include <errno.h>
+#include <immintrin.h>
 #include <stdbool.h>
 #include <stddef.h> // do we need that?
 #include <stdint.h>
@@ -101,19 +102,101 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   return result;
 }
 
-void addVectors(struct bignum *a, struct bignum b) {
-    // Add the 32bit blocks of b to the corresponding blocks of a
-    for (size_t i = 0; i < b.size; i++) {
-        size_t overflowCount = 1;
-        // If there is an addition overflow, increment the third 32bit block
-        if (i < a->size && __builtin_uadd_overflow(b.digits[i], *(a->digits + i),
-                                     (a->digits + i))) {
-            while((overflowCount) + i < a->size && __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
-                                                                           (a->digits + (overflowCount) + i))){
-                overflowCount++;
-            }
-        }
+void additionBignumSIMD(struct bignum *a, struct bignum b) {
+  size_t newSize;
+  uint32_t overflowCheck;
+  uint32_t *newDigits;
+
+  // check if extra space is needed
+  if (__builtin_uadd_overflow(a->digits[a->size - 1], b.digits[b.size - 1],
+                              &overflowCheck)) {
+    a->size++;
+    if (__builtin_umull_overflow(a->size, sizeof(*a->digits), &newSize)) {
+      perror("Could not calculate new size\n");
+      exit(EXIT_FAILURE);
     }
+
+    if (!(newDigits = realloc(a->digits, newSize))) {
+      fprintf(stderr, "Could not allocate memory\n");
+      free(a->digits);
+      exit(EXIT_FAILURE);
+    }
+    a->digits = newDigits;
+    a->digits[a->size - 1] = 0;
+  }
+
+  // load constant '1' into all doublewords
+  int j = 1;
+  __m128i ov = _mm_loadu_si32(&j);
+  ov = _mm_shuffle_epi32(ov, _MM_SHUFFLE(0, 0, 0, 0));
+
+  // calculate loopcounter for simd
+  size_t i = 0;
+  size_t size;
+  bool subOverflow = __builtin_usubl_overflow(b.size, 4, &size);
+  for (; !subOverflow && i <= size; i += 4) {
+    // calculate the sum of doublewords
+    __m128i am = _mm_loadu_si128((__m128i *)(a->digits + i));
+    __m128i bm = _mm_loadu_si128((__m128i *)(b.digits + i));
+
+    __m128i sum = _mm_add_epi32(am, bm);
+
+    // check in which doublewords there is an overflow
+    __m128i overflow =
+        _mm_or_si128(_mm_cmpgt_epi32(am, sum), _mm_cmpgt_epi32(bm, sum));
+
+    overflow = _mm_and_si128(overflow, ov);
+
+    // if there is an overflow in the highest block, add the overflow sequential
+    __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0, 0, 0, 3));
+    uint32_t lastBlockOverflow;
+    _mm_storeu_si32(&lastBlockOverflow, zw);
+    if (lastBlockOverflow) {
+      size_t overflowCount = 4;
+      while ((overflowCount) + i < a->size &&
+             __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
+                                     (a->digits + (overflowCount) + i))) {
+        overflowCount++;
+      }
+    }
+
+    // add overflow to the result and store variable
+    overflow = _mm_slli_si128(overflow, 4);
+    sum = _mm_add_epi32(sum, overflow);
+    _mm_storeu_si128((__m128i *)(a->digits + i), sum);
+  }
+
+  // do the last computations without simd
+  for (; i < b.size; i++) {
+    uint64_t b64 = (uint64_t)b.digits[i];
+
+    size_t overflowCount = 2;
+    // If there is an addition overflow, increment the third 32bit block
+    if (__builtin_uaddl_overflow(b64, *(uint64_t *)(a->digits + i),
+                                 (uint64_t *)(a->digits + i))) {
+      while ((overflowCount) + i < a->size &&
+             __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
+                                     (a->digits + (overflowCount) + i))) {
+        overflowCount++;
+      }
+    }
+  }
+}
+
+void addVectors(struct bignum *a, struct bignum b) {
+  // Add the 32bit blocks of b to the corresponding blocks of a
+  for (size_t i = 0; i < b.size; i++) {
+    size_t overflowCount = 1;
+    // If there is an addition overflow, increment the third 32bit block
+    if (i < a->size && __builtin_uadd_overflow(b.digits[i], *(a->digits + i),
+                                               (a->digits + i))) {
+      while ((overflowCount) + i < a->size &&
+             __builtin_uadd_overflow(1, *(a->digits + (overflowCount) + i),
+                                     (a->digits + (overflowCount) + i))) {
+        overflowCount++;
+      }
+    }
+  }
 }
 
 
@@ -142,9 +225,76 @@ void additionBignum(struct bignum *a, struct bignum b) {
   addVectors(a, b);
 }
 
+void subtractionBignumSIMD(struct bignum *a, struct bignum b) {
+  // load constant '1' into all doublewords
+  int j = 1;
+  __m128i ov = _mm_loadu_si32(&j);
+  ov = _mm_shuffle_epi32(ov, _MM_SHUFFLE(0, 0, 0, 0));
+
+  // compute loop counter
+  size_t i = 0;
+  size_t size;
+  bool subOverflow = __builtin_usubl_overflow(b.size, 4, &size);
+  for (; !subOverflow && i <= size; i += 4) {
+    // calculate subtraction
+    __m128i am = _mm_loadu_si128((__m128i *)(a->digits + i));
+    __m128i bm = _mm_loadu_si128((__m128i *)(b.digits + i));
+
+    __m128i sub = _mm_sub_epi32(am, bm);
+
+    // check for overflow in each doubleword
+    __m128i pow = _mm_set1_epi32(-2147483648);
+    __m128i amu = _mm_add_epi32(am, pow);
+    __m128i subu = _mm_add_epi32(sub, pow);
+    __m128i overflow = _mm_cmplt_epi32(amu, subu);
+
+    overflow = _mm_and_si128(overflow, ov);
+
+    // if there is an overflow in the highest block, subtract the overflow
+    // sequential
+    __m128i zw = _mm_shuffle_epi32(overflow, _MM_SHUFFLE(0, 0, 0, 3));
+    uint32_t lastBlockOverflow;
+    _mm_storeu_si32(&lastBlockOverflow, zw);
+    if (lastBlockOverflow) {
+      size_t overflowCount = 4;
+      while (overflowCount + i < a->size &&
+             __builtin_usub_overflow(*(a->digits + (overflowCount) + i), 1,
+                                     (a->digits + (overflowCount) + i))) {
+        overflowCount++;
+      }
+    }
+
+    // subtract the overflows and store result
+    overflow = _mm_slli_si128(overflow, 4);
+    sub = _mm_sub_epi32(sub, overflow);
+    _mm_storeu_si128((__m128i *)(a->digits + i), sub);
+  }
+
+  // do the rest without simd
+  for (; i < b.size; i++) {
+    size_t overflowCount = 1;
+    // If there is an subtraction overflow, decrement the third 32bit block
+    if (__builtin_usub_overflow(*(a->digits + i), *(b.digits + i),
+                                (a->digits + i))) {
+      while (overflowCount + i < a->size &&
+             __builtin_usub_overflow(*(a->digits + (overflowCount) + i), 1,
+                                     (a->digits + (overflowCount) + i))) {
+        overflowCount++;
+      }
+    }
+  }
+
+  // Remove leading zeros
+  for (int newSize = a->size - 1; newSize >= -1; newSize--) {
+    if (newSize < 0 || a->digits[newSize] != 0) {
+      a->size = newSize + 1;
+      break;
+    }
+  }
+}
+
 /*Both a and b need to have the same fracSize*/
 void subtractionBignum(struct bignum *a, struct bignum b) {
-
   // Subtract the 32bit blocks of b to the corresponding blocks of a
   for (size_t i = 0; i < b.size; i++) {
 
@@ -260,7 +410,7 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
     }
     return newBigNum;
   }
-  if(newBigNum.size == 1){
+  if (newBigNum.size == 1) {
     newBigNum.digits[0] = lastBlock << n;
     return newBigNum;
   }
@@ -384,145 +534,145 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
     if (a->digits[newSize] != 0) {
       a->size = newSize + 1;
       break;
-     }
-   }
- }
-
-
+    }
+  }
+}
 
 struct bignum splitAndAdd(struct bignum a, size_t split) {
-    if (a.size <= split) {
-        // Return a copy of a
-        uint32_t *digits = allocateDigits(a.size);
-        for (size_t i = 0; i < a.size; i++) {
-            digits[i] = a.digits[i];
-        }
-        return (struct bignum) {digits, a.size, 0};
-    } else {
-        // Copy the least significant bits into a bignum and add a zero, so that result.size >= a.size-split
-        // (Important for the addition, the first bignum must be larger or equal)
-        uint32_t *digits = allocateDigits(split+2);
-        for (size_t i = 0; i < split; i++) {
-            digits[i] = a.digits[i];
-        }
-        digits[split] = digits[split+1] = 0;
-
-        struct bignum result = {digits, split+2, 0};
-
-        // Shift the most significant bits to the right place
-        struct bignum most = a;
-        most.size -= split;
-        most.digits += split;
-
-        // Add the most significant
-        addVectors(&result, most);
-
-        // Remove leading zeros
-        while (result.size > 1 && result.digits[result.size - 1] == 0) {
-            result.size--;
-        }
-
-        return result;
+  if (a.size <= split) {
+    // Return a copy of a
+    uint32_t *digits = allocateDigits(a.size);
+    for (size_t i = 0; i < a.size; i++) {
+      digits[i] = a.digits[i];
     }
+    return (struct bignum){digits, a.size, 0};
+  } else {
+    // Copy the least significant bits into a bignum and add a zero, so that
+    // result.size >= a.size-split (Important for the addition, the first bignum
+    // must be larger or equal)
+    uint32_t *digits = allocateDigits(split + 2);
+    for (size_t i = 0; i < split; i++) {
+      digits[i] = a.digits[i];
+    }
+    digits[split] = digits[split + 1] = 0;
+
+    struct bignum result = {digits, split + 2, 0};
+
+    // Shift the most significant bits to the right place
+    struct bignum most = a;
+    most.size -= split;
+    most.digits += split;
+
+    // Add the most significant
+    addVectors(&result, most);
+
+    // Remove leading zeros
+    while (result.size > 1 && result.digits[result.size - 1] == 0) {
+      result.size--;
+    }
+
+    return result;
+  }
 }
 
 struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
-    if (x.size == 0 || y.size == 0) {
-        // If one of the factors is zero, return zero
-        // The NULL pointer can always be freed;
-        return (struct bignum) {NULL, 1, 0};
-    } else if (x.size <= 4 && y.size <= 4) {
-        return multiplicationBignum(x, y);
-        //base case
-        /* uint32_t *digits = allocateDigits(2); */
-        /* ((uint64_t *) digits)[0] = (uint64_t) x.digits[0] * y.digits[0]; */
-        /* size_t size = 2; */
-        /*  */
-        /* // Remove leading zeros */
-        /* while (size > 1 && digits[size-1] == 0) { */
-        /*     size--; */
-        /* } */
-        /* return (struct bignum) {digits, size, 0}; */
-    } else {
-        // the maximum result size is x.size + y.size
-        uint32_t *digits = allocateDigits(x.size + y.size);
+  if (x.size == 0 || y.size == 0) {
+    // If one of the factors is zero, return zero
+    // The NULL pointer can always be freed;
+    return (struct bignum){NULL, 1, 0};
+  } else if (x.size <= 4 && y.size <= 4) {
+    return multiplicationBignum(x, y);
+    // base case
+    /* uint32_t *digits = allocateDigits(2); */
+    /* ((uint64_t *) digits)[0] = (uint64_t) x.digits[0] * y.digits[0]; */
+    /* size_t size = 2; */
+    /*  */
+    /* // Remove leading zeros */
+    /* while (size > 1 && digits[size-1] == 0) { */
+    /*     size--; */
+    /* } */
+    /* return (struct bignum) {digits, size, 0}; */
+  } else {
+    // the maximum result size is x.size + y.size
+    uint32_t *digits = allocateDigits(x.size + y.size);
 
-        // Swap if necessary, so that x.size >= y.size
-        if (x.size < y.size) {
-            struct bignum tmp = x;
-            x = y;
-            y = tmp;
-        }
-
-        // Select the split size by the largest factor and divide into m and most significant bits
-        // x = x0 + x1 * 2^m, y = y0 + y1 * 2^m
-        size_t m = x.size / 2;
-
-        // Calculate x0y0 and x1y1 recursive
-        struct bignum x0 = x;
-        x0.size = m;
-        struct bignum y0 = y;
-        y0.size = y.size < m ? y.size : m;
-        struct bignum x0y0 = karazubaMultiplication(x0, y0);
-
-        struct bignum x1y1;
-        if (y.size <= m) {
-            // x1y1 will be zero
-            x1y1 = (struct bignum) {NULL, 0, 0};
-        } else {
-            struct bignum x1 = x;
-            x1.size = x.size - m;
-            x1.digits += m;
-            struct bignum y1 = y;
-            y1.size = y.size - m;
-            y1.digits += m;
-            x1y1 = karazubaMultiplication(x1, y1);
-        }
-
-        //Copy the results of x0y0 and x1y1 into digits
-        for (size_t i = 0; i < 2 * m; i++) {
-            if (i < x0y0.size) {
-                digits[i] = x0y0.digits[i];
-            } else {
-                digits[i] = 0;
-            }
-        }
-        for (size_t i = 0; i + 2 * m < x.size + y.size; i++) {
-            if (i < x1y1.size) {
-                digits[i + 2 * m] = x1y1.digits[i];
-            } else {
-                digits[i + 2 * m] = 0;
-            }
-        }
-
-        // Calculate (x0+x1) * (y0+y1)
-        struct bignum x0x1 = splitAndAdd(x, m);
-        struct bignum y0y1 = splitAndAdd(y, m);
-
-        struct bignum middle_value = karazubaMultiplication(x0x1, y0y1);
-
-        // Subtract x0y0 and x1y1 from middle value and add the result at 2^m
-        subtractionBignum(&middle_value, x0y0);
-        subtractionBignum(&middle_value, x1y1);
-
-        struct bignum offset = (struct bignum) {digits + m, (x.size + y.size) - m, 0};
-        addVectors(&offset, middle_value);
-
-        struct bignum result = {digits, x.size + y.size, 0};
-        // Remove leading zeros
-        while (result.size > 1 && result.digits[result.size-1] == 0) {
-            result.size--;
-        }
-
-        // Free heap bignums
-        free(x0y0.digits);
-        free(x1y1.digits);
-        free(x0x1.digits);
-        free(y0y1.digits);
-        free(middle_value.digits);
-
-        return result;
+    // Swap if necessary, so that x.size >= y.size
+    if (x.size < y.size) {
+      struct bignum tmp = x;
+      x = y;
+      y = tmp;
     }
+
+    // Select the split size by the largest factor and divide into m and most
+    // significant bits x = x0 + x1 * 2^m, y = y0 + y1 * 2^m
+    size_t m = x.size / 2;
+
+    // Calculate x0y0 and x1y1 recursive
+    struct bignum x0 = x;
+    x0.size = m;
+    struct bignum y0 = y;
+    y0.size = y.size < m ? y.size : m;
+    struct bignum x0y0 = karazubaMultiplication(x0, y0);
+
+    struct bignum x1y1;
+    if (y.size <= m) {
+      // x1y1 will be zero
+      x1y1 = (struct bignum){NULL, 0, 0};
+    } else {
+      struct bignum x1 = x;
+      x1.size = x.size - m;
+      x1.digits += m;
+      struct bignum y1 = y;
+      y1.size = y.size - m;
+      y1.digits += m;
+      x1y1 = karazubaMultiplication(x1, y1);
+    }
+
+    // Copy the results of x0y0 and x1y1 into digits
+    for (size_t i = 0; i < 2 * m; i++) {
+      if (i < x0y0.size) {
+        digits[i] = x0y0.digits[i];
+      } else {
+        digits[i] = 0;
+      }
+    }
+    for (size_t i = 0; i + 2 * m < x.size + y.size; i++) {
+      if (i < x1y1.size) {
+        digits[i + 2 * m] = x1y1.digits[i];
+      } else {
+        digits[i + 2 * m] = 0;
+      }
+    }
+
+    // Calculate (x0+x1) * (y0+y1)
+    struct bignum x0x1 = splitAndAdd(x, m);
+    struct bignum y0y1 = splitAndAdd(y, m);
+
+    struct bignum middle_value = karazubaMultiplication(x0x1, y0y1);
+
+    // Subtract x0y0 and x1y1 from middle value and add the result at 2^m
+    subtractionBignum(&middle_value, x0y0);
+    subtractionBignum(&middle_value, x1y1);
+
+    struct bignum offset =
+        (struct bignum){digits + m, (x.size + y.size) - m, 0};
+    addVectors(&offset, middle_value);
+
+    struct bignum result = {digits, x.size + y.size, 0};
+    // Remove leading zeros
+    while (result.size > 1 && result.digits[result.size - 1] == 0) {
+      result.size--;
+    }
+
+    // Free heap bignums
+    free(x0y0.digits);
+    free(x1y1.digits);
+    free(x0x1.digits);
+    free(y0y1.digits);
+    free(middle_value.digits);
+
+    return result;
+  }
 }
 
 /* This division only works if a < b*/
