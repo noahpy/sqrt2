@@ -1,6 +1,7 @@
 
 #include "libs/big_num/big_num.h"
 #include "libs/mat_fast_exp.h"
+#include "libs/utils/utils.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stddef.h>

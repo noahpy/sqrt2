@@ -729,18 +729,17 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
     // If one of the factors is zero, return zero
     // The NULL pointer can always be freed;
     return (struct bignum){NULL, 1, 0};
-  } else if (x.size <= 4 && y.size <= 4) {
-    return multiplicationBignum(x, y);
+  } else if (x.size == 1 && y.size == 1) {
     // base case
-    /* uint32_t *digits = allocateDigits(2); */
-    /* ((uint64_t *) digits)[0] = (uint64_t) x.digits[0] * y.digits[0]; */
-    /* size_t size = 2; */
-    /*  */
-    /* // Remove leading zeros */
-    /* while (size > 1 && digits[size-1] == 0) { */
-    /*     size--; */
-    /* } */
-    /* return (struct bignum) {digits, size, 0}; */
+    uint32_t *digits = allocateDigits(2);
+    ((uint64_t *) digits)[0] = (uint64_t) x.digits[0] * y.digits[0];
+    size_t size = 2;
+    
+    // Remove leading zeros
+    while (size > 1 && digits[size-1] == 0) {
+        size--;
+    }
+    return (struct bignum) {digits, size, 0};
   } else {
     // the maximum result size is x.size + y.size
     uint32_t *digits = allocateDigits(x.size + y.size);

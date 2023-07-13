@@ -71,7 +71,8 @@ bool run_program(int argc, char *argv[]) {
   long hex_precision = 2;
 
   struct bignum (*calculateSqrt2)(size_t precision) = sqrt2;
-  struct bignum (*multiplication)(struct bignum a, struct bignum b) = multiplicationBignum;
+  struct bignum (*multiplication)(struct bignum a, struct bignum b) =
+      multiplicationBignum;
 
   int flag = 0;
   struct option long_options[] = {{"help", 0, &flag, HELP_RETURN_CODE},
@@ -94,20 +95,20 @@ bool run_program(int argc, char *argv[]) {
         return false;
       }
       switch (version) {
-        case 1:
-            break;
-        case 2:
-            calculateSqrt2 = sqrt2_V2;
-            multiplication = multiplicationBignumSIMD; 
-            break;
-        case 3:
-            calculateSqrt2 = sqrt2_V3;
-            multiplication = karazubaMultiplication;
-            break;
-        default:
-            fprintf(stderr, "Version %ld not supported.\n", version);
-            print_help(progname);
-            return false;
+      case 1:
+        break;
+      case 2:
+        calculateSqrt2 = sqrt2_V2;
+        multiplication = multiplicationBignumSIMD;
+        break;
+      case 3:
+        calculateSqrt2 = sqrt2_V3;
+        multiplication = karazubaMultiplication;
+        break;
+      default:
+        fprintf(stderr, "Version %ld not supported.\n", version);
+        print_help(progname);
+        return false;
       }
       break;
     case 'B':
@@ -182,24 +183,26 @@ bool run_program(int argc, char *argv[]) {
       sqrt2_bignum = calculateSqrt2(hex_to_binary_places(hex_precision));
       print_bignum_hex(&sqrt2_bignum, hex_precision);
     } else {
-      sqrt2_bignum = calculateSqrt2(decimal_to_binary_places(decimal_precision));
-      print_bignum_dec(&sqrt2_bignum, multiplication, decimal_precision);
+      sqrt2_bignum =
+          calculateSqrt2(decimal_to_binary_places(decimal_precision));
+      print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
     }
     free(sqrt2_bignum.digits);
     return true;
   }
   clock_t start = clock();
-  while(repetitions--){
+  while (repetitions--) {
     if (hex_places && !decimal_places) {
       sqrt2_bignum = calculateSqrt2(hex_to_binary_places(hex_precision));
     } else {
-      sqrt2_bignum = calculateSqrt2(decimal_to_binary_places(decimal_precision));
+      sqrt2_bignum =
+          calculateSqrt2(decimal_to_binary_places(decimal_precision));
     }
   }
   if (hex_places && !decimal_places) {
     print_bignum_hex(&sqrt2_bignum, hex_precision);
   } else {
-    /* print_bignum_dec(&sqrt2_bignum, multiplication, decimal_precision); */
+    print_bignum_dec(&sqrt2_bignum, multiplication, decimal_precision);
   }
   free(sqrt2_bignum.digits);
   clock_t end = clock();

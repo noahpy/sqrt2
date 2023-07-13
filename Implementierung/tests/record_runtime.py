@@ -37,6 +37,7 @@ for i in range(1, TEST_RANGE + 1, STEP):
             runtime += (end - start)
             counter -= 1
         runtime /= ITERATION
+        print(runtime)
         errors = result.stderr
         print(result.stdout.strip(), end="\n")
         if(len(result.stdout.strip()) != i + 2):
