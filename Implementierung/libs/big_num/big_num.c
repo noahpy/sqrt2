@@ -1,5 +1,7 @@
 
 #include "../utils/utils.h"
+#include <emmintrin.h>
+#include <smmintrin.h>
 #include <errno.h>
 #include <immintrin.h>
 #include <stdbool.h>
@@ -71,6 +73,149 @@ struct bignum multiplicationBignum(struct bignum a, struct bignum b) {
   // Multiply every 32bit block of b with the first of a
   // Add the new (64bit) block to the result
   for (size_t i = 0; i < a.size; i++) {
+    uint64_t a64 = (uint64_t)a.digits[i];
+
+    for (size_t j = 0; j < b.size; j++) {
+      uint64_t b64 = (uint64_t)b.digits[j];
+      uint64_t c64 = a64 * b64;
+
+      size_t overflowCount = 2;
+      // If there is an addition overflow, increment the third 32bit block
+      if (__builtin_uaddl_overflow(c64, *(uint64_t *)(result.digits + j + i),
+                                   (uint64_t *)(result.digits + j + i))) {
+        while ((overflowCount) + j + i < result.size &&
+               __builtin_uadd_overflow(
+                   1, *(result.digits + (overflowCount) + j + i),
+                   (result.digits + (overflowCount) + j + i))) {
+          overflowCount++;
+        }
+      }
+    }
+  }
+
+  // Remove leading zeros
+  for (int newSize = result.size - 1; newSize >= -1; newSize--) {
+    if (newSize < 1 || result.digits[newSize] != 0) {
+      result.size = newSize + 1;
+      break;
+    }
+  }
+
+  return result;
+}
+
+// Multiply two bignums and store the result in a new bignum
+// a.size should be >= b.size
+struct bignum multiplicationBignumSIMD(struct bignum a, struct bignum b) {
+  uint32_t *bignumDigits = NULL;
+  size_t newSize;
+  if (__builtin_uaddl_overflow(a.size, b.size, &newSize)) {
+    perror("Could not calculate new size\n");
+    exit(EXIT_FAILURE);
+  }
+  size_t newFrac;
+  if (__builtin_uaddl_overflow(a.fracSize, b.fracSize, &newFrac)) {
+    perror("Could not calculate new fraction size\n");
+    exit(EXIT_FAILURE);
+  }
+  bignumDigits = allocateDigits(newSize);
+
+  struct bignum result = {
+      .size = newSize, .digits = bignumDigits, .fracSize = newFrac};
+
+  // Zero all elements
+  for (size_t i = 0; i < result.size; i++) {
+    *(result.digits + i) = 0;
+  }
+
+  size_t i = 0;
+
+  // SIMD multiplication
+  for (; i < a.size && a.size - i >= 2 && b.size >= 2; i += 2) {
+    __m128i a128 = _mm_cvtepu32_epi64(_mm_loadl_epi64((__m128i *)(a.digits + i)));
+    __m128i a128_reversed = _mm_shuffle_epi32(a128, _MM_SHUFFLE(1, 0, 3, 2));
+    size_t j = 0;
+    for (; j < b.size && b.size - j >= 2; j += 2) {
+      __m128i b128 = _mm_cvtepu32_epi64(_mm_loadl_epi64((__m128i *)(b.digits + j)));
+      __m128i mul = _mm_mul_epu32(a128, b128);
+      size_t overflowCount = 2;
+      if (__builtin_uaddl_overflow(_mm_extract_epi64(mul, 0), *(uint64_t *)(result.digits + j + i),
+                                   (uint64_t *)(result.digits + j + i))) {
+        while ((overflowCount) + j + i < result.size &&
+               __builtin_uadd_overflow(
+                   1, *(result.digits + (overflowCount) + j + i),
+                   (result.digits + (overflowCount) + j + i))) {
+          overflowCount++;
+        }
+      }
+      overflowCount = 4;
+      if (__builtin_uaddl_overflow(_mm_extract_epi64(mul, 1), *(uint64_t *)(result.digits + j + i + 2),
+                                   (uint64_t *)(result.digits + j + i + 2))) {
+        while ((overflowCount) + j + i < result.size &&
+               __builtin_uadd_overflow(
+                   1, *(result.digits + (overflowCount) + j + i),
+                   (result.digits + (overflowCount) + j + i))) {
+          overflowCount++;
+        }
+      }
+
+      mul = _mm_mul_epu32(a128_reversed, b128);
+      overflowCount = 3;
+      if (__builtin_uaddl_overflow(_mm_extract_epi64(mul, 0), *(uint64_t *)(result.digits + j + i + 1),
+                                   (uint64_t *)(result.digits + j + i + 1))) {
+        while ((overflowCount) + j + i < result.size &&
+               __builtin_uadd_overflow(
+                   1, *(result.digits + (overflowCount) + j + i),
+                   (result.digits + (overflowCount) + j + i))) {
+          overflowCount++;
+        }
+      }
+      overflowCount = 3;
+      if (__builtin_uaddl_overflow(_mm_extract_epi64(mul, 1), *(uint64_t *)(result.digits + j + i + 1),
+                                   (uint64_t *)(result.digits + j + i + 1))) {
+        while ((overflowCount) + j + i < result.size &&
+               __builtin_uadd_overflow(
+                   1, *(result.digits + (overflowCount) + j + i),
+                   (result.digits + (overflowCount) + j + i))) {
+          overflowCount++;
+        }
+      }
+
+    }
+    if(j == b.size-1){
+        uint64_t al = (uint64_t)a.digits[i];
+        uint64_t ah = (uint64_t)a.digits[i+1];
+        uint64_t b64 = (uint64_t)b.digits[j];
+        uint64_t cl = al * b64;
+        uint64_t ch = ah * b64;
+    
+        size_t overflowCount = 2;
+        // If there is an addition overflow, increment the third 32bit block
+        if (__builtin_uaddl_overflow(cl, *(uint64_t *)(result.digits + j + i),
+                                     (uint64_t *)(result.digits + j + i))) {
+            while ((overflowCount) + j + i < result.size &&
+                 __builtin_uadd_overflow(
+                     1, *(result.digits + (overflowCount) + j + i),
+                     (result.digits + (overflowCount) + j + i))) {
+            overflowCount++;
+            }
+        }
+        overflowCount = 3;
+        if (__builtin_uaddl_overflow(ch, *(uint64_t *)(result.digits + j + i + 1),
+                                     (uint64_t *)(result.digits + j + i + 1))) {
+            while ((overflowCount) + j + i < result.size &&
+                 __builtin_uadd_overflow(
+                     1, *(result.digits + (overflowCount) + j + i),
+                     (result.digits + (overflowCount) + j + i))) {
+            overflowCount++;
+            }
+        }
+    }
+  }
+
+  // Multiply every 32bit block of b with the first of a
+  // Add the new (64bit) block to the result
+  for (; i < a.size; i++) {
     uint64_t a64 = (uint64_t)a.digits[i];
 
     for (size_t j = 0; j < b.size; j++) {
@@ -198,7 +343,6 @@ void addVectors(struct bignum *a, struct bignum b) {
     }
   }
 }
-
 
 void additionBignum(struct bignum *a, struct bignum b) {
   size_t newSize;
@@ -414,12 +558,11 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
     newBigNum.digits[0] = lastBlock << n;
     return newBigNum;
   }
-  if(a.size-1+blockShifts == newBigNum.size-1){
-    newBigNum.digits[newBigNum.size-1] = lastBlock << n;
-  }
-  else{
-    newBigNum.digits[newBigNum.size-1] = lastBlock >> (32-n);
-    newBigNum.digits[newBigNum.size-2] = lastBlock << n;
+  if (a.size - 1 + blockShifts == newBigNum.size - 1) {
+    newBigNum.digits[newBigNum.size - 1] = lastBlock << n;
+  } else {
+    newBigNum.digits[newBigNum.size - 1] = lastBlock >> (32 - n);
+    newBigNum.digits[newBigNum.size - 2] = lastBlock << n;
   }
   for (size_t i = a.size - 2; i < a.size; i--) {
     uint64_t tmp = a.digits[i];
@@ -682,7 +825,8 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
 }
 
 /* This division only works if a < b*/
-void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize) {
+void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize,
+                     void subtract(struct bignum *, struct bignum)) {
   b->fracSize = fracSize;
   size_t newSize = fracSize / 32 + (fracSize % 32 != 0);
   // allocate result bignum
@@ -703,7 +847,7 @@ void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize) {
       // set the bit in the result bignum
       digits[fracSize / 32] |= mask;
       // subtract b from a
-      subtractionBignum(a, *b);
+      subtract(a, *b);
       break;
     case 0:
       // set the bit in the result bignum
