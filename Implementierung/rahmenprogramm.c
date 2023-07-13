@@ -184,7 +184,7 @@ bool run_program(int argc, char *argv[]) {
     } else {
       sqrt2_bignum =
           calculateSqrt2(decimal_to_binary_places(decimal_precision));
-      /* print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision); */
+      print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
     }
     free(sqrt2_bignum.digits);
     return true;
@@ -201,7 +201,7 @@ bool run_program(int argc, char *argv[]) {
   if (hex_places && !decimal_places) {
     print_bignum_hex(&sqrt2_bignum, hex_precision);
   } else {
-    print_bignum_dec(&sqrt2_bignum, multiplicationBignumSIMD, decimal_precision);
+    print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
   }
   free(sqrt2_bignum.digits);
   clock_t end = clock();
