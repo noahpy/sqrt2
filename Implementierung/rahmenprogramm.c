@@ -16,7 +16,7 @@ const char *usage_msg = "Usage: %s [options]   Compute the square root of 2\n";
 
 const char *help_msg =
     "Optional arguments:\n"
-    "  -VX    The version of the progam with 1 <= X <= 3 (default: X = 1)\n"
+    "  -VX    The version of the progam with 0 <= X <= 3 (default: X = 0)\n"
     "  -B     Time the runtime\n"
     "  -BX    Time the runtime with X > 0 repetitions (default: X = 1)\n"
     "  -dX    Expected number of decimal places with X > 0 (default: X = 2)\n"
@@ -71,8 +71,6 @@ bool run_program(int argc, char *argv[]) {
   long hex_precision = 2;
 
   struct bignum (*calculateSqrt2)(size_t precision) = sqrt2;
-  struct bignum (*multiplication)(struct bignum a, struct bignum b) =
-      multiplicationBignum;
 
   int flag = 0;
   struct option long_options[] = {{"help", 0, &flag, HELP_RETURN_CODE},
@@ -95,15 +93,16 @@ bool run_program(int argc, char *argv[]) {
         return false;
       }
       switch (version) {
+      case 0:
+        break;
       case 1:
+        calculateSqrt2 = sqrt2_V1;
         break;
       case 2:
         calculateSqrt2 = sqrt2_V2;
-        multiplication = multiplicationBignumSIMD;
         break;
       case 3:
         calculateSqrt2 = sqrt2_V3;
-        multiplication = karazubaMultiplication;
         break;
       default:
         fprintf(stderr, "Version %ld not supported.\n", version);
@@ -185,7 +184,7 @@ bool run_program(int argc, char *argv[]) {
     } else {
       sqrt2_bignum =
           calculateSqrt2(decimal_to_binary_places(decimal_precision));
-      print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
+      /* print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision); */
     }
     free(sqrt2_bignum.digits);
     return true;
@@ -202,7 +201,7 @@ bool run_program(int argc, char *argv[]) {
   if (hex_places && !decimal_places) {
     print_bignum_hex(&sqrt2_bignum, hex_precision);
   } else {
-    print_bignum_dec(&sqrt2_bignum, multiplication, decimal_precision);
+    print_bignum_dec(&sqrt2_bignum, multiplicationBignumSIMD, decimal_precision);
   }
   free(sqrt2_bignum.digits);
   clock_t end = clock();
