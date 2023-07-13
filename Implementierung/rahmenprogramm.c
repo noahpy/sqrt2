@@ -55,7 +55,7 @@ bool convert_string_to_long(const char *str, long *value) {
 }
 
 bool run_program(int argc, char *argv[]) {
-  /*Get user options adn trugger matrix exponentiation program.
+  /*Get user options and trigger matrix exponentiation program.
    *Returns:
       - is_valid (bool): true if user options were vaild, else false*/
 

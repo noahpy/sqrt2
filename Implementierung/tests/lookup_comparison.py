@@ -18,7 +18,7 @@ fig, ax = plt.subplots()
 
 for i in range(1, TEST_RANGE + 1, STEP):
     print('../main','-V2', f'-d{i}')
-    result = subprocess.run(['../main','-V3', f'-d{i}'], capture_output=True, text=True)
+    result = subprocess.run(['../main','-V2', f'-d{i}'], capture_output=True, text=True)
     output = result.stdout.strip()
     errors = result.stderr
     count = 0
