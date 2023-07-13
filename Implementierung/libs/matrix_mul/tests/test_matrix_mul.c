@@ -84,7 +84,7 @@ int test(uint32_t arr[]) {
     struct matrix2x2 second = createMatrix((arr + 4));
 
     // Multiply first in place
-    struct matrix2x2 result = mulMatrix2x2(first, second, multiplicationBignum);
+    struct matrix2x2 result = mulMatrix2x2(first, second, multiplicationBignum, additionBignum);
 
 
     // Check for correct result
@@ -119,7 +119,7 @@ int testCmp(uint32_t arr[]) {
     struct cmp_matrix2x2 second = createCmpMatrix((arr + 3));
 
     // Multiply first in place
-    struct cmp_matrix2x2 result = mulCmpMatrix2x2(first, second, multiplicationBignum);
+    struct cmp_matrix2x2 result = mulCmpMatrix2x2(first, second, multiplicationBignum, additionBignum);
 
     // Check for correct result
     int r = compareCmpTo(result, (arr + 6));

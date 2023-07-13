@@ -81,7 +81,7 @@ int test(uint32_t arr[]) {
 
     struct matrix2x2 matrix = createMatrix(arr);
 
-    matrix = powMatrix2x2(matrix, arr[4], multiplicationBignum);
+    matrix = powMatrix2x2(matrix, arr[4], multiplicationBignum, additionBignum);
 
     int result = compareTo(matrix, (arr + 5));
     free2x2(matrix);
