@@ -45,6 +45,8 @@ for i in range(1, TEST_RANGE + 1, STEP):
 
     # Plot the count vs. iterations graph
     ax.plot(iterations, counts, label='Demanded vs Given precision of Sqrt 2')
+    ax.set_xlabel('precision in decimal digits')
+    ax.set_ylabel(f'average runtime of {ITERATION} iterations in s')
     ax.set_xlabel('Demanded Precision')
     ax.set_ylabel('Resulting Precision')
     ax.grid(True)
