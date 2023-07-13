@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 #include "../../mat_fast_exp.h"
@@ -86,17 +87,20 @@ void freeArray(size_t n, struct bignum array[]) {
 //   free(b.digits);
 // }
 
-int main () {
+int main() {
     // Inspired by the example from slide 4
     // https://gra.caps.in.tum.de/b/9a48e342ee6b6a950c3b5102a9e18ddc9b5ccb5c750110e8ee507345d263fb6a/v8-0.pdf
-    size_t iterations = 5;
-    size_t n_mul = 10000;
-    size_t points = 6;
+
+    // MULTIPLICATION
+
+    int iterations = 20;
+    int maxSize = 10000;
+    int points = 20;
     struct bignum tests[2 * points];
     printf("%s\n", "Generating test bignums, this may take some time...");
-    generate_testset(1234, 2 * n_mul, tests, points);
-    printf("Running tests for %zu multiplications\n", n_mul);
-    struct bignum results_nmul[n_mul];
+    generate_testset(1234, maxSize, tests, points);
+    printf("Running tests for multiplication with max size of %d, %d points distributed even, %d iterations per calculation\n", maxSize, points, iterations);
+    struct bignum results_nmul[maxSize];
 
     for (size_t i = 0; i < 2 * points; i += 2) {
       // Normal Multiplication
@@ -104,15 +108,85 @@ int main () {
       clock_gettime(CLOCK_MONOTONIC, &start_nmul);
 
       for (size_t j = 0; j < iterations; j++) {
-        results_nmul[i/2] = multiplicationBignum(tests[i], tests[i+1]);
-        // additionBignum(&tests[i], tests[i+1]);
+          multiplicationBignum(tests[i], tests[i+1]);
       }
 
       struct timespec end_nmul;
       clock_gettime(CLOCK_MONOTONIC, &end_nmul);
       double time_nmul = end_nmul.tv_sec - start_nmul.tv_sec + 1e-9 * (end_nmul.tv_nsec - start_nmul.tv_nsec);
-      printf("Normal multiplication with size %ld took %f seconds.\n", i/2, time_nmul);
+      printf("Normal multiplication with size %lu took %f seconds.\n", (i/2) * maxSize/points, time_nmul);
     }
+    freeArray(2 * points, tests);
 
+    // ADDITION
+    iterations = 200000;
+    maxSize = 10000;
+    points = 20;
+    printf("%s\n", "Generating test bignums, this may take some time...");
+    generate_testset(1234, maxSize, tests, points);
+    printf("Running tests for addition with max size of %d, %d points distributed even, %d iterations per calculation\n", maxSize, points, iterations);
+
+    for (size_t i = 0; i < 2 * points; i += 2) {
+      // Normal Multiplication
+      struct timespec start_nmul;
+      clock_gettime(CLOCK_MONOTONIC, &start_nmul);
+
+      for (size_t j = 0; j < iterations; j++) {
+          additionBignum(&tests[i], tests[i+1]);
+      }
+
+      struct timespec end_nmul;
+      clock_gettime(CLOCK_MONOTONIC, &end_nmul);
+      double time_nmul = end_nmul.tv_sec - start_nmul.tv_sec + 1e-9 * (end_nmul.tv_nsec - start_nmul.tv_nsec);
+      printf("Normal addition with size %lu took %f seconds.\n", (i/2) * maxSize/points, time_nmul);
+    }
+    freeArray(2 * points, tests);
+
+    // SUBTRACTION
+    iterations = 200000;
+    maxSize = 10000;
+    points = 20;
+    printf("%s\n", "Generating test bignums, this may take some time...");
+    generate_testset(1234, maxSize, tests, points);
+    printf("Running tests for subtraction with max size of %d, %d points distributed even, %d iterations per calculation\n", maxSize, points, iterations);
+
+    for (size_t i = 0; i < 2 * points; i += 2) {
+      // Normal Multiplication
+      struct timespec start_nmul;
+      clock_gettime(CLOCK_MONOTONIC, &start_nmul);
+
+      for (size_t j = 0; j < iterations; j++) {
+          subtractionBignum(&tests[i], tests[i+1]);
+      }
+
+      struct timespec end_nmul;
+      clock_gettime(CLOCK_MONOTONIC, &end_nmul);
+      double time_nmul = end_nmul.tv_sec - start_nmul.tv_sec + 1e-9 * (end_nmul.tv_nsec - start_nmul.tv_nsec);
+      printf("Normal subtraction with size %lu took %f seconds.\n", (i/2) * maxSize/points, time_nmul);
+    }
+    freeArray(2 * points, tests);
+
+    // KARAZUBA 
+    iterations = 20;
+    maxSize = 10000;
+    points = 20;
+    printf("%s\n", "Generating test bignums, this may take some time...");
+    generate_testset(1234, maxSize, tests, points);
+    printf("Running tests for karazuba multiplication with max size of %d, %d points distributed even, %d iterations per calculation\n", maxSize, points, iterations);
+
+    for (size_t i = 0; i < 2 * points; i += 2) {
+      // Normal Multiplication
+      struct timespec start_nmul;
+      clock_gettime(CLOCK_MONOTONIC, &start_nmul);
+
+      for (size_t j = 0; j < iterations; j++) {
+          karazubaMultiplication(tests[i], tests[i+1]);
+      }
+
+      struct timespec end_nmul;
+      clock_gettime(CLOCK_MONOTONIC, &end_nmul);
+      double time_nmul = end_nmul.tv_sec - start_nmul.tv_sec + 1e-9 * (end_nmul.tv_nsec - start_nmul.tv_nsec);
+      printf("Normal karazuba multiplication with size %lu took %f seconds.\n", (i/2) * maxSize/points, time_nmul);
+    }
     freeArray(2 * points, tests);
 }
