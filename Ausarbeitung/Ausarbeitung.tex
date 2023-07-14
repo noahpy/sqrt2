@@ -46,7 +46,7 @@ struct bignum {
 \end{lstlisting}
 
 Zahlen werden in einem Array von 32-Bit großen \textit{digits} gespeichert. Die Reihenfolge der DoubleWords ist Little-Endian. \textit{Size} gibt die Größe des Arrays an, \textit{fracSize} bestimmt, 
-wie viele Nachkommastellen in dieser Zahl vorhanden sind, dazu mehr in \ref{sec:newton-raphson}. Nun werden verschiedene Arithmetische Operationen ausgeführt.
+wie viele Nachkommastellen in dieser Zahl vorhanden sind, dazu mehr in \ref{sec:division}. Nun werden verschiedene Arithmetische Operationen ausgeführt.
 
 \subsubsection*{Addition und Subtraktion}
 Bei der Addition und der Subtraktion werden die einzelnen Elemente aufeinander addiert bzw. subtrahiert. Entsteht ein Overflow, wird dieser auf die nächsten Blöcke übertragen. \\
@@ -66,14 +66,14 @@ Für zwei Zahlen der Längen $n, m \in\mathbb{N}$ hat die Bauernmultiplikation a
 Die Multiplikation spielt auf der untersten Ebene für die Matrixmultiplikation und somit auch für die Berechnung von $\sqrt{2}$ eine wichtige Rolle.\\
 Mathematisch lässt sich dies mit den eingangs definierten Big-Nums $a$ und $b$ folgendermaßen darstellen:
 \begin{equation}
-  c = \sum_{i=0}^m (2^{(32i)} b_i \sum_{j=0}^m a_j) \, .
+  c = \sum_{i=0}^m (2^{32i} b_i \sum_{j=0}^m a_j) \, .
 \end{equation}
 
 Im Folgenden wird ein Algorithmus zur schnelleren Berechnung des Produkts erläutert.
 
 \subsection{Karazuba-Multiplikation}
 Dank des Karazuba-Algorithmus kann die Laufzeit der Multiplikation auf $\mathcal{O}(n^{1.59})$ verringert werden.
-Dafür werden die zu multiplizierenden Zahlen in die Form $a_0+a_1*2^m$ gebracht, wobei $a_0$ und $a_1$ maximal die größe $\lceil\frac{n}{2}\rceil$ haben.
+Dafür werden die zu multiplizierenden Zahlen in die Form $a_0+2^ma_1$ gebracht, wobei $a_0$ und $a_1$ maximal die größe $\lceil\frac{n}{2}\rceil$ haben.
 Durch folgende Umformung kann $ab$ mit nur noch drei $\lceil\frac{n}{2}\rceil$ großen Multiplikationen und 6 zu vernachlässigenden Additionen/Subtraktionen und einigen shifts ermittelt werden:
 \begin{align*}
 a b &= (a_0+2^ma_1) (b_0+2^mb_1)\\
@@ -150,19 +150,18 @@ Es müssen demnach lediglich $x_{n-1}$ und $x_n$ mit vier Multiplikationen berec
 \subsection{Schnelle Exponentiation}
 Die schnelle Exponentiation nutzt Assozitivität und Potenzgesetze, um die Zahl der der Multiplikationen bei der Exponentiation von $\mathcal{O}(n)$ auf $\mathcal{O}(\log{}n)$ zu verringern. 
 Naiv kann eine Potenz $a^n$ mit $n\in\mathbb{N}$ nach der Schulmethode mit \(\prod_{1}^{n} a \) berechnet werden. 
-Dafür benötigt man allerdings $n-1$ Multiplikationen, was bei großen Werten für $n$ zu einer langen Berechnung ausartet.\\
-
-Um dieses Problem effizienter zu lösen, werfen wir erst einmal einen Blick auf die Potenzgesetze für assoziative Operatoren. Denn sowohl eine Multiplikation, als auch eine Addition im Exponenten kann aufgeteilt werden:
+Dafür benötigt man allerdings $n-1$ Multiplikationen, was bei großen Werten für $n$ zu einer langen Berechnung ausartet. \par
+Um dieses Problem effizienter zu lösen, werfen wir erst einmal einen Blick auf die Potenzgesetze für assoziative Operatoren. Denn sowohl eine Multiplikation, als auch eine Addition im Exponenten kann aufgeteilt werden in
 \begin{align}
   a^{n+m} &= \overbrace{a\dots a}^{n+m} = \overbrace{(a\dots a)}^n \overbrace{(a\dots a)}^m = a^n a^m \quad \text{und} \label{exponenten_addition} \\
   a^{nm} &= \overbrace{a\dots a}^{nm} = \underbrace{\overbrace{(a \dots a)}^n \dots \overbrace{(a \dots a)}^n}_m = (a^n)^{^m} \, . \label{exponenten_multiplikation}
 \end{align}
-Wenn man also $a^n$ und $a^m$ effizienter als mit $n+m$ Multiplikationen berechnen kann, kann man auch $a^{n+m}$ mit \ref{exponenten_addition} effizient berechnen.\\
+Wenn man also $a^n$ und $a^m$ effizienter als mit $n+m$ Multiplikationen berechnen kann, kann man auch $a^{n+m}$ mit \ref{exponenten_addition} effizient berechnen.\par
 Bei der schnellen Exponentiation berechnet man durch wiederholtes Quadrieren alle $a^{(2^k)}$ mit $2^k \le n$. Denn nach \ref{exponenten_multiplikation} gilt:
 \[ {\left( a^{(2^k)} \right)}^2 = a^{(2 \cdot 2^k)} = a^{(2^{k+1})}.\]
-Um $a^n$ mit $n=2^k$ zu berechnen, sind damit nur noch $k=\log_2n$ Multiplikationen notwendig.
-\\Potenzen mit der Form $a^{(2^k)}$ können also effizient berechnet werden, um nun auch Potenzen mit $n\in\mathbb{N}$ berechnen zu können, nutzt man \ref{exponenten_addition}. 
-Jede Zahl $n\in\mathbb{N}$ kann durch Addition von Zweierpotenzen dargestellt werden (Binärsystem). \\
+Um $a^n$ mit $n=2^k$ zu berechnen, sind damit nur noch $k=\log_2n$ Multiplikationen notwendig. \par
+Potenzen mit der Form $a^{(2^k)}$ können also effizient berechnet werden, um nun auch Potenzen mit $n\in\mathbb{N}$ berechnen zu können, nutzt man \ref{exponenten_addition}. 
+Jede Zahl $n\in\mathbb{N}$ kann durch Addition von Zweierpotenzen dargestellt werden, siehe das Binärsystem. \par
 Sei $n$ in Binärdarstellung $2^0b_0+2^1b_1+2^2b_2+\dots+2^nb_n$, so erhält man $a^n$ mit:
 \[ a^n = a^{2^0b_0+2^1b_1+2^2b_2+\dots+2^nb_n} = a^{2^0b_0} a^{2^1b_1} a^{2^2b_2} \dots a^{2^nb_n} \, .\]
 Da $b_i$ nur die Werte $0$ und $1$ annehmen kann, ist es am Ende eine boolsche Entscheidung, ob der aktuelle Wert von $a^{(2^k)}$ auf das Zwischenergebnis aufmultipliziert wird, oder nicht.\\
@@ -174,14 +173,15 @@ Auch wenn diese Gleichung auf den ersten Blick nach der Anwendung des Kommutativ
 \[ \overbrace{(a\dots a)}^n \overbrace{(a \dots a)}^m = \overbrace{(a \dots a)}^m \overbrace{(a \dots a)}^n \, .\]
 Ein Beispiel:
 \[ 7^3\cdot7^4 = \overbrace{(7\cdot7\cdot7)}^3\cdot\overbrace{(7\cdot7\cdot7\cdot7)}^4 = \overbrace{(7\cdot7\cdot7\cdot7)}^4\cdot\overbrace{(7\cdot7\cdot7)}^3 = 7^4 \cdot 7^3 \, . \]
-Demnach macht es keinen Unterschied, ob zuerst $a^{(2^k)}$ mit dem kleinsten oder dem größten $k$ aufmultipliziert wird.\\
+Demnach macht es keinen Unterschied, ob zuerst $a^{(2^k)}$ mit dem kleinsten oder dem größten $k$ aufmultipliziert wird.\par
 Da $(\mathbb{N}^{2\times 2}, \cdot)$ eine Gruppe und damit assoziativ ist, kann die schnelle Exponentiation auch für das lösen von $a\in\mathbb{N}^{2\times 2}$ genutzt werden.
+Zur Verdeutlichung berechnen wir das Beispiel $a^3$ für $a = \left(\begin{matrix} 0 & 1 \\ 1 & 2 \end{matrix}\right)$. Die Binärdarstellung von $3$ lautet $(11)_2$, wir multiplizieren also $a^1$ und $a^2$ aufeinander: 
+\begin{equation*} \label{eq:beispiel_matrixexp}
+  \left(\begin{matrix} 0 & 1 \\ 1 & 2 \end{matrix}\right) \left(\begin{matrix} 0 & 1 \\ 1 & 2 \end{matrix}\right)^2 = \left(\begin{matrix} 0 & 1 \\ 1 & 2 \end{matrix}\right) \left(\begin{matrix} 1 & 2 \\ 2 & 5 \end{matrix}\right) = 
+  \left(\begin{matrix} 2 & 5 \\ 5 & 12 \end{matrix}\right) \, .
+\end{equation*}
 
-\subsection{Matrizen} \label{sec:matrizen}
-anwendung der schnellen exponentiation auf matrizen, beispiel dazu
-(0.75 Seiten)
-
-\subsection{Newton-Raphson-Division} \label{sec:newton-raphson}
+\subsection{Darstellung von Kommazahlen und Division} \label{sec:division}
 Mithilfe der bereitgestellten Matrix werden nun die Werte ausgerechnet, die bei der Division an $\sqrt{2}$ konvergieren.
 Nun beschäftigen wir uns mit der Darstellung von Kommazahlen und einem Algorithmus zur Berechnung eines Quotienten in dieser Darstellung. \\
 Wir kennen zwei verschiedene Formen der Darstellung von Kommazahlen: Fließkommazahlen nach \textit{IEEE-754} und Fixpunktzahlen.
@@ -200,40 +200,54 @@ Fixpunktzahlen haben einen kleineren Wertebereich bei gleichem Speicherverbrauch
 \end{figure} 
 
 Ein weiterer Vorteil von Fixpunktzahlen liegt darin, dass man unendlich viele Nachkommastellen einfach darstellen kann, in dem man beispielsweise die implementierten Big-Nums aus \ref{sec:bignum} verwendet. Aus den
-genannten Gründen lässt sich schließen, dass sich die Nutzung von Fixpunktzahlen viel besser eignet, um $\sqrt{2}$ mit beliebig vielen Nachkommastellen darzustellen. \\
+genannten Gründen lässt sich schließen, dass sich die Nutzung von Fixpunktzahlen viel besser eignet, um $\sqrt{2}$ mit beliebig vielen Nachkommastellen darzustellen. \par
 
-Die Newton-Raphson-Division ist ein Algorithmus zur Berechnung der Division. Er nutzt das Newton-Verfahren, das dafür da ist, Nullstellen von Funktionen zu approximieren und wendet dies so an, um Quotienten zu berechnen. 
-Das Verfahren besteht aus 3 Schritten, die nun erläutert werden \cite{newton_raphson_division}. Wir wollen den Quotienten aus $a$ und $b$ berechen, mit $a, b \in \mathbb{N}$. \\
-Zunächst brauchen wir eine erste Näherung. Wir bitshiften den Quotienten so lange nach rechts, bis $0,5 \leq b < 1,0$. Die erste Näherung erhalten wir mit:
-\begin{equation} \label{eq:erste_naeherung}
-  x_0 = \frac{48}{17} - b \frac{32}{17} \, .
-\end{equation}
+Als Division wird ein naives Verfahren verwendet, dass im Stile der schriftlichen Division das Ergebnis berechnet und welches nur funktioniert, wenn $\text{Dividend} < \text{Divisor}$ gilt. Zu Beginn 
+wird der Dividend einmal nach links geshiftet, danach werden in einer Schleife beide Zahlen verglichen. In der i-ten Ausführung der Schleife ergibt sich folgende Fallunterscheidung:
+\begin{itemize}
+  \item $\text{Dividend} \geq \text{Divisor}$: Setze das i-te Bit des Ergebnisses auf 1, subtrahiere den Divisor vom Dividenden, shifte den Dividenden einmal nach links
+  \item $\text{Dividend} = \text{Divisor}$: Setze das i-te Bit des Ergebnisses auf 1, beende den Algorithmus frühzeitig
+  \item $\text{Dividend} < \text{Divisor}$: Setze das i-te Bit des Ergebnisses auf 0, shifte den Dividenden einmal nach links
+\end{itemize}
 
-Als Nächstes berechnen wir iterativ immer bessere Näherungen:
-\begin{equation} \label{eq:iterationen}
-  x_{i + 1} = x_i (2 - b x_i) \, .
-\end{equation}
-Mit jeder Iteration erhält das Ergebnis doppelt so viele Nachkommastellen wie vorher, es wird auch doppelt so genau. Um die Anzahl der benötigten Iterationen zu erhalten, betrachten wir folgende Formel, wobei k für die erwartete Anzahl an Nachkommastellen im Ergebnis steht:
-\begin{equation} \label{eq:anzahl_iterationen}
-  \text{Iterationen} = \lfloor log_2k\rfloor \, .
-\end{equation}
+Die Anzahl der Wiederholungen der Schleife entspricht der Anzahl der benötigten Nachkommastellen. Als illustratives Beispiel berechnen wir $5_{10} / 12_{10} = (101)_2 / (1100)_2$ mit zwei Nachkommastellen. 
+Aus dem ersten Schleifendurchlauf ergibt sich $(1010)_2 < (1100)_2$, also ist die erste binäre Nachkommastelle eine null. Aus dem zweiten Schleifendurchlauf erhalten wir $(10100)_2 \geq (1100)_2$, die 
+zweite Nachkommastelle ist also eine eins. Das Ergebnis der Division lautet $(0,01)_2 = (0,25)_{10}$. Das Resultat ist aufgrund der mangelnden Anzahl an Nachkommastellen zwar nicht akkurat, verdeutlicht 
+aber das Vorgehen der Division. \par
+Obwohl dieser Algorithmus zur Kategorie der langsamen Division gehört, bei dem in jedem Schleifendurchlauf jeweils eine weitere Nachkommastelle berechnet wird, 
+wurde sich explizit dafür entschieden, diesen zu verwenden. Schnelle Divisionsalgorithmen wie die Newton-Raphson-Division können pro 
+Schleifendurchlauf die Anzahl der Nachkommastellen zwar verdoppeln \cite{newton_raphson_division}, haben aber aufgrund von wiederholten Multiplikationen und der benötigten initialen Approximation eine schlechtere Performanz, als der hier 
+vorgestellte Algorithmus.
 
-Um nun das Endergebnis zu erhalten, multiplizieren das Zwischenergebnis mit $a$ und erhalten somit unser Ergebnis der Division.
-Es kann passieren, dass durch die ständige Verdoppelung der Nachkommastellen, die Zahl zu viele davon besitzt als notwendig. Diese Ziffern werden einfach abgeschnitten. \\
-Als illustratives Beispiel berechnen wir $5 / 12$ mit sieben Nachkommastellen. Die Anzahl der Iterationen beträgt $ \lfloor log_27\rfloor = 2$.
-Nach wiederholten bitshiften der Zahl $12$ erhalten wir $(0,1100)_2 = (0,75)_{10}$. Wir berechnen die Zwischenschritte:
-\begin{align}
-  x_0 &= (10,1101.001)_2 - (0,1100)_2 \cdot (1,111)_2 = (1,0110.101)_2 \,; \nonumber \\ 
-  x_1 &= (1,0110.101)_2 \cdot (2_{10} - (0,1100)_2 \cdot (1,0110.101)_2) = (1,0101.0100.0001.0101.00)_2  \,; \nonumber \\
-  x_2 &= (1,0101.0100.0001.0101.00)_2 \cdot (2_{10} - (0,1100)_2 \cdot (1,0101.0100.0001.0101.00)_2) \nonumber \\ 
-      &= (1,0101.0101.0101.0100.0010.1000.1011.0101.0100.0000)_2 \,. \nonumber
-\end{align}
-Multipliziert man $x_2$ mit dem geshifteten $a = (0,0101)_2$ und shiftet dieses so weit, so dass die Zahl nur noch sieben Nachkommastellen besitzt, erhält man das
-Ergebnis $(0,0110.101)_2 = (0,4141)_{10}$, welches sich an der dritten dezimalen Nachkommastelle vom eigentlichen Ergebnis $0,41\overline{6}$ abweicht. \\
+% Die Newton-Raphson-Division ist ein Algorithmus zur Berechnung der Division. Er nutzt das Newton-Verfahren, das dafür da ist, Nullstellen von Funktionen zu approximieren und wendet dies so an, um Quotienten zu berechnen. 
+% Das Verfahren besteht aus 3 Schritten, die nun erläutert werden \cite{newton_raphson_division}. Wir wollen den Quotienten aus $a$ und $b$ berechen, mit $a, b \in \mathbb{N}$. \\
+% Zunächst brauchen wir eine erste Näherung. Wir bitshiften den Quotienten so lange nach rechts, bis $0,5 \leq b < 1,0$. Die erste Näherung erhalten wir mit:
+% \begin{equation} \label{eq:erste_naeherung}
+%   x_0 = \frac{48}{17} - b \frac{32}{17} \, .
+% \end{equation}
+%
+% Als Nächstes berechnen wir iterativ immer bessere Näherungen:
+% \begin{equation} \label{eq:iterationen}
+%   x_{i + 1} = x_i (2 - b x_i) \, .
+% \end{equation}
+% Mit jeder Iteration erhält das Ergebnis doppelt so viele Nachkommastellen wie vorher, es wird auch doppelt so genau. Um die Anzahl der benötigten Iterationen zu erhalten, betrachten wir folgende Formel, wobei k für die erwartete Anzahl an Nachkommastellen im Ergebnis steht:
+% \begin{equation} \label{eq:anzahl_iterationen} \text{Iterationen} = \lfloor log_2k\rfloor \, .
+% \end{equation}
+%
+% Um nun das Endergebnis zu erhalten, multiplizieren das Zwischenergebnis mit $a$ und erhalten somit unser Ergebnis der Division.
+% Es kann passieren, dass durch die ständige Verdoppelung der Nachkommastellen, die Zahl zu viele davon besitzt als notwendig. Diese Ziffern werden einfach abgeschnitten. \\
+% Als illustratives Beispiel berechnen wir $5 / 12$ mit sieben Nachkommastellen. Die Anzahl der Iterationen beträgt $ \lfloor log_27\rfloor = 2$.
+% Nach wiederholten bitshiften der Zahl $12$ erhalten wir $(0,1100)_2 = (0,75)_{10}$. Wir berechnen die Zwischenschritte:
+% \begin{align}
+%   x_0 &= (10,1101.001)_2 - (0,1100)_2 \cdot (1,111)_2 = (1,0110.101)_2 \,; \nonumber \\ 
+%   x_1 &= (1,0110.101)_2 \cdot (2_{10} - (0,1100)_2 \cdot (1,0110.101)_2) = (1,0101.0100.0001.0101.00)_2  \,; \nonumber \\
+%   x_2 &= (1,0101.0100.0001.0101.00)_2 \cdot (2_{10} - (0,1100)_2 \cdot (1,0101.0100.0001.0101.00)_2) \nonumber \\ 
+%       &= (1,0101.0101.0101.0100.0010.1000.1011.0101.0100.0000)_2 \,. \nonumber
+% \end{align}
+% Multipliziert man $x_2$ mit dem geshifteten $a = (0,0101)_2$ und shiftet dieses so weit, so dass die Zahl nur noch sieben Nachkommastellen besitzt, erhält man das
+% Ergebnis $(0,0110.101)_2 = (0,4141)_{10}$, welches sich an der dritten dezimalen Nachkommastelle vom eigentlichen Ergebnis $0,41\overline{6}$ abweicht. \\
  
 Wir sind in der Lage, Divisionen durchzuführen und effizient Werte auszurechnen, die das Ergebnis approximieren.
-
-(1 Seite gedacht, jetzt 2)
 
 % TODO: Je nach Aufgabenstellung einen der Begriffe wählen
 \section{Genauigkeit} \label{sec:genauigkeit}
@@ -261,11 +275,11 @@ eingetragen.
 An dem Diagramm ist zu erkennen, dass die Hauptimplementierung langsamer ist als die drei Vergleichsimplementierungen. Dies liegt zum Einen an der Tatsache, dass die kompakten Matrizen 4 Multiplikationen einsparen, zum 
 Anderen daran, dass die arithmetischen Operationen in SIMD und die Karazuba-Multiplikation schneller sind als die naiven Implementierungen. \par
 Aufgrund des nahezu identischen Graphenverlaufs der ersten und der zweiten Vergleichsimplementierung sieht man, dass die Karazuba-Multiplikation und die Multiplikation in SIMD ähnlich performant abschneiden. Dies steht 
-entgegen der Annahme, dass die Karazuba-Multiplikation wegen ihrer Laufzeit von $\mathcal{O}(n^{1.59})$ schneller ist als die SIMD Multiplikation. Dies kann einige Gründe haben, so ist der Overhead durch die rekursiven 
+entgegen unserer anfänglichen Annahme, dass die Karazuba-Multiplikation wegen ihrer Laufzeit von $\mathcal{O}(n^{1.59})$ schneller ist als die SIMD Multiplikation. Dies kann einige Gründe haben, so ist der Overhead durch die rekursiven 
 Funktionsaufrufe ein möglicher Grund. Ein weiterer Aspekt könnte darin liegen, dass die Optimierung durch den Compiler mit der Option -O3 bei der rekursiven Karazuba-Lösung nicht so groß ausfällt.
 
 \section{Zusammenfassung und Ausblick} \label{sec:zusammenfassung}
-In dieser Arbeit beschäftigten wir uns mit der Berechnung der Quadratwurzel aus zwei. Es wurden verschiedene Algorithmen thematisiert, wie die Karazuba-Multiplikation oder die Newton-Raphson-Division und ihr Einfluss auf die Laufzeit erläutert. Außerdem wurden SIMD Implementierungen berücksichtigt. \par
+In dieser Arbeit beschäftigten wir uns mit der Berechnung der Quadratwurzel aus zwei. Es wurden verschiedene Algorithmen thematisiert, wie die Karazuba-Multiplikation oder Divisionsalgorithmus und ihr Einfluss auf die Laufzeit erläutert. Außerdem wurden SIMD Implementierungen berücksichtigt. \par
 In einer weiteren Arbeit könnte man daran ansetzen und Big-Num Arithmetiken in AVX implementieren, um weiter die Performanz zu steigern. Des Weiteren könnte man weitere Algorithmen auf die Laufzeit untersuchen und gegebenenfalls implementieren, so zum Beispiel die Goldschmidt-Division. \par
 Das Ziel der Arbeit wurde erreicht. Nutzer können, abhängig von ihren Anforderungen oder auch Computerspezifikationen, die Wurzel aus zwei mit beliebigen Nachkommastellen berechnen.
 
