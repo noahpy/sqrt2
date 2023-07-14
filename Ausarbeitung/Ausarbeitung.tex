@@ -245,21 +245,24 @@ ermöglicht, auf Kosten von Laufzeit, die im nächsten Kapitel beleuchtet wird. 
 
 \section{Performanzanalyse} \label{sec:performanz}
 Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i7-9700K Prozessor, 3.60GHz, 16 GB Arbeitsspeicher, 
-Ubuntu 20.04, 64 Bit, Linux-Kernel 5.4.0. Kompiliert wurde mit GCC 8.1.0 mit der Option - 03. \par
-Die erste Implementierung nutzt eine herkömmliche Matrix und alle naiven Implementierungen der Arithmetik von Big-Nums, 
-die zweite nutzt kompakte Matrizen, die die Anzahl der Rechnungen minimiert, Addition und Subtraktion in SIMD und die Karazuba-Multiplikation. Die dritte gleicht der zweiten, nur mit dem Unterschied, dass statt der 
+Ubuntu 20.04, 64 Bit, Linux-Kernel 5.4.0 ausgeführt. Kompiliert wurde mit der Option -03 mit GCC 8.1.0. \par
+Die Hauptimplementierung nutzt eine herkömmliche Matrix und alle naiven Implementierungen der Arithmetik von Big-Nums, die erste Vergleichsimplementierung nutzt kompakte Matrizen statt der herkömmlichen. 
+Die zweite Vergleichsimplementierung nutzt neben kompakten Matrizen auch die Addition und Subtraktion in SIMD und die Karazuba-Multiplikation. Die Dritte gleicht der zweiten, nur mit dem Unterschied, dass statt der 
 Karazuba-Multiplikation eine SIMD Implementierung der Multiplikation verwendet wird. \par
 
 Die Berechnungen wurden mit Eingabegrößen von 1 bis 10000 dezimalen Nachkommastellen jeweils 20 mal durchgeführt und das arithmetische Mittel für jede Eingabegröße wurde in das Diagramm aus Abbildung \ref{img:performanz-diagramm} 
 eingetragen.
 \begin{figure}[h] \centering
-  \includegraphics[scale=0.4]{graphiken/fixpunktzahlen-wertebereich.png} 
+  \includegraphics[scale=0.25]{graphiken/performanz-diagramm.jpg} 
   \caption{Performanz der einzelnen Implementierungen} \label{img:performanz-diagramm}
 \end{figure} 
 
 
-Vergleichsimplementierungen ansetzen (SIMD, nicht SIMD? / Karazuba, normale Multiplikation / Bitshifts?), Graphisch laufzeiten vergleichen, tatsächliche Performanz erklären und schlussfolgern. \\
-(2 - 3 Seiten)
+An dem Diagramm ist zu erkennen, dass die Hauptimplementierung langsamer ist als die drei Vergleichsimplementierungen. Dies liegt zum Einen an der Tatsache, dass die kompakten Matrizen 4 Multiplikationen einsparen, zum 
+Anderen daran, dass die arithmetischen Operationen in SIMD und die Karazuba-Multiplikation schneller sind als die naiven Implementierungen. \par
+Aufgrund des nahezu identischen Graphenverlaufs der ersten und der zweiten Vergleichsimplementierung sieht man, dass die Karazuba-Multiplikation und die Multiplikation in SIMD ähnlich performant abschneiden. Dies steht 
+entgegen der Annahme, dass die Karazuba-Multiplikation wegen ihrer Laufzeit von $\mathcal{O}(n^{1.59})$ schneller ist als die SIMD Multiplikation. Dies kann einige Gründe haben, so ist der Overhead durch die rekursiven 
+Funktionsaufrufe ein möglicher Grund. Ein weiterer Aspekt könnte darin liegen, dass die Optimierung durch den Compiler mit der Option -O3 bei der rekursiven Karazuba-Lösung nicht so groß ausfällt.
 
 \section{Zusammenfassung und Ausblick} \label{sec:zusammenfassung}
 In dieser Arbeit beschäftigten wir uns mit der Berechnung der Quadratwurzel aus zwei. Es wurden verschiedene Algorithmen thematisiert, wie die Karazuba-Multiplikation oder die Newton-Raphson-Division und ihr Einfluss auf die Laufzeit erläutert. Außerdem wurden SIMD Implementierungen berücksichtigt. \par
