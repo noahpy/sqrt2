@@ -11,10 +11,11 @@ int compareBignum(struct bignum a, struct bignum b) {
     return 1;
 }
 
-void freeResults(size_t n, struct matrix2x2 normal[], struct cmp_matrix2x2 compact[]) {
+void freeResults(size_t n, struct matrix2x2 normal[], struct cmp_matrix2x2 compact[], struct cmp_matrix2x2 sequence[]) {
     for (size_t i = 0; i < n; i++) {
         free2x2(normal[i]);
         freeCmp2x2(compact[i]);
+        freeCmp2x2(sequence[i]);
     }
 }
 
@@ -39,7 +40,7 @@ int main () {
     // https://gra.caps.in.tum.de/b/9a48e342ee6b6a950c3b5102a9e18ddc9b5ccb5c750110e8ee507345d263fb6a/v8-0.pdf
     size_t n = 10001;
     size_t iterations = 1000;
-    size_t stepsize = 200;
+    size_t stepsize = 100;
     printf("Running tests for matrix exponentiation for n up to %zu in steps of size %zu: %zu exponentiation in total\n", n, stepsize, n / stepsize);
 
     struct matrix2x2 results_normal[n/stepsize];
@@ -66,28 +67,50 @@ int main () {
     double time_cmp = end_cmp.tv_sec - start_cmp.tv_sec + 1e-9 * (end_cmp.tv_nsec - start_cmp.tv_nsec);
     printf("Compact matrix exponentiation took %f seconds.\n", time_cmp);
 
+    struct cmp_matrix2x2 results_s[n];
+    struct timespec start_f;
+    clock_gettime(CLOCK_MONOTONIC, &start_f);
+    for (int i = 0; i < n / stepsize; i++) {
+        results_s[i] = sequence(i * stepsize);
+    }
+    struct timespec end_f;
+    clock_gettime(CLOCK_MONOTONIC, &end_f);
+    double time_f = end_f.tv_sec - start_f.tv_sec + 1e-9 * (end_f.tv_nsec - start_f.tv_nsec);
+    printf("Sequence took %f seconds.\n", time_f);
+
     for (size_t i = 0; i < n / stepsize; i++) {
         struct matrix2x2 normal = results_normal[i];
         struct cmp_matrix2x2 compact = results_cmp[i];
+        struct cmp_matrix2x2 folge = results_s[i];
         if (!compareBignum(normal.a12, normal.a21)
             | !compareBignum(normal.a11, compact.xm1)
             | !compareBignum(normal.a12, compact.x)
             | !compareBignum(normal.a22, compact.xp1)
+              | !compareBignum(compact.xm1, folge.xm1)
+              | !compareBignum(compact.x, folge.x)
+              | !compareBignum(compact.xp1, folge.xp1)
                 ) {
             printf("%s\n", "Results do not match.");
-            freeResults(n / stepsize, results_normal, results_cmp);
+            printf("%d\n", i);
+            printf("%u, %u\n", compact.xm1.digits[0], folge.xm1.digits[0]);
+            printf("%u, %u\n", compact.x.digits[0], folge.x.digits[0]);
+            printf("%u, %u\n", compact.xp1.digits[0], folge.xp1.digits[0]);
+            printf("%zu, %zu\n", compact.xm1.size, folge.xp1.size);
+            printf("%zu, %zu\n", compact.xp1.size, folge.xp1.size);
+            printf("%zu, %zu\n", compact.xp1.size, folge.xp1.size);
+            freeResults(n / stepsize, results_normal, results_cmp, results_s);
             return EXIT_FAILURE;
         }
     }
     printf("%s\n", "Results are the same.");
-    freeResults(n / stepsize, results_normal, results_cmp);
+    freeResults(n / stepsize, results_normal, results_cmp, results_s);
 
     printf("%s\n", "Generating benchmark results");
     printf("This will take about %f seconds, because there are %zu iterations\n", iterations * (time_normal + time_cmp),
             iterations);
     struct timespec start;
     struct timespec end;
-    char results[sizeof (char ) * 25 * (n / stepsize)];
+    char results[sizeof (char ) * 35 * (n / stepsize)];
     char converter[100];
     results[0] = 0;
     for (size_t i = 0; i < n / stepsize; i++) {
@@ -108,7 +131,19 @@ int main () {
         sprintf(converter, ";%f", avg);
         strcat(results, converter);
 
-        // Calculate normal
+        // Calculate sequence
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        for (size_t j = 0; j < iterations; j++) {
+            freeCmp2x2(sequence(i * stepsize));
+        }
+        clock_gettime(CLOCK_MONOTONIC, &end);
+
+        // Add sequence average
+        avg = (end.tv_sec - start.tv_sec + 1e-9 * (end.tv_nsec - start.tv_nsec));
+        sprintf(converter, ";%f", avg);
+        strcat(results, converter);
+
+        // Calculate compact
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (size_t j = 0; j < iterations; j++) {
             struct cmp_matrix2x2 base = {bignumOfInt(0), bignumOfInt(1), bignumOfInt(2)};

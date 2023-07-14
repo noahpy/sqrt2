@@ -78,3 +78,26 @@ struct cmp_matrix2x2 powCmpMatrix2x2(struct cmp_matrix2x2 a, uint32_t n, struct 
 
     return result;
 }
+
+struct cmp_matrix2x2 sequence(size_t n) {
+    // Edge case n = 0
+    if (n == 0) {
+        return (struct cmp_matrix2x2) {bignumOfInt(1), bignumOfInt(0), bignumOfInt(1)};
+    }
+
+    // Set values for n = 1
+    struct bignum very_old = bignumOfInt(0);
+    very_old.size = 0;
+    struct bignum old = bignumOfInt(1);
+    struct bignum current = bignumOfInt(2);
+    n--;
+    for (; n > 0; n--) {
+        // Get n+1 with xn = 2xn-1 + xn-2
+        free(very_old.digits);
+        very_old = old;
+        old = current;
+        current = shiftLeft(current, 1);
+        additionBignum(&current, very_old);
+    }
+    return (struct cmp_matrix2x2) {very_old, old, current};
+}
