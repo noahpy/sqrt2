@@ -181,7 +181,6 @@ Da $(\mathbb{N}^{2\times 2}, \cdot)$ eine Gruppe und damit assoziativ ist, kann 
 anwendung der schnellen exponentiation auf matrizen, beispiel dazu
 (0.75 Seiten)
 
-\newpage
 \subsection{Newton-Raphson-Division} \label{sec:newton-raphson}
 Mithilfe der bereitgestellten Matrix werden nun die Werte ausgerechnet, die bei der Division an $\sqrt{2}$ konvergieren.
 Nun beschäftigen wir uns mit der Darstellung von Kommazahlen und einem Algorithmus zur Berechnung eines Quotienten in dieser Darstellung. \\
@@ -224,14 +223,14 @@ Es kann passieren, dass durch die ständige Verdoppelung der Nachkommastellen, d
 Als illustratives Beispiel berechnen wir $5 / 12$ mit sieben Nachkommastellen. Die Anzahl der Iterationen beträgt $ \lfloor log_27\rfloor = 2$.
 Nach wiederholten bitshiften der Zahl $12$ erhalten wir $(0,1100)_2 = (0,75)_{10}$. Wir berechnen die Zwischenschritte:
 \begin{align}
-  x_0 &= (10,1101.001)_2 - (0,1100)_2 \cdot (1,111)_2 = (1,0110.101)_2 \,; \label{eq:beispiel_x0} \nonumber \\ 
-  x_1 &= (1,0110.101)_2 \cdot (2_{10} - (0,1100)_2 \cdot (1,0110.101)_2) = (1,0101.0100.0001.0101.00)_2  \,; \label{eq:beispiel_x1} \nonumber \\
+  x_0 &= (10,1101.001)_2 - (0,1100)_2 \cdot (1,111)_2 = (1,0110.101)_2 \,; \nonumber \\ 
+  x_1 &= (1,0110.101)_2 \cdot (2_{10} - (0,1100)_2 \cdot (1,0110.101)_2) = (1,0101.0100.0001.0101.00)_2  \,; \nonumber \\
   x_2 &= (1,0101.0100.0001.0101.00)_2 \cdot (2_{10} - (0,1100)_2 \cdot (1,0101.0100.0001.0101.00)_2) \nonumber \\ 
-      &= (1,0101.0101.0101.0100.0010.1000.1011.0101.0100.0000)_2 \,. \label{eq:beispiel_x2} \nonumber
+      &= (1,0101.0101.0101.0100.0010.1000.1011.0101.0100.0000)_2 \,. \nonumber
 \end{align}
 Multipliziert man $x_2$ mit dem geshifteten $a = (0,0101)_2$ und shiftet dieses so weit, so dass die Zahl nur noch sieben Nachkommastellen besitzt, erhält man das
 Ergebnis $(0,0110.101)_2 = (0,4141)_{10}$, welches sich an der dritten dezimalen Nachkommastelle vom eigentlichen Ergebnis $0,41\overline{6}$ abweicht. \\
-
+ 
 Wir sind in der Lage, Divisionen durchzuführen und effizient Werte auszurechnen, die das Ergebnis approximieren.
 
 (1 Seite gedacht, jetzt 2)
