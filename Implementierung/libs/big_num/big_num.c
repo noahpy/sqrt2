@@ -437,8 +437,8 @@ void subtractionBignumSIMD(struct bignum *a, struct bignum b) {
   }
 
   // Remove leading zeros
-  for (int newSize = a->size - 1; newSize >= -1; newSize--) {
-    if (newSize < 0 || a->digits[newSize] != 0) {
+  for (int newSize = a->size - 1; newSize >= 0; newSize--) {
+    if (a->digits[newSize] != 0) {
       a->size = newSize + 1;
       break;
     }
@@ -463,8 +463,8 @@ void subtractionBignum(struct bignum *a, struct bignum b) {
   }
 
   // Remove leading zeros
-  for (int newSize = a->size - 1; newSize >= -1; newSize--) {
-    if (newSize < 1 || a->digits[newSize] != 0) {
+  for (int newSize = a->size - 1; newSize >= 0; newSize--) {
+    if (a->digits[newSize] != 0) {
       a->size = newSize + 1;
       break;
     }
@@ -611,7 +611,7 @@ void shiftRight(struct bignum *a, size_t number) {
 }
 
 // Calculate a/b with newton-raphson: result is in *a
-void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
+void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize, void subtract(struct bignum *, struct bignum)) {
 
   // Treat 1/2 as a edge case
   if (a->digits[0] == 1 && b->digits[0] == 2) {
@@ -652,7 +652,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
   shiftRight(&t1, t1.fracSize - multt2b.fracSize);
   t1.fracSize -= (t1.fracSize - multt2b.fracSize);
 
-  subtractionBignum(&t1, multt2b);
+  subtract(&t1, multt2b);
 
   free(multt2b.digits);
   free(t2.digits);

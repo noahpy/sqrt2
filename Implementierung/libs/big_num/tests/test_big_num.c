@@ -164,7 +164,7 @@ void test_division(struct bignum a, struct bignum b, size_t number,
     printf("%08x_", b.digits[j]);
   }
   printf("%08x, with a fraction size of %zu)", b.digits[0], number);
-  divisionBignum(&a, &b, number);
+  divisionBignum(&a, &b, number, subtractionBignum);
   struct bignum result = a;
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {

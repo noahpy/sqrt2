@@ -28,26 +28,40 @@ void test_run_program(int argc, char *argv[], bool expected){
     }
 
     // redirect stderr 
-    int original_stdout = dup(STDERR_FILENO);
+    int original_stderr = dup(STDERR_FILENO);
+    int original_stdout = dup(STDOUT_FILENO);
     int dev_null = open("/dev/null", O_WRONLY);
     if(dev_null == -1){
         fprintf(stderr, "Can not open /dev/null\n");
         exit(EXIT_FAILURE);
     }
+
     if(dup2(dev_null, STDERR_FILENO) == -1){
+        fprintf(stderr, "Can not redirect stderr to /dev/null\n");
+        exit(EXIT_FAILURE);
+    }
+     if(dup2(dev_null, STDOUT_FILENO) == -1){
         fprintf(stderr, "Can not redirect stdout to /dev/null\n");
         exit(EXIT_FAILURE);
     }
+
 
     // reset optind 
     optind = 1;
     bool result = run_program(argc, argv);
 
-    // reset stderr
-    if(dup2(original_stdout, STDERR_FILENO) == -1){
+    // reset stderr / stdout
+    if(dup2(original_stderr, STDERR_FILENO) == -1){
+        fprintf(stderr, "Can not reset stderr\n");
+        exit(EXIT_FAILURE);
+    }
+    if(dup2(original_stdout, STDOUT_FILENO) == -1){
         fprintf(stderr, "Can not reset stdout\n");
         exit(EXIT_FAILURE);
     }
+
+    close(dev_null);
+
 
     if (result == expected){
         test_passed++;
@@ -87,7 +101,7 @@ int main(){
     test_run_program(2, (char *[]){"./test", "-Bhallo58"}, false);
 
     // -d option: number needs to be greater equal 0
-    test_run_program(2, (char *[]){"./test", "-d0"}, true);
+    test_run_program(2, (char *[]){"./test", "-d3"}, true);
     test_run_program(2, (char *[]){"./test", "-d12"}, true);
     test_run_program(2, (char *[]){"./test", "-d12446"}, true);
     test_run_program(2, (char *[]){"./test", "-d0.0"}, false);
@@ -99,7 +113,7 @@ int main(){
 
     // -h option: does also accept numbers which are greater equal 0
     test_run_program(1, (char *[]){"./test", "-h"}, true);
-    test_run_program(2, (char *[]){"./test", "-h0"}, true);
+    test_run_program(2, (char *[]){"./test", "-h5"}, true);
     test_run_program(2, (char *[]){"./test", "-h12446"}, true);
     test_run_program(2, (char *[]){"./test", "-h0.0"}, false);
     test_run_program(2, (char *[]){"./test", "-h-34"}, false);
@@ -115,13 +129,13 @@ int main(){
     // combine different options
     test_run_program(3, (char *[]){"./test", "-h1", "-V0"}, true);
     test_run_program(3, (char *[]){"./test", "-h1", "-V0.0"}, false);
-    test_run_program(4, (char *[]){"./test", "-h1", "-V0", "-d0"}, true);
+    test_run_program(4, (char *[]){"./test", "-h1", "-V0", "-d3"}, true);
     test_run_program(4, (char *[]){"./test", "-h1", "-V0", "-d0.0"}, false);
-    test_run_program(5, (char *[]){"./test", "-h1", "-V0", "-d0", "-B1"}, true);
-    test_run_program(5, (char *[]){"./test", "-h1", "-V0", "-d0", "-B"}, true);
+    test_run_program(5, (char *[]){"./test", "-h1", "-V0", "-d5", "-B1"}, true);
+    test_run_program(5, (char *[]){"./test", "-h1", "-V0", "-d0", "-B"}, false);
     test_run_program(5, (char *[]){"./test", "-h1", "-V0", "-d0", "-B0.0"}, false);
     test_run_program(5, (char *[]){"./test", "-h1er", "-V0", "-d0", "-B0.0"}, false);
-    test_run_program(4, (char *[]){"./test", "-V0", "-d0", "-B"}, true);
+    test_run_program(4, (char *[]){"./test", "-V0", "-d2", "-B"}, true);
 
     // unknown options
     test_run_program(2, (char *[]){"./test", "-x"}, false);
