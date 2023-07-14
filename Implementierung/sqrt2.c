@@ -45,7 +45,7 @@ struct bignum sqrt2_V2(size_t s) {
 
   size_t n = (size_t)floor(((double)s) * gradient) + 3;
   struct cmp_matrix2x2 r =
-      powCmpMatrix2x2(m, n, karazubaMultiplication, additionBignum);
+      powCmpMatrix2x2(m, n, karazubaMultiplication, additionBignumSIMD);
   divisionBignum2(&r.x, &r.xp1, 2.5 * n, subtractionBignumSIMD);
   free(r.xp1.digits);
   free(r.xm1.digits);
@@ -57,7 +57,7 @@ struct bignum sqrt2_V3(size_t s) {
 
   size_t n = (size_t)floor(((double)s) * gradient) + 3;
   struct cmp_matrix2x2 r =
-      powCmpMatrix2x2(m, n, multiplicationBignumSIMD, additionBignum);
+      powCmpMatrix2x2(m, n, multiplicationBignumSIMD, additionBignumSIMD);
   divisionBignum2(&r.x, &r.xp1, 2.5 * n, subtractionBignumSIMD);
   free(r.xp1.digits);
   free(r.xm1.digits);
