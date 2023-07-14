@@ -9,6 +9,10 @@
 #include <string.h>
 #include "../rahmenprogramm.h"
 
+/**
+ * Test Rahmenprogramm with different options
+ */
+
 
 int test_cases = 0;
 int test_passed = 0;
