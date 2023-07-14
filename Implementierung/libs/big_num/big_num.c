@@ -290,8 +290,13 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
     __m128i sum = _mm_add_epi32(am, bm);
 
     // check in which doublewords there is an overflow
+    // check for overflow in each doubleword
+    __m128i pow = _mm_set1_epi32(-2147483648);
+    __m128i amu = _mm_add_epi32(am, pow);
+    __m128i bmu = _mm_add_epi32(bm, pow);
+    __m128i sumu = _mm_add_epi32(sum, pow);
     __m128i overflow =
-        _mm_or_si128(_mm_cmpgt_epi32(am, sum), _mm_cmpgt_epi32(bm, sum));
+        _mm_or_si128(_mm_cmpgt_epi32(amu, sumu), _mm_cmpgt_epi32(bmu, sumu));
 
     overflow = _mm_and_si128(overflow, ov);
 
