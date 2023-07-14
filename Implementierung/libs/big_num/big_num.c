@@ -432,8 +432,8 @@ void subtractionBignumSIMD(struct bignum *a, struct bignum b) {
   }
 
   // Remove leading zeros
-  for (int newSize = a->size - 1; newSize >= -1; newSize--) {
-    if (newSize < 0 || a->digits[newSize] != 0) {
+  for (int newSize = a->size - 1; newSize >= 0; newSize--) {
+    if (a->digits[newSize] != 0) {
       a->size = newSize + 1;
       break;
     }
@@ -458,8 +458,8 @@ void subtractionBignum(struct bignum *a, struct bignum b) {
   }
 
   // Remove leading zeros
-  for (int newSize = a->size - 1; newSize >= -1; newSize--) {
-    if (newSize < 1 || a->digits[newSize] != 0) {
+  for (int newSize = a->size - 1; newSize >= 0; newSize--) {
+    if (a->digits[newSize] != 0) {
       a->size = newSize + 1;
       break;
     }
