@@ -6,8 +6,8 @@ import numpy as np
 with open("digit.txt", "r") as f:
     lookup = f.read()
 
-TEST_RANGE = 1000
-STEP = 5
+TEST_RANGE = 10000
+STEP = 1000
 
 counts = []  # Store the count values
 iterations = []  # Store the i values
@@ -17,7 +17,7 @@ plt.ion()  # Enable interactive mode
 fig, ax = plt.subplots()
 
 for i in range(1, TEST_RANGE + 1, STEP):
-    result = subprocess.run(['../main', f'-d{i}'], capture_output=True, text=True)
+    result = subprocess.run(['../main','-V3', f'-d{i}'], capture_output=True, text=True)
     output = result.stdout
     errors = result.stderr
     count = 0
@@ -34,6 +34,7 @@ for i in range(1, TEST_RANGE + 1, STEP):
     print(f"Matched {count - 2} digits when requested for {i}. Realtive Error: {abs(i-(count-2))/i}")
     if  i > count - 2:
         print("Fever digits than expected!")
+        print("Output:", output[100:])
     if errors:
         print("Received error messages:", errors)
 
@@ -44,6 +45,8 @@ for i in range(1, TEST_RANGE + 1, STEP):
 
     # Plot the count vs. iterations graph
     ax.plot(iterations, counts, label='Demanded vs Given precision of Sqrt 2')
+    ax.set_xlabel('precision in decimal digits')
+    ax.set_ylabel(f'average runtime of {ITERATION} iterations in s')
     ax.set_xlabel('Demanded Precision')
     ax.set_ylabel('Resulting Precision')
     ax.grid(True)
