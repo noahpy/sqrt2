@@ -245,7 +245,20 @@ ermöglicht, auf Kosten von Laufzeit, die im nächsten Kapitel beleuchtet wird. 
 (1,5 - 2 Seiten?)
 
 \section{Performanzanalyse} \label{sec:performanz}
-Newton Raphson Laufzeit erklären, mit Graphiken demonstrieren, das selbe mit Exponentiation. \\
+Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i7-9700K Prozessor, 3.60GHz, 16 GB Arbeitsspeicher, 
+Ubuntu 20.04, 64 Bit, Linux-Kernel 5.4.0. Kompiliert wurde mit GCC 8.1.0 mit der Option - 03. \par
+Die erste Implementierung nutzt eine herkömmliche Matrix und alle naiven Implementierungen der Arithmetik von Big-Nums, 
+die zweite nutzt kompakte Matrizen, die die Anzahl der Rechnungen minimiert, Addition und Subtraktion in SIMD und die Karazuba-Multiplikation. Die dritte gleicht der zweiten, nur mit dem Unterschied, dass statt der 
+Karazuba-Multiplikation eine SIMD Implementierung der Multiplikation verwendet wird. \par
+
+Die Berechnungen wurden mit Eingabegrößen von 1 bis 10000 dezimalen Nachkommastellen jeweils 20 mal durchgeführt und das arithmetische Mittel für jede Eingabegröße wurde in das Diagramm aus Abbildung \ref{img:performanz-diagramm} 
+eingetragen.
+\begin{figure}[h] \centering
+  \includegraphics[scale=0.4]{graphiken/fixpunktzahlen-wertebereich.png} 
+  \caption{Performanz der einzelnen Implementierungen} \label{img:performanz-diagramm}
+\end{figure} 
+
+
 Vergleichsimplementierungen ansetzen (SIMD, nicht SIMD? / Karazuba, normale Multiplikation / Bitshifts?), Graphisch laufzeiten vergleichen, tatsächliche Performanz erklären und schlussfolgern. \\
 (2 - 3 Seiten)
 
