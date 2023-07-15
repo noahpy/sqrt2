@@ -22,14 +22,18 @@
 \maketitle
 
 \section{Einleitung} \label{sec:einleitung}
-Schon im 1800 Jahrhundert v. Chr. beschäftigten sich die Babylonier mit der Quadratwurzel aus zwei. Mit $\tfrac {30547}{21600} = 1,\textbf{41421}2962\dots$ schafften sie eine Näherung, die nur
+Schon im 18. Jahrhundert v. Chr. beschäftigten sich die Babylonier mit der Quadratwurzel aus zwei. Mit $\tfrac {30547}{21600} = 1,\textbf{41421}2962\dots$ schafften sie eine Näherung, die nur
 ab der fünften Nachkommastelle vom eigentlichen Ergebnis abweichte \cite{quadratwurzel_aus_2}. Außerdem schafften sie es, mit dem Beweis der Irrationalität der Wurzel aus 2, den ersten Beweis 
 dieser Art aufzustellen, der abseits von Intuition, eine Überlegung und genaue Beweisführung erforderte \cite{lemonde_wurzel_2}. \par
 
 Der Nutzen der bekanntesten irrationalen Zahl ist heute im Alltag weitreichend. So ist beim internationalen Standard für Papierformate das Seitenverhältnis stets $\frac{1}{\sqrt{2}}$ \cite{papierformat}. 
 Dies hat zur Folge, dass beim Halbieren "des Blattes entlang der längeren Seite wieder ein Blatt im DIN-A-Format [...] entsteht" \cite{quadratwurzel_aus_2}. \par
 
-In dieser Arbeit werden wir uns damit beschäftigen, wie man eine beliebige Anzahl an Nachkommastellen aus der Quadratwurzel aus zwei berechnet. Zu Beginn setzen wir uns dafür damit auseinander, 
+In dieser Arbeit werden wir uns damit beschäftigen, wie man eine beliebige Anzahl an Nachkommastellen aus der Quadratwurzel aus zwei mit folgenden Verfahren berechnet.
+\begin{align}
+    \begin{pmatrix} 0 \ 1 \\ 1 \ 2\end{pmatrix}^n = \begin{pmatrix} x_{n-1} \ x_n \\ x_n \ x_{n+1}\end{pmatrix} \Leftrightarrow \lim_{n \to \infty} 1 + \frac{x_n}{x_{n+1}} = \sqrt{2} \nonumber
+\end{align}
+Zu Beginn setzen wir uns dafür damit auseinander, 
 wie man Zahlen mit beliebiger Größe speichern kann und arithmetische Operationen ausführen kann. Als nächstes wird beleuchtet, wie wir mithilfe von Matrizen und der schnellen Exponentiation
 an den Wert von $\sqrt{2}$ approximieren. Es wird die Genauigkeit der Endergebnisse erläutert und zum Schluss die Performanz des Programms mithilfe von Vergleichsimplementierungen bewertet.
 
@@ -293,7 +297,19 @@ Die Umwandlung von hexadezimaler Präzision $n$ in binärer Präzision $i$ läß
   i \geq \left\lceil n \cdot \frac{\ln(16)}{\ln(2)}\right\rceil = n \cdot 4 \nonumber
 \end{align}
 Diese Korrelationen wurden im Code umgesetzt (\texttt{decimal\_place\_converter.c}).
-Außerdem wurde durch Messungen die Anzahl an konvergenten Nachkommastellen in Abhängigkeit zum Matrixexponenten $n$ ermittelt, die sich als logarithmischen Wachstum herausstellte. Dieser läßt sich gut durch einem linearen Wachstum annähern, da ein logarithmisches Wachstum sich zunehmend linear verhält. Somit läßt sich für eine gegebene Anzahl an konvergenten Nachkommastellen ein approximatives Minimum des Matrixexponenten rückrechnen (siehe \texttt{sqrt2.c}). Die jetzige Approximierung rechnet ca. 0.5\% mehr konvergente Nachkommastellen aus als benötigt. Hierdurch ist unser Programm nicht nur auf den geforderten Nachkommastellen präzise, sondern auch exakt.
+Außerdem wurde durch Messungen die Anzahl an konvergenten Nachkommastellen in Abhängigkeit zum Matrixexponenten $n$ ermittelt, die sich als logarithmischen Wachstum herausstellte. Dieser läßt sich gut durch einem linearen Wachstum annähern, da ein logarithmisches Wachstum sich zunehmend linear verhält. Somit läßt sich für eine gegebene Anzahl an konvergenten Binärnachkommastellen (Eingabe von \texttt{sqrt2}) ein approximatives Minimum des Matrixexponenten rückrechnen (siehe \texttt{sqrt2.c}). Die aktuelle Approximierung rechnet ca. 0.5\% mehr konvergente Nachkommastellen aus als benötigt. Hierdurch ist unser Programm nicht nur auf den geforderten Nachkommastellen präzise, sondern auch exakt.
+Hier sind einige Beispiele, die dieses Verhalten demonstrieren:
+
+\begin{verbatim}
+$ ./main -d100
+1.414213562373095048801688724209698078569671875376948073176679737990732478
+4621070388503875343276415727
+\end{verbatim}
+
+\begin{verbatim}
+$ ./main -h10
+0x1.6a09e667f3
+\end{verbatim}
 
 \section{Performanzanalyse} \label{sec:performanz}
 \begin{figure}
