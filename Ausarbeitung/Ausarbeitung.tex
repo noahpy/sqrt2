@@ -250,12 +250,36 @@ vorgestellte Algorithmus.
 Wir sind in der Lage, Divisionen durchzuführen und effizient Werte auszurechnen, die das Ergebnis approximieren.
 
 % TODO: Je nach Aufgabenstellung einen der Begriffe wählen
-\section{Genauigkeit} \label{sec:genauigkeit}
-Wahrscheinlich Genauigkeit, da es die Aufgabe ist, $\sqrt{2}$ beliebig genau darzustellen. \\
+\section{Korrektheit und Genauigkeit} \label{sec:genauigkeit}
+In dieser Sektion wird die Korrektheit bzw. die Genauigkeit des Ansatzes und seiner Implementierung belegt und erläutert. Da das Belgen der Korrektheit des Gesamtansatzes über die Anforderungen dieses Projektes hinaus gehen, werden wir uns auf die Korrektheit und Genauigkeit unserer Implementierung fokussieren.
 
-Umfangreiche Erklärung darüber, wie die Matrix Elemente an $\sqrt{2}$ konvergiert und Newton-Raphson and die Division. Erklärung, wie die Kombination aus Bignum und Fixkommazahlen unendliche Genauigkeit 
-ermöglicht, auf Kosten von Laufzeit, die im nächsten Kapitel beleuchtet wird. \\ 
-(1,5 - 2 Seiten?)
+\subsection{Korrektheit}
+Wir haben eine Vielzahl an Methoden ergriffen, um die Korrektheit unserer Implementierung sicherzustellen. Einer dieser Aspekte sind Unit-Tests. Unser Code wurde in möglich inkohärente Komponenten aufgeteilt, um diese einzeln auf ihre Korrektheit zu prüfen. Die jeweiligen Tests einer Komponente sind im \texttt{tests} Subordner zu finden. Mehr als die Hälfte von unserer Code-Base ist allein für diesen Zweck dediziert (54\%: 2702 / 4943 Zeilen). Die mathematische Korrektheit der Ansätze der Komponenten wurde beretis oben belegt \ref{sec:loesungsansatz}.
+
+
+Zusätzlich wurden automatisierte System-Tests ausgeführt, die alle Versionen und ihre Ausgaben bis auf 100.000 Dezimalnachkommastellen abgleicht (Implementierung/tests/lookup\_comparison.py). Diese Vergleichs-Nachkommastellen wurden aus mehreren unabhängigen Quellen erhalten \cite{sqrt2_Quelle}, \cite{sqrt2_Quelle2}. Somit wird nicht nur die Korrektheit der einzelnen Komponenten festgestellt, sondern auch die des Gesamtsystems.
+
+Darüber hinaus wurde für jedes neue Feature ein neuer Branch eröffnet, so dass wir die Änderungen gegenseitig kontrolliert und nur unter unabhängiger Zulassung in den \texttt{master}-Branch hinzugefügt haben. Die Bedingungen für eine Zulassung waren das Bestehen von allen Tests, lesbarer Code und eine fehlerfreie statische Analyse per \texttt{valgrind}. Mit dieser Vorgehensweise wurde fehlerfreier und qualitativer Code gewährleistet.
+
+\subsection{Genauigkeit}
+Wie bereits erwähnt in \ref{sec:division}, erlaubt die Struktur von \texttt{bignums} eine Darstellung von beliebig genauen Zahlen. Außerdem wurde gezeigt, dass bei den beiden vorgestellten Divisionsmethoden die Anzahl an errechneten Binärnachkommastellen beliebig bestimmbar ist. Da in unserem Anwendungsfall die Multiplikation, Addition und Subtraktion von \texttt{bignum} nicht mit Fixkommazahlen rechnen müssen, sind diese per Definition (unter Annahme der Korrektheit) unendlich genau, also exakt. Da somit alle benötigten arithmetische Methoden für die Errechung von $\frac{x_n}{x_{n+1}}$ entweder exakt oder beliebig genau bestimmbar sind, ist dieser auf beliebig genaue Binärnachkommastellen bestimmbar.
+
+Ein weitere Aspekt der Genauigkeit ist die korrekte Übersetzung von Dezimalpräzision / Hexadezimalpräzision in Binärpräzision, sowie Bestimmen von beliebig genauen konvergenten Nachkommastellen.
+Die Umwandlung von dezimaler Präzision $n$ in binärer Präzision $i$ läßt sich folgends formulieren:
+\begin{align}
+  2^{-i} \leq 10^{-n} \Leftrightarrow \nonumber \\
+    -i \cdot \ln(2) \leq -n \cdot \ln(10) \Leftrightarrow \nonumber \\
+  i \geq \left\lceil n \cdot \frac{\ln(10)}{\ln(2)} \right\rceil \nonumber
+\end{align} 
+Die Umwandlung von hexadezimaler Präzision $n$ in binärer Präzision $i$ läßt sich folgends formulieren:
+\begin{align}
+  2^{-i} \leq 16^{-n} \Leftrightarrow \nonumber \\
+    -i \cdot \ln(2) \leq -n \cdot \ln(16) \Leftrightarrow \nonumber \\
+  i \geq \left\lceil n \cdot \frac{\ln(16)}{\ln(2)}\right\rceil = n \cdot 4 \nonumber
+\end{align}
+Diese Korrelationen wurden im Code umgesetzt (\texttt{decimal\_place\_converter.c}).
+Außerdem wurde durch iteratives Experimentieren eine Korrelation zwischen der Anzahl an konvergenten Nachkommastellen und dem Matrixexponenten $n$ ermittelt. 
+
 
 \section{Performanzanalyse} \label{sec:performanz}
 Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i7-9700K Prozessor, 3.60GHz, 16 GB Arbeitsspeicher, 
