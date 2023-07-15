@@ -91,13 +91,6 @@ int main () {
               | !compareBignum(compact.xp1, folge.xp1)
                 ) {
             printf("%s\n", "Results do not match.");
-            printf("%d\n", i);
-            printf("%u, %u\n", compact.xm1.digits[0], folge.xm1.digits[0]);
-            printf("%u, %u\n", compact.x.digits[0], folge.x.digits[0]);
-            printf("%u, %u\n", compact.xp1.digits[0], folge.xp1.digits[0]);
-            printf("%zu, %zu\n", compact.xm1.size, folge.xp1.size);
-            printf("%zu, %zu\n", compact.xp1.size, folge.xp1.size);
-            printf("%zu, %zu\n", compact.xp1.size, folge.xp1.size);
             freeResults(n / stepsize, results_normal, results_cmp, results_s);
             return EXIT_FAILURE;
         }
