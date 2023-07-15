@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 import sys
 
 plt.ion()  # Enable interactive mode
+plt.rcParams.update({'font.size': 17})
 
 fig, ax = plt.subplots()
 
 TEST_RANGE = 20000
 STEP = 500
-ITERATION = 5
+ITERATION = 1
 VERSION_START = 0
 VERSION_END = 3
 
@@ -48,9 +49,9 @@ for i in range(1, TEST_RANGE + 1, STEP):
         ax.plot(precisions, times[j-1], label=f'Average runtime for Version {j} in correlation with demanded precision')
         ax.grid(True)
     ax.set_xlabel('precision in decimal digits')
-    ax.set_ylabel(f'average runtime of {ITERATION} iterations in s')
+    ax.set_ylabel(f'average runtime in s')
 
-    ax.legend()
+    # ax.legend()
     plt.draw()
     plt.pause(0.001)
     print(f"Done {(i / (TEST_RANGE-STEP) * 100):.2f}%", end="\r", flush=True)
