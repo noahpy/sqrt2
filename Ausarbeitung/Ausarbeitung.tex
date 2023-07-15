@@ -72,7 +72,7 @@ Mathematisch lässt sich dies mit den eingangs definierten Big-Nums $a$ und $b$ 
 Im Folgenden wird ein Algorithmus zur schnelleren Berechnung des Produkts erläutert.
 
 \subsection{Karazuba-Multiplikation}
-Dank des Karazuba-Algorithmus kann die Laufzeit der Multiplikation auf $\mathcal{O}(n^{1.59})$ verringert werden.
+Dank des Karazuba-Algorithmus kann die Laufzeit der Multiplikation auf $\mathcal{O}(n^{\log_2(3)}) = \mathcal{O}(n^{1.59})$\cite{the_art_of_programming} verringert werden.
 Dafür werden die zu multiplizierenden Zahlen in die Form $a_0+2^ma_1$ gebracht, wobei $a_0$ und $a_1$ maximal die Größe $\lceil\frac{n}{2}\rceil$ haben.
 Durch folgende Umformung kann $ab$ mit nur noch drei $\lceil\frac{n}{2}\rceil$ großen Multiplikationen und sechs zu vernachlässigenden Additionen bzw. Subtraktionen und einigen shifts ermittelt werden:
 \begin{align*}
@@ -81,6 +81,14 @@ a b &= (a_0+2^ma_1) (b_0+2^mb_1)\\
       &= a_0b_0 + 2^m(\mathbf{a_0b_1 + a_1b_0}) + 2^{2m}a_1b_1\\
       &= a_0b_0 + 2^m(\mathbf{a_0b_1 + a_1b_0 + a_0b_0 + a_1b_1} - a_0b_0 - a_1b_1) + 2^{2m}a_1b_1\\
       &= a_0b_0 + 2^m(\mathbf{(a_0+a_1)(b_0+b_1)} - a_0b_0 - a_1b_1) + 2^{2m}a_1b_1 \, .
+\end{align*}
+Kann eines der Zwischenprodukte immer noch nicht durch eingebaute CPU-Instruktionen berechnet werden, kann der Algorithmus rekursiv angewendet werden oder auch ab einer bestimmten Grenze auf die russische Bauernmultiplikation zurückgegriffen werden.
+Zur Veranschaulichung ein Beispiel mit $0x0001.0002 \cdot 0x0003.0004$ unter der Annahme, dass wir 16-bit Zahlen mit der CPU multiplizieren können:
+\begin{align*}
+      a &= 0x0002 + 2^40x0001, b = 0x0004 + 2^40x0003 \\
+      a_0b_0 &= 0x0000.0008, a_1b_1 = 0x0000.0003, (a_0+a_1)(b_0+b_1) = 0x0000.0015 \\
+      ab &= 0x0000.0003.0000.0008 + 2^4(0x0000.0015-0x0000.0008-0x0000.0003) \\
+      &= 0x0000.0003.000a.0008 \, .
 \end{align*}
 
 \subsection{Matrixmultiplikation}
@@ -100,20 +108,20 @@ Die Matrixmultiplikation kann wie nach Definition implementiert werden. Um zwei 
       a_{21}b_{11}+a_{22}b_{21} & a_{21}b_{12}+a_{22}b_{22}
       \end{matrix}\right) \, .
 \]
-Da die Laufzeit der Multiplikation länger ist als die der Addition, ist es das Ziel, die Anzahl der Multiplikationen zu minimieren. \\
+Da die Multiplikation in einer schlechteren Laufzeitklasse ist als die Addition, ist es erstrebenswert, die Anzahl der Multiplikationen zu minimieren. \\
 Für allgemeine $\mathbb{N}^{2\times2}$ Matrizen wären keine Optimierungen mehr möglich, allerdings befindet sich die Matrix
 \begin{equation*}
   \left(\begin{matrix}
       0 & 1 \\
       1 & 2
-  \end{matrix}\right) \quad \text{in der Form} \quad
+  \end{matrix}\right) \quad \text{in der symmetrischen Form} \quad
   \left(\begin{matrix}
       x_{n-1} & x_n \\
       x_n     & x_{n+1}
   \end{matrix}\right) \, ,
 \end{equation*}
 die bei der Multiplikation mit sich selbst beibehalten wird.
-Diese Eigenschaft macht es nicht nur möglich, die Anzahl der gespeicherten Werte von 4 auf drei zu reduzieren, sondern auch die Anzahl der Multiplikationen auf vier zu halbieren:
+Diese Eigenschaft macht es nicht nur möglich, die Anzahl der gespeicherten Werte von vier auf drei zu reduzieren, sondern auch die Anzahl der Multiplikationen auf vier zu halbieren:
 \[
 \left(\begin{matrix}
       x_{n-1} & x_n\\
@@ -158,10 +166,10 @@ Um dieses Problem effizienter zu lösen, werfen wir einen Blick auf die Potenzge
   a^{n+m} &= \overbrace{a\dots a}^{n+m} = \overbrace{(a\dots a)}^n \overbrace{(a\dots a)}^m = a^n a^m \quad \text{und} \label{exponenten_addition} \\
   a^{nm} &= \overbrace{a\dots a}^{nm} = \underbrace{\overbrace{(a \dots a)}^n \dots \overbrace{(a \dots a)}^n}_m = (a^n)^{^m} \, . \label{exponenten_multiplikation}
 \end{align}
-Wenn man also $a^n$ und $a^m$ effizienter als mit $n+m$ Multiplikationen berechnen kann, kann man auch $a^{n+m}$ mit \ref{exponenten_addition} effizient berechnen.\par
+Wenn man also $a^n$ und $a^m$ effizienter als mit $n+m-2$ Multiplikationen berechnen kann, kann man auch $a^{n+m}$ mit \ref{exponenten_addition} effizient berechnen.\par
 Bei der schnellen Exponentiation ermittelt man rechnerisch durch wiederholtes Quadrieren alle $a^{(2^k)}$ mit $2^k \le n$. Denn nach \ref{exponenten_multiplikation} gilt:
 \[ {\left( a^{(2^k)} \right)}^2 = a^{(2 \cdot 2^k)} = a^{(2^{k+1})}.\]
-Um $a^n$ mit $n=2^k$ zu erhalten, sind damit nur noch $k=\log_2n$ Multiplikationen notwendig. \par
+Zur Berechnung von $a^n$ mit $n=2^k$ sind damit nur noch $k=\log_2n$ Multiplikationen notwendig. \par
 Um nun auch Potenzen mit $n\in\mathbb{N}$ berechnen zu können, nutzt man \ref{exponenten_addition}. 
 Jede Zahl $n\in\mathbb{N}$ kann durch Addition von Zweierpotenzen dargestellt werden, siehe das Binärsystem. \par
 Sei $n$ in Binärdarstellung $2^0b_0+2^1b_1+2^2b_2+\dots+2^nb_n$, so erhält man $a^n$ laut \ref{exponenten_addition} mit:
@@ -176,7 +184,7 @@ Auch wenn diese Gleichung auf den ersten Blick nach der Anwendung des Kommutativ
 % Ein Beispiel:
 % \[ 7^3\cdot7^4 = \overbrace{(7\cdot7\cdot7)}^3\cdot\overbrace{(7\cdot7\cdot7\cdot7)}^4 = \overbrace{(7\cdot7\cdot7\cdot7)}^4\cdot\overbrace{(7\cdot7\cdot7)}^3 = 7^4 \cdot 7^3 \, . \]
 Demnach macht es keinen Unterschied, ob zuerst $a^{(2^k)}$ mit dem kleinsten oder dem größten $k$ aufmultipliziert wird.\par
-Da $(\mathbb{N}^{2\times 2}, \cdot)$ eine Gruppe und damit assoziativ ist, kann die schnelle Exponentiation auch für das lösen von $a\in\mathbb{N}^{2\times 2}$ genutzt werden.
+$(\mathbb{N}^{2\times 2}, \cdot)$ ist eine Gruppe und damit assoziativ ist, deshalb kann die schnelle Exponentiation auch für das lösen von $a\in\mathbb{N}^{2\times 2}$ genutzt werden.
 Zur Verdeutlichung berechnen wir das Beispiel $a^3$ für $a = \left(\begin{matrix} 0 & 1 \\ 1 & 2 \end{matrix}\right)$. Die Binärdarstellung von $3$ lautet $(11)_2$, wir multiplizieren also $a^1$ und $a^2$ aufeinander: 
 \begin{equation*} \label{eq:beispiel_matrixexp}
   \left(\begin{matrix} 0 & 1 \\ 1 & 2 \end{matrix}\right) \left(\begin{matrix} 0 & 1 \\ 1 & 2 \end{matrix}\right)^2 = \left(\begin{matrix} 0 & 1 \\ 1 & 2 \end{matrix}\right) \left(\begin{matrix} 1 & 2 \\ 2 & 5 \end{matrix}\right) = 
@@ -214,7 +222,7 @@ In der i-ten Ausführung der Schleife ergibt sich folgende Fallunterscheidung:
 \end{itemize}
 
 \begin{figure}[h] \centering
-  \includegraphics[scale=0.25]{graphiken/division-example.png} 
+  %\includegraphics[scale=0.25]{graphiken/division-example.png} 
   \caption{Die einzelnen Rechenschritte zur Berechnung der Division} \label{img:beispiel_division}
 \end{figure} 
 
@@ -273,7 +281,7 @@ Karazuba-Multiplikation eine SIMD Implementierung der Multiplikation verwendet w
 Die Berechnungen wurden mit Eingabegrößen von 1 bis 10000 dezimalen Nachkommastellen jeweils 20 mal durchgeführt und das arithmetische Mittel für jede Eingabegröße wurde in das Diagramm aus Abbildung \ref{img:performanz-diagramm} 
 eingetragen.
 \begin{figure}[h] \centering
-  \includegraphics[scale=0.25]{graphiken/performanz-diagramm.jpg} 
+  %\includegraphics[scale=0.25]{graphiken/performanz-diagramm.jpg} 
   \caption{Performanz der einzelnen Implementierungen} \label{img:performanz-diagramm}
 \end{figure} 
 
