@@ -15,7 +15,9 @@
 
 \usepackage{amsfonts}
 \usepackage{amsmath}
-
+\usepackage{pgfplots}
+\usepackage{caption}
+\usepackage{subcaption}
 \begin{document}
 \maketitle
 
@@ -54,8 +56,8 @@ Seien $a$ und $b$ zwei Big-Nums, unterteilt in ihre Blöcke von $0$ bis $m$. Fal
 Für die Addition und Subtraktion gilt:
 
 \begin{align}
-  c &= \sum_{i=0}^m (2^{32i} (a_i + b_i)) \quad  \text{und} \label{eq:bignum_addition} \\ 
-  c &= \sum_{i=0}^m (2^{32i} (a_i - b_i)) \, .          \label{eq:bignum_subtraktion}
+  c &= \sum_{i=0}^m \left(2^{32i} (a_i + b_i)\right) \quad  \text{und} \label{eq:bignum_addition} \\
+  c &= \sum_{i=0}^m \left(2^{32i} (a_i - b_i)\right) \, .          \label{eq:bignum_subtraktion}
 \end{align}
 
 Hiermit sind beide Operationen trivial mit einer Laufzeit von $\mathcal{O}(n)$ implementiert.
@@ -66,7 +68,7 @@ Für zwei Zahlen der Längen $n, m \in\mathbb{N}$ hat die Bauernmultiplikation a
 Die Multiplikation spielt auf der untersten Ebene für die Matrixmultiplikation und somit auch für die Berechnung von $\sqrt{2}$ eine wichtige Rolle.\\
 Mathematisch lässt sich dies mit den eingangs definierten Big-Nums $a$ und $b$ folgendermaßen darstellen:
 \begin{equation}
-  c = \sum_{i=0}^m (2^{32i} b_i \sum_{j=0}^m 2^{32j}a_j) \, .
+  c = \sum_{i=0}^m \left(2^{32i} b_i \sum_{j=0}^m 2^{32j}a_j\right) \, .
 \end{equation}
 
 Im Folgenden wird ein Algorithmus zur schnelleren Berechnung des Produkts erläutert.
@@ -222,7 +224,7 @@ In der i-ten Ausführung der Schleife ergibt sich folgende Fallunterscheidung:
 \end{itemize}
 
 \begin{figure}[h] \centering
-  \includegraphics[scale=0.25]{graphiken/division-example.png} 
+  \includegraphics[scale=0.25]{graphiken/division-example.png}
   \caption{Die einzelnen Rechenschritte zur Berechnung der Division} \label{img:beispiel_division}
 \end{figure} 
 
@@ -271,8 +273,43 @@ Umfangreiche Erklärung darüber, wie die Matrix Elemente an $\sqrt{2}$ konvergi
 ermöglicht, auf Kosten von Laufzeit, die im nächsten Kapitel beleuchtet wird. \\ 
 (1,5 - 2 Seiten?)
 
+
 \section{Performanzanalyse} \label{sec:performanz}
-Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i7-9700K Prozessor, 3.60GHz, 16 GB Arbeitsspeicher, 
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+      \centering
+\pgfplotsset{scaled x ticks=false}
+\begin{tikzpicture}
+\begin{axis}[width=1.1\textwidth]
+\addplot[color=blue!50!cyan, smooth,very thick] table [x=n, y=a, col sep=comma] {graphiken/matrix_exp.csv};
+\addplot[color=cyan!50!lime, smooth, very thick] table [x=n, y=b, col sep=comma] {graphiken/matrix_exp.csv};
+\addplot[color=orange, smooth, very thick] table [x=n, y=c, col sep=comma] {graphiken/matrix_exp.csv};
+\node[text=blue!50!cyan,fill=white,align=center,anchor=west,scale=0.8,inner sep=5pt] at (700, 75){Normale \\Matrix};
+\node[text=cyan!50!lime,fill=white,align=center,anchor=west,scale=0.8,inner sep=5pt] at (700, 250){Folge};
+\node[text=orange,align=center,anchor=west,scale=0.8,inner sep=5pt] at (550, -5){Kompakte Matrix};
+\end{axis}
+\end{tikzpicture}
+\caption{Matrixexponentiationen}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+      \centering
+\begin{tikzpicture}
+\begin{axis}[width=1.1\textwidth]
+\addplot[color=red!80!orange, smooth,very thick] table [x=n, y=a, col sep=comma] {graphiken/matrix_mul.csv};
+\addplot[color=blue!50!orange, smooth, very thick] table [x=n, y=b, col sep=comma] {graphiken/matrix_mul.csv};
+\node[color=red!80!orange,fill=white,align=center,anchor=west,scale=0.8,inner sep=5pt] at (100, 150){Normale Multiplikation};
+\node[text=blue!50!orange,align=center,anchor=west,scale=0.8,inner sep=5pt] at (190, 5){Kompakte Multiplikation};
+\end{axis}
+\end{tikzpicture}
+\caption{Matrixmultiplikationen}
+\end{subfigure}
+\caption{Performanz der Operationen}
+\end{figure}
+
+
+
+Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i7-9700K Prozessor, 3.60GHz, 16 GB Arbeitsspeicher,
 Ubuntu 20.04, 64 Bit, Linux-Kernel 5.4.0 ausgeführt. Kompiliert wurde mit der Option -03 mit GCC 8.1.0. \par
 Die Hauptimplementierung nutzt eine herkömmliche Matrix und alle naiven Implementierungen der Arithmetik von Big-Nums, die erste Vergleichsimplementierung nutzt kompakte Matrizen statt der herkömmlichen. 
 Die zweite Vergleichsimplementierung nutzt neben kompakten Matrizen auch die Addition und Subtraktion in SIMD und die Karazuba-Multiplikation. Die Dritte gleicht der zweiten, nur mit dem Unterschied, dass statt der 
@@ -281,7 +318,7 @@ Karazuba-Multiplikation eine SIMD Implementierung der Multiplikation verwendet w
 Die Berechnungen wurden mit Eingabegrößen von 1 bis 10000 dezimalen Nachkommastellen jeweils 20 mal durchgeführt und das arithmetische Mittel für jede Eingabegröße wurde in das Diagramm aus Abbildung \ref{img:performanz-diagramm} 
 eingetragen.
 \begin{figure}[h] \centering
-  \includegraphics[scale=0.25]{graphiken/performanz-diagramm.jpg} 
+  \includegraphics[scale=0.25]{graphiken/performanz-diagramm.jpg}
   \caption{Performanz der einzelnen Implementierungen} \label{img:performanz-diagramm}
 \end{figure} 
 
