@@ -22,14 +22,18 @@
 \maketitle
 
 \section{Einleitung} \label{sec:einleitung}
-Schon im 1800 Jahrhundert v. Chr. beschäftigten sich die Babylonier mit der Quadratwurzel aus zwei. Mit $\tfrac {30547}{21600} = 1,\textbf{41421}2962\dots$ schafften sie eine Näherung, die nur
+Schon im 18. Jahrhundert v. Chr. beschäftigten sich die Babylonier mit der Quadratwurzel aus zwei. Mit $\tfrac {30547}{21600} = 1,\textbf{41421}2962\dots$ schafften sie eine Näherung, die nur
 ab der fünften Nachkommastelle vom eigentlichen Ergebnis abweichte \cite{quadratwurzel_aus_2}. Außerdem schafften sie es, mit dem Beweis der Irrationalität der Wurzel aus 2, den ersten Beweis 
 dieser Art aufzustellen, der abseits von Intuition, eine Überlegung und genaue Beweisführung erforderte \cite{lemonde_wurzel_2}. \par
 
 Der Nutzen der bekanntesten irrationalen Zahl ist heute im Alltag weitreichend. So ist beim internationalen Standard für Papierformate das Seitenverhältnis stets $\frac{1}{\sqrt{2}}$ \cite{papierformat}. 
 Dies hat zur Folge, dass beim Halbieren "des Blattes entlang der längeren Seite wieder ein Blatt im DIN-A-Format [...] entsteht" \cite{quadratwurzel_aus_2}. \par
 
-In dieser Arbeit werden wir uns damit beschäftigen, wie man eine beliebige Anzahl an Nachkommastellen aus der Quadratwurzel aus zwei berechnet. Zu Beginn setzen wir uns dafür damit auseinander, 
+In dieser Arbeit werden wir uns damit beschäftigen, wie man eine beliebige Anzahl an Nachkommastellen aus der Quadratwurzel aus zwei mit folgenden Verfahren berechnet.
+\begin{align}
+    \begin{pmatrix} 0 \ 1 \\ 1 \ 2\end{pmatrix}^n = \begin{pmatrix} x_{n-1} \ x_n \\ x_n \ x_{n+1}\end{pmatrix} \Leftrightarrow \lim_{n \to \infty} 1 + \frac{x_n}{x_{n+1}} = \sqrt{2} \nonumber
+\end{align}
+Zu Beginn setzen wir uns dafür damit auseinander, 
 wie man Zahlen mit beliebiger Größe speichern kann und arithmetische Operationen ausführen kann. Als nächstes wird beleuchtet, wie wir mithilfe von Matrizen und der schnellen Exponentiation
 an den Wert von $\sqrt{2}$ approximieren. Es wird die Genauigkeit der Endergebnisse erläutert und zum Schluss die Performanz des Programms mithilfe von Vergleichsimplementierungen bewertet.
 
@@ -267,7 +271,7 @@ Wir sind in der Lage, Divisionen durchzuführen und effizient Werte auszurechnen
 
 % TODO: Je nach Aufgabenstellung einen der Begriffe wählen
 \section{Korrektheit und Genauigkeit} \label{sec:genauigkeit}
-In dieser Sektion wird die Korrektheit bzw. die Genauigkeit des Ansatzes und seiner Implementierung belegt und erläutert. Da das Belgen der Korrektheit des Gesamtansatzes über die Anforderungen dieses Projektes hinaus gehen, werden wir uns auf die Korrektheit und Genauigkeit unserer Implementierung fokussieren.
+In dieser Sektion wird die Korrektheit bzw. die Genauigkeit des Ansatzes und seiner Implementierung belegt und erläutert. Da das Belgen der Korrektheit des mathematischen Gesamtansatzes über die Anforderungen dieses Projektes hinaus gehen, werden wir uns auf die Korrektheit und Genauigkeit unserer Implementierung fokussieren.
 
 \subsection{Korrektheit}
 Wir haben eine Vielzahl an Methoden ergriffen, um die Korrektheit unserer Implementierung sicherzustellen. Einer dieser Aspekte sind Unit-Tests. Unser Code wurde in möglich inkohärente Komponenten aufgeteilt, um diese einzeln auf ihre Korrektheit zu prüfen. Die jeweiligen Tests einer Komponente sind im \texttt{tests} Subordner zu finden. Mehr als die Hälfte von unserer Code-Base ist allein für diesen Zweck dediziert (54\%: 2702 / 4943 Zeilen). Die mathematische Korrektheit der Ansätze der Komponenten wurde beretis oben belegt \ref{sec:loesungsansatz}.
@@ -275,12 +279,12 @@ Wir haben eine Vielzahl an Methoden ergriffen, um die Korrektheit unserer Implem
 
 Zusätzlich wurden automatisierte System-Tests ausgeführt, die alle Versionen und ihre Ausgaben bis auf 100.000 Dezimalnachkommastellen abgleicht (Implementierung/tests/lookup\_comparison.py). Diese Vergleichs-Nachkommastellen wurden aus mehreren unabhängigen Quellen erhalten \cite{sqrt2_Quelle}, \cite{sqrt2_Quelle2}. Somit wird nicht nur die Korrektheit der einzelnen Komponenten festgestellt, sondern auch die des Gesamtsystems.
 
-Darüber hinaus wurde für jedes neue Feature ein neuer Branch eröffnet, so dass wir die Änderungen gegenseitig kontrolliert und nur unter unabhängiger Zulassung in den \texttt{master}-Branch hinzugefügt haben. Die Bedingungen für eine Zulassung waren das Bestehen von allen Tests, lesbarer Code und eine fehlerfreie statische Analyse per \texttt{valgrind}. Mit dieser Vorgehensweise wurde fehlerfreier und qualitativer Code gewährleistet.
+Darüber hinaus wurde für jedes neue Feature ein neuer Branch eröffnet, so dass wir die Änderungen gegenseitig kontrolliert und nur unter unabhängiger Zulassung in den \texttt{master}-Branch hinzugefügt haben. Die Bedingungen für eine Zulassung waren das Bestehen von allen Tests, lesbarer Code, kompilieren mit den Compilerflags \texttt{-Werror}, \texttt{-Wall}, \texttt{-Wpedantic}, \texttt{-Wextra} und eine fehlerfreie statische Analyse per \texttt{valgrind}. Mit dieser Vorgehensweise wurde fehlerfreier und qualitativer Code gewährleistet, sowie eine schnelle Erkennung von Fehlern.
 
 \subsection{Genauigkeit}
 Wie bereits erwähnt in \ref{sec:division}, erlaubt die Struktur von \texttt{bignums} eine Darstellung von beliebig genauen Zahlen. Außerdem wurde gezeigt, dass bei den beiden vorgestellten Divisionsmethoden die Anzahl an errechneten Binärnachkommastellen beliebig bestimmbar ist. Da in unserem Anwendungsfall die Multiplikation, Addition und Subtraktion von \texttt{bignum} nicht mit Fixkommazahlen rechnen müssen, sind diese per Definition (unter Annahme der Korrektheit) unendlich genau, also exakt. Da somit alle benötigten arithmetische Methoden für die Errechung von $\frac{x_n}{x_{n+1}}$ entweder exakt oder beliebig genau bestimmbar sind, ist dieser auf beliebig genaue Binärnachkommastellen bestimmbar.
 
-Ein weitere Aspekt der Genauigkeit ist die korrekte Übersetzung von Dezimalpräzision / Hexadezimalpräzision in Binärpräzision, sowie Bestimmen von beliebig genauen konvergenten Nachkommastellen. Es muss zwischen konvergenten und normalen Nachkommastellen unterschieden werden, da nicht alle errechneten Nachkommastellen gleich der Nachkommastellen von Wurzel zwei sind.
+Ein weiterer Aspekt der Genauigkeit ist die korrekte Übersetzung von Dezimalpräzision / Hexadezimalpräzision in Binärpräzision, sowie Bestimmen von beliebig genauen konvergenten Nachkommastellen. Es muss zwischen konvergenten und normalen Nachkommastellen unterschieden werden, da nicht alle errechneten Nachkommastellen gleich der Nachkommastellen von Wurzel zwei sind.
 Die Umwandlung von dezimaler Präzision $n$ in binärer Präzision $i$ läßt sich folgends formulieren:
 \begin{align}
   2^{-i} \leq 10^{-n} \Leftrightarrow \nonumber \\
@@ -294,7 +298,19 @@ Die Umwandlung von hexadezimaler Präzision $n$ in binärer Präzision $i$ läß
   i \geq \left\lceil n \cdot \frac{\ln(16)}{\ln(2)}\right\rceil = n \cdot 4 \nonumber
 \end{align}
 Diese Korrelationen wurden im Code umgesetzt (\texttt{decimal\_place\_converter.c}).
-Außerdem wurde durch Messungen die Anzahl an konvergenten Nachkommastellen in Abhängigkeit zum Matrixexponenten $n$ ermittelt, die sich als logarithmischen Wachstum herausstellte. Dieser läßt sich gut durch einem linearen Wachstum annähern, da ein logarithmisches Wachstum sich zunehmend linear verhält. Somit läßt sich für eine gegebene Anzahl an konvergenten Nachkommastellen ein approximatives Minimum des Matrixexponenten rückrechnen (siehe \texttt{sqrt2.c}). Die jetzige Approximierung rechnet ca. 0.5\% mehr konvergente Nachkommastellen aus als benötigt. Hierdurch ist unser Programm nicht nur auf den geforderten Nachkommastellen präzise, sondern auch exakt.
+Außerdem wurde durch Messungen die Anzahl an konvergenten Nachkommastellen in Abhängigkeit zum Matrixexponenten $n$ ermittelt, die sich als logarithmischen Wachstum herausstellte. Dieser läßt sich gut durch einem linearen Wachstum annähern, da ein logarithmisches Wachstum sich zunehmend linear verhält. Somit läßt sich für eine gegebene Anzahl an konvergenten Binärnachkommastellen (Eingabe von \texttt{sqrt2}) ein approximatives Minimum des Matrixexponenten rückrechnen (siehe \texttt{sqrt2.c}). Die aktuelle Approximierung rechnet ca. 0.5\% mehr konvergente Nachkommastellen aus als benötigt. Hierdurch ist unser Programm nicht nur auf den geforderten Nachkommastellen präzise, sondern auch exakt.
+Hier sind einige Beispiele, die dieses Verhalten demonstrieren:
+
+\begin{verbatim}
+$ ./main -d100
+1.414213562373095048801688724209698078569671875376948073176679737990732478
+4621070388503875343276415727
+\end{verbatim}
+
+\begin{verbatim}
+$ ./main -h10
+0x1.6a09e667f3
+\end{verbatim}
 
 
 \section{Performanzanalyse} \label{sec:performanz}
