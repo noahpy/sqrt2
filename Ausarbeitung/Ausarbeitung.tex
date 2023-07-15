@@ -296,18 +296,18 @@ Die Umwandlung von hexadezimaler Präzision $n$ in binärer Präzision $i$ läss
 \end{align}
 Diese Korrelationen wurden im Code umgesetzt (\texttt{decimal\_place\_converter.c}).
 Außerdem wurde durch Messungen die Anzahl an konvergenten Nachkommastellen in Abhängigkeit zum Matrixexponenten $n$ ermittelt, die sich als logarithmischen Wachstum herausstellte. Dieser lässt sich gut durch einem linearen Wachstum annähern, da ein logarithmisches Wachstum sich zunehmend linear verhält. Somit lässt sich für eine gegebene Anzahl an konvergenten Binärnachkommastellen (Eingabe von \texttt{sqrt2}) ein approximatives Minimum des Matrixexponenten rückrechnen (siehe \texttt{sqrt2.c}). Die aktuelle Approximierung rechnet ca. 0.5\% mehr konvergente Nachkommastellen aus als benötigt. Hierdurch ist unser Programm stets auf den geforderten Nachkommastellen präzise.
-% Hier sind einige Beispiele, die dieses Verhalten demonstrieren:
+Hier sind einige Beispiele, die dieses Verhalten demonstrieren:
 %
-% \begin{verbatim}
-% $ ./main -d100
-% 1.414213562373095048801688724209698078569671875376948073176679737990732478
-% 4621070388503875343276415727
-% \end{verbatim}
+\begin{verbatim}
+$ ./main -d100
+1.414213562373095048801688724209698078569671875376948073176679737990732478
+4621070388503875343276415727
+\end{verbatim}
 %
-% \begin{verbatim}
-% $ ./main -h10
-% 0x1.6a09e667f3
-% \end{verbatim}
+\begin{verbatim}
+$ ./main -h10
+0x1.6a09e667f3
+\end{verbatim}
 
 \section{Performanzanalyse} \label{sec:performanz}
 \begin{figure}[h] \centering
