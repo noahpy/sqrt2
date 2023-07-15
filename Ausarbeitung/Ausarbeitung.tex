@@ -280,7 +280,7 @@ Darüber hinaus wurde für jedes neue Feature ein neuer Branch eröffnet, so das
 \subsection{Genauigkeit}
 Wie bereits erwähnt in \ref{sec:division}, erlaubt die Struktur von \texttt{bignums} eine Darstellung von beliebig genauen Zahlen. Außerdem wurde gezeigt, dass bei den beiden vorgestellten Divisionsmethoden die Anzahl an errechneten Binärnachkommastellen beliebig bestimmbar ist. Da in unserem Anwendungsfall die Multiplikation, Addition und Subtraktion von \texttt{bignum} nicht mit Fixkommazahlen rechnen müssen, sind diese per Definition (unter Annahme der Korrektheit) unendlich genau, also exakt. Da somit alle benötigten arithmetische Methoden für die Errechung von $\frac{x_n}{x_{n+1}}$ entweder exakt oder beliebig genau bestimmbar sind, ist dieser auf beliebig genaue Binärnachkommastellen bestimmbar.
 
-Ein weitere Aspekt der Genauigkeit ist die korrekte Übersetzung von Dezimalpräzision / Hexadezimalpräzision in Binärpräzision, sowie Bestimmen von beliebig genauen konvergenten Nachkommastellen.
+Ein weitere Aspekt der Genauigkeit ist die korrekte Übersetzung von Dezimalpräzision / Hexadezimalpräzision in Binärpräzision, sowie Bestimmen von beliebig genauen konvergenten Nachkommastellen. Es muss zwischen konvergenten und normalen Nachkommastellen unterschieden werden, da nicht alle errechneten Nachkommastellen gleich der Nachkommastellen von Wurzel zwei sind.
 Die Umwandlung von dezimaler Präzision $n$ in binärer Präzision $i$ läßt sich folgends formulieren:
 \begin{align}
   2^{-i} \leq 10^{-n} \Leftrightarrow \nonumber \\
@@ -294,8 +294,7 @@ Die Umwandlung von hexadezimaler Präzision $n$ in binärer Präzision $i$ läß
   i \geq \left\lceil n \cdot \frac{\ln(16)}{\ln(2)}\right\rceil = n \cdot 4 \nonumber
 \end{align}
 Diese Korrelationen wurden im Code umgesetzt (\texttt{decimal\_place\_converter.c}).
-Außerdem wurde durch iteratives Experimentieren eine Korrelation zwischen der Anzahl an konvergenten Nachkommastellen und dem Matrixexponenten $n$ ermittelt. 
-
+Außerdem wurde durch Messungen die Anzahl an konvergenten Nachkommastellen in Abhängigkeit zum Matrixexponenten $n$ ermittelt, die sich als logarithmischen Wachstum herausstellte. Dieser läßt sich gut durch einem linearen Wachstum annähern, da ein logarithmisches Wachstum sich zunehmend linear verhält. Somit läßt sich für eine gegebene Anzahl an konvergenten Nachkommastellen ein approximatives Minimum des Matrixexponenten rückrechnen (siehe \texttt{sqrt2.c}). Die jetzige Approximierung rechnet ca. 0.5\% mehr konvergente Nachkommastellen aus als benötigt. Hierdurch ist unser Programm nicht nur auf den geforderten Nachkommastellen präzise, sondern auch exakt.
 
 
 \section{Performanzanalyse} \label{sec:performanz}
