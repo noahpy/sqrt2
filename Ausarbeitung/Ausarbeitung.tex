@@ -311,7 +311,7 @@ $ ./main -h10
 
 \section{Performanzanalyse} \label{sec:performanz}
 \begin{figure}[h] \centering
-  \includegraphics[scale=0.25]{graphiken/performanz-diagramm.jpg}
+  \includegraphics[scale=0.4]{graphiken/performanz-diagramm.jpg}
   \caption{Performanz der einzelnen Implementierungen} \label{img:performanz-diagramm}
 \end{figure} 
 
@@ -348,12 +348,12 @@ $ ./main -h10
 \end{figure}
 
 Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i7-9700K Prozessor, 3.60GHz, 16 GB Arbeitsspeicher,
-Ubuntu 20.04, 64 Bit, Linux-Kernel 5.4.0 ausgeführt. Kompiliert wurde mit der Option -03 mit GCC 8.1.0. \par
+Ubuntu 20.04, 64 Bit, Linux-Kernel 5.4.0 ausgeführt. Kompiliert wurde mit der Option -01 mit GCC 8.1.0. \par
 Die Hauptimplementierung nutzt eine herkömmliche Matrix und alle naiven Implementierungen der Arithmetik von Big-Nums, die erste Vergleichsimplementierung nutzt kompakte Matrizen statt der herkömmlichen. 
 Die zweite Vergleichsimplementierung nutzt neben kompakten Matrizen auch die Addition und Subtraktion in SIMD und die Karazuba-Multiplikation. Die Dritte gleicht der zweiten, nur mit dem Unterschied, dass statt der 
 Karazuba-Multiplikation eine SIMD Implementierung der Multiplikation verwendet wird. \par
 
-Die Berechnungen wurden mit Eingabegrößen von 1 bis 10000 dezimalen Nachkommastellen jeweils 20 mal durchgeführt und das arithmetische Mittel für jede Eingabegröße wurde in das Diagramm aus Abbildung \ref{img:performanz-diagramm} 
+Die Berechnungen wurden mit Eingabegrößen von 1 bis 20000 dezimalen Nachkommastellen jeweils 10 mal durchgeführt und das arithmetische Mittel für jede Eingabegröße wurde in das Diagramm aus Abbildung \ref{img:performanz-diagramm} 
 eingetragen.
 
 An dem Diagramm ist zu erkennen, dass die Hauptimplementierung langsamer ist als die drei Vergleichsimplementierungen. Dies liegt zum Einen an der Tatsache, dass die kompakten Matrizen deutlich Rechenzeit einsparen, wie man im direkten Vergleich in Abbildung \ref{fig:performanz-matrix} erkennen kann. Zum 
