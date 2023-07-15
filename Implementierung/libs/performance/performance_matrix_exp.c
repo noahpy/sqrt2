@@ -40,15 +40,15 @@ int main () {
     // https://gra.caps.in.tum.de/b/9a48e342ee6b6a950c3b5102a9e18ddc9b5ccb5c750110e8ee507345d263fb6a/v8-0.pdf
     size_t n = 10001;
     size_t iterations = 1000;
-    size_t stepsize = 100;
+    size_t stepsize = 50;
     printf("Running tests for matrix exponentiation for n up to %zu in steps of size %zu: %zu exponentiation in total\n", n, stepsize, n / stepsize);
 
     struct matrix2x2 results_normal[n/stepsize];
     struct timespec start_normal;
     clock_gettime(CLOCK_MONOTONIC, &start_normal);
-    for (int i = 0; i < n / stepsize; i++) {
+    for (size_t i = 0; i < n / stepsize; i++) {
         struct matrix2x2 base = {bignumOfInt(0), bignumOfInt(1), bignumOfInt(1), bignumOfInt(2)};
-        results_normal[i] = powMatrix2x2(base, i * stepsize, multiplicationBignum);
+        results_normal[i] = powMatrix2x2(base, i * stepsize, multiplicationBignum, additionBignum);
     }
     struct timespec end_normal;
     clock_gettime(CLOCK_MONOTONIC, &end_normal);
@@ -58,9 +58,9 @@ int main () {
     struct cmp_matrix2x2 results_cmp[n];
     struct timespec start_cmp;
     clock_gettime(CLOCK_MONOTONIC, &start_cmp);
-    for (int i = 0; i < n / stepsize; i++) {
+    for (size_t i = 0; i < n / stepsize; i++) {
         struct cmp_matrix2x2 base = {bignumOfInt(0), bignumOfInt(1), bignumOfInt(2)};
-        results_cmp[i] = powCmpMatrix2x2(base, i * stepsize, multiplicationBignum);
+        results_cmp[i] = powCmpMatrix2x2(base, i * stepsize, multiplicationBignum, additionBignum);
     }
     struct timespec end_cmp;
     clock_gettime(CLOCK_MONOTONIC, &end_cmp);
@@ -70,7 +70,7 @@ int main () {
     struct cmp_matrix2x2 results_s[n];
     struct timespec start_f;
     clock_gettime(CLOCK_MONOTONIC, &start_f);
-    for (int i = 0; i < n / stepsize; i++) {
+    for (size_t i = 0; i < n / stepsize; i++) {
         results_s[i] = sequence(i * stepsize);
     }
     struct timespec end_f;
@@ -115,7 +115,7 @@ int main () {
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (size_t j = 0; j < iterations; j++) {
             struct matrix2x2 base = {bignumOfInt(0), bignumOfInt(1), bignumOfInt(1), bignumOfInt(2)};
-            free2x2(powMatrix2x2(base, i * stepsize, multiplicationBignum));
+            free2x2(powMatrix2x2(base, i * stepsize, multiplicationBignum, additionBignum));
         }
         clock_gettime(CLOCK_MONOTONIC, &end);
 
@@ -140,7 +140,7 @@ int main () {
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (size_t j = 0; j < iterations; j++) {
             struct cmp_matrix2x2 base = {bignumOfInt(0), bignumOfInt(1), bignumOfInt(2)};
-            freeCmp2x2(powCmpMatrix2x2(base, i * stepsize, multiplicationBignum));
+            freeCmp2x2(powCmpMatrix2x2(base, i * stepsize, multiplicationBignum, additionBignum));
         }
         clock_gettime(CLOCK_MONOTONIC, &end);
 
