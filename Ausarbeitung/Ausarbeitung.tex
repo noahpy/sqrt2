@@ -347,8 +347,8 @@ $ ./main -h10
 \caption{Performanz einzelner Operationen}
 \end{figure}
 
-Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i7-9700K Prozessor, 3.60GHz, 16 GB Arbeitsspeicher,
-Ubuntu 20.04, 64 Bit, Linux-Kernel 5.4.0 ausgeführt. Kompiliert wurde mit der Option -03 mit GCC 8.1.0. \par
+Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i5-10210U Prozessor, 4.2GHz, 16 GB Arbeitsspeicher,
+Fedora 38 x86\_64, Linux-Kernel 6.3.8 ausgeführt. Kompiliert wurde mit der Option -03 mit GCC 13.1.1 \par
 Die Hauptimplementierung nutzt eine herkömmliche Matrix und alle naiven Implementierungen der Arithmetik von Big-Nums, die erste Vergleichsimplementierung nutzt kompakte Matrizen statt der herkömmlichen. 
 Die zweite Vergleichsimplementierung nutzt neben kompakten Matrizen auch die Addition und Subtraktion in SIMD und die Karazuba-Multiplikation. Die Dritte gleicht der zweiten, nur mit dem Unterschied, dass statt der 
 Karazuba-Multiplikation eine SIMD Implementierung der Multiplikation verwendet wird. \par
