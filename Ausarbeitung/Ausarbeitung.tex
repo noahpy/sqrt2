@@ -15,10 +15,20 @@
 
 \usepackage{amsfonts}
 \usepackage{amsmath}
+
+\usepackage{subfig}
+
 \begin{document}
 \maketitle
 
 \section{Einleitung} \label{sec:einleitung}
+\begin{figure}[h] 
+\centering
+\subfloat[Lena: Photoshop-Output]{{\includegraphics[scale=0.2]{graphiken/division-example.png} }}
+\qquad
+\subfloat[Lena: Code-Output]{{\includegraphics[scale=0.2]{graphiken/division-example.png} }}
+\caption{Lena nach Graustufen und Weichzeichnen: Photoshop-Output (links) vs Code-Output (rechts)} 
+\end{figure}
 
 Schon im 1800 Jahrhundert v. Chr. beschäftigten sich die Babylonier mit der Quadratwurzel aus zwei. Mit $\tfrac {30547}{21600} = 1,\textbf{41421}2962\dots$ schafften sie eine Näherung, die nur
 ab der fünften Nachkommastelle vom eigentlichen Ergebnis abweichte \cite{quadratwurzel_aus_2}. Außerdem schafften sie es, mit dem Beweis der Irrationalität der Wurzel aus 2, den ersten Beweis 
@@ -208,7 +218,7 @@ Bei der Division wird ein naives Verfahren verwendet, das im Stile der schriftli
 wird der Dividend einmal nach links geshiftet, danach werden in einer Schleife beide Zahlen verglichen. Die Anzahl der Wiederholungen der Schleife entspricht der Anzahl der benötigten Nachkommastellen.
 In der i-ten Ausführung der Schleife ergibt sich folgende Fallunterscheidung:
 \begin{itemize}
-  \item $\text{Dividend} \geq \text{Divisor}$: Setze das i-te Bit des Ergebnisses auf 1, subtrahiere den Divisor vom Dividenden, shifte den Dividenden einmal nach links
+  \item $\text{Dividend} > \text{Divisor}$: Setze das i-te Bit des Ergebnisses auf 1, subtrahiere den Divisor vom Dividenden, shifte den Dividenden einmal nach links
   \item $\text{Dividend} = \text{Divisor}$: Setze das i-te Bit des Ergebnisses auf 1, beende den Algorithmus frühzeitig
   \item $\text{Dividend} < \text{Divisor}$: Setze das i-te Bit des Ergebnisses auf 0, shifte den Dividenden einmal nach links
 \end{itemize}
@@ -276,7 +286,6 @@ eingetragen.
   \includegraphics[scale=0.25]{graphiken/performanz-diagramm.jpg} 
   \caption{Performanz der einzelnen Implementierungen} \label{img:performanz-diagramm}
 \end{figure} 
-
 
 An dem Diagramm ist zu erkennen, dass die Hauptimplementierung langsamer ist als die drei Vergleichsimplementierungen. Dies liegt zum Einen an der Tatsache, dass die kompakten Matrizen 4 Multiplikationen einsparen, zum 
 Anderen daran, dass die arithmetischen Operationen in SIMD und die Karazuba-Multiplikation schneller sind als die naiven Implementierungen. \par
