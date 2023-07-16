@@ -5,9 +5,6 @@
 # Unignore all with extensions
 !*.*
 # Unignore all relevant dirs
-!Ausarbeitung/
-!Implementierung/
-!Vortrag/
-!Ausarbeitung/graphiken/
+!*/
 # Unignore main binary
 !Implementierung/main

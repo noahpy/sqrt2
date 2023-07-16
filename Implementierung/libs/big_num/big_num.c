@@ -610,92 +610,6 @@ void shiftRight(struct bignum *a, size_t number) {
   *(a->digits + i) = (*(a->digits + i) >> restShifts);
 }
 
-// Calculate a/b with newton-raphson: result is in *a
-void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize, void subtract(struct bignum *, struct bignum)) {
-
-  // Treat 1/2 as a edge case
-  if (a->digits[0] == 1 && b->digits[0] == 2) {
-    free(a->digits);
-    *a = shiftLeftConstant(bignumOfInt(1), fracSize - 1);
-    return;
-  }
-
-  a->fracSize = 1;
-  b->fracSize = 1;
-  struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), b->fracSize);
-
-  // Calculates b * 0.5 until b < 1
-  while (compareBigNum(*b, oneShift) == 1) {
-    b->fracSize++;
-    a->fracSize++;
-    oneShift = shiftLeftConstant(oneShift, 1);
-  }
-  free(oneShift.digits);
-
-  // load constant 32 / 17 (approx. 1.875)
-  struct bignum t2 =
-      (struct bignum){.digits = allocateDigits(1), .size = 1, .fracSize = 3};
-  t2.digits[0] = 0xf;
-
-  // load constant 48 / 17
-  size_t numberBlocks = ((t2.fracSize + b->fracSize) / 32) + 2;
-  struct bignum t1 = {.digits = allocateDigits(numberBlocks),
-                      .size = numberBlocks,
-                      .fracSize = (numberBlocks - 1) * 32};
-  for (size_t i = 0; i < t1.size - 1; i++) {
-    *(t1.digits + i) = 0xD2D2D2D2;
-  }
-  *(t1.digits + t1.size - 1) = 2;
-
-  // calculate first approximation: t1 + t2 * b
-  struct bignum multt2b = multiplicationBignum(t2, *b);
-  shiftRight(&t1, t1.fracSize - multt2b.fracSize);
-  t1.fracSize -= (t1.fracSize - multt2b.fracSize);
-
-  subtract(&t1, multt2b);
-
-  free(multt2b.digits);
-  free(t2.digits);
-
-  size_t iterationCounter = 0;
-  for (size_t i = fracSize; i > 1; i /= 2) {
-    iterationCounter++;
-  }
-
-  // iterations to approximate the values with: t1 = t1 * (2 - b * t1)
-  for (size_t i = 0; i < iterationCounter; i++) {
-    struct bignum t1t = multiplicationBignum(t1, *b);
-    struct bignum two = shiftLeftConstant(bignumOfInt(2), t1t.fracSize);
-    subtractionBignum(&two, t1t);
-
-    free(t1t.digits);
-    t1t = multiplicationBignum(t1, two);
-
-    free(t1.digits);
-    free(two.digits);
-
-    t1 = t1t;
-  }
-
-  // multiply a with the approximated value to get a/b
-  struct bignum at = multiplicationBignum(*a, t1);
-  free(a->digits);
-  free(t1.digits);
-  *a = at;
-
-  // Shift bignum right, until we have our desired number of fraction size
-  shiftRight(a, a->fracSize - fracSize);
-  a->fracSize -= a->fracSize - fracSize;
-
-  // Remove leading zeros
-  for (int newSize = a->size - 1; newSize >= 0; newSize--) {
-    if (a->digits[newSize] != 0) {
-      a->size = newSize + 1;
-      break;
-    }
-  }
-}
-
 struct bignum splitAndAdd(struct bignum a, size_t split) {
   if (a.size <= split) {
     // Return a copy of a
@@ -824,7 +738,7 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
 }
 
 /* This division only works if a < b*/
-void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize,
+void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize,
                      void subtract(struct bignum *, struct bignum)) {
   b->fracSize = fracSize;
   size_t newSize = fracSize / 32 + (fracSize % 32 != 0);

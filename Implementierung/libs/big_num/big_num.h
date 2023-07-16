@@ -66,18 +66,6 @@ struct bignum karazubaMultiplication(struct bignum, struct bignum);
  */
 struct bignum multiplicationBignumSIMD(struct bignum a, struct bignum b);
 
-// division functions
-
-/**
- * @brief Divides two bignums and writes the result to the first parameter
- * using the newton-raphson method
- *
- * @param struct bignum a: The first bignum to divide
- * @param struct bignum b: The second bignum to divide
- * @param size_t fracSize: The number of bits after the decimal point to be computed
- */
-void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize, void subtract(struct bignum *, struct bignum));
-
 /**
  * @brief Divides two bignums and writes the result to the first parameter
  *
@@ -85,7 +73,7 @@ void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize, void su
  * @param struct bignum b: The second bignum to divide
  * @param size_t fracSize: The number of bits after the decimal point to be computed
  */
-void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize, void subtract(struct bignum*, struct bignum));
+void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize, void subtract(struct bignum*, struct bignum));
 
 /**
  * @brief Adds two bignums and writes the result to the first parameter
