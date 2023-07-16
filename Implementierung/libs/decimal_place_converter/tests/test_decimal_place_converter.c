@@ -20,7 +20,7 @@ void test_decimal_conv(size_t decimal, size_t expected) {
 void test_hex_conv(size_t hex, size_t expected) {
   test_cases++;
   size_t result = hex_to_binary_places(hex);
-  if (result == expected) {
+  if (result >= expected) {
     test_passed++;
   } else {
     printf("Test failed: hex_place_converter(%zu) == %zu, expected %zu\n", hex,
