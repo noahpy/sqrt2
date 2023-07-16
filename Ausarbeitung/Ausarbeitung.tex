@@ -335,6 +335,8 @@ Die Optimierungsstufe -O1 wurde bewusst gewählt. Mit der Option -O3 verlaufen a
 \section{Zusammenfassung und Ausblick} \label{sec:zusammenfassung}
 In dieser Arbeit beschäftigten wir uns mit der Berechnung der Quadratwurzel aus zwei. Es wurden verschiedene Algorithmen thematisiert, wie die Karazuba-Multiplikation oder Divisionsalgorithmus und ihr Einfluss auf die Laufzeit erläutert. Außerdem wurden SIMD Implementierungen berücksichtigt. \par
 In einer weiteren Arbeit könnte man daran ansetzen und Big-Num Arithmetiken in AVX implementieren, um weiter die Performanz zu steigern. Des Weiteren könnte man weitere Algorithmen auf die Laufzeit untersuchen und gegebenenfalls implementieren, so zum Beispiel die Goldschmidt-Division. \par
+Auch für die Multiplikation gibt es noch effizientere Algorithmen wie den \textit{Toom-Cook Algorithmus}, der im Gegensatz zur Karazuba-Multiplikation nicht zwingend in zwei, sondern beliebig viele Teile aufteilt und somit eine Laufzeit von $\mathcal{O}(n^{1.46})$ erreicht\cite{the_art_of_programming}. \\
+Eine andere Möglichkeit wäre Parallälität durch Threading bei der Multiplikation von Bignums oder Matrizen zu nutzen. Ob diese Optimierungen in der Praxis auch schneller sind, müsste gemessen werden, da sie weiteren Overhead verursachen. \par
 Das Ziel der Arbeit wurde erreicht. Nutzer können, abhängig von ihren Anforderungen oder auch Computerspezifikationen, die Wurzel aus zwei mit beliebigen Nachkommastellen berechnen.
  
 % TODO: Fuegen Sie Ihre Quellen der Datei Ausarbeitung.bib hinzu
