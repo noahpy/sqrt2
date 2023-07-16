@@ -30,15 +30,7 @@ char get_hex_value(char hex) {
   exit(EXIT_FAILURE);
 }
 
-/**
- * @brief Converts a hex string to a decimal string
- *
- * @param hex The hex string
- * @param len The length of the hex string
- * @param fraction_len The length of the fraction part of the resulting decimal
- * string, which is equal to the number of bits after the decimal point
- * @return char* The decimal string
- */
+
 char *hex_to_dec(char *hex, size_t len, size_t fraction_len, bool is_sqrt2) {
   // determine the length of the decimal string with magic number 1.204119983
   // (ln(16) / ln(10))
@@ -742,12 +734,8 @@ void print_bignum_hex(struct bignum *num, long isSqrt2) {
   // shift to left to fit in to hex digits
   size_t shift = 4 - (num->fracSize % 4);
   if (shift < 4) {
-    // TODO: replace with real left shift
-    int lt[] = {2, 4, 8};
-    struct bignum multiplier = bignumOfInt(lt[shift - 1]);
-    struct bignum result = multiplicationBignum(*num, multiplier);
+    struct bignum result = shiftLeft(*num, shift);
     hex_string = bin_to_hex(result);
-    free(multiplier.digits);
     free(result.digits);
   } else {
     shift = 0;

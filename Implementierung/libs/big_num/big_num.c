@@ -132,10 +132,12 @@ struct bignum multiplicationBignumSIMD(struct bignum a, struct bignum b) {
 
   // SIMD multiplication
   for (; i < a.size && a.size - i >= 2 && b.size >= 2; i += 2) {
+    // load 2 32bit blocks from a
     __m128i a128 = _mm_cvtepu32_epi64(_mm_loadl_epi64((__m128i *)(a.digits + i)));
     __m128i a128_reversed = _mm_shuffle_epi32(a128, _MM_SHUFFLE(1, 0, 3, 2));
     size_t j = 0;
     for (; j < b.size && b.size - j >= 2; j += 2) {
+      // calculate all 4 products and add them to the result, whilst considering overflows
       __m128i b128 = _mm_cvtepu32_epi64(_mm_loadl_epi64((__m128i *)(b.digits + j)));
       __m128i mul = _mm_mul_epu32(a128, b128);
       size_t overflowCount = 2;
@@ -182,6 +184,7 @@ struct bignum multiplicationBignumSIMD(struct bignum a, struct bignum b) {
       }
 
     }
+    // calculate remainder
     if(j == b.size-1){
         uint64_t al = (uint64_t)a.digits[i];
         uint64_t ah = (uint64_t)a.digits[i+1];
@@ -287,8 +290,13 @@ void additionBignumSIMD(struct bignum *a, struct bignum b) {
     __m128i sum = _mm_add_epi32(am, bm);
 
     // check in which doublewords there is an overflow
+    // check for overflow in each doubleword
+    __m128i pow = _mm_set1_epi32(-2147483648);
+    __m128i amu = _mm_add_epi32(am, pow);
+    __m128i bmu = _mm_add_epi32(bm, pow);
+    __m128i sumu = _mm_add_epi32(sum, pow);
     __m128i overflow =
-        _mm_or_si128(_mm_cmpgt_epi32(am, sum), _mm_cmpgt_epi32(bm, sum));
+        _mm_or_si128(_mm_cmpgt_epi32(amu, sumu), _mm_cmpgt_epi32(bmu, sumu));
 
     overflow = _mm_and_si128(overflow, ov);
 
@@ -429,8 +437,8 @@ void subtractionBignumSIMD(struct bignum *a, struct bignum b) {
   }
 
   // Remove leading zeros
-  for (int newSize = a->size - 1; newSize >= -1; newSize--) {
-    if (newSize < 0 || a->digits[newSize] != 0) {
+  for (int newSize = a->size - 1; newSize >= 0; newSize--) {
+    if (a->digits[newSize] != 0) {
       a->size = newSize + 1;
       break;
     }
@@ -455,8 +463,8 @@ void subtractionBignum(struct bignum *a, struct bignum b) {
   }
 
   // Remove leading zeros
-  for (int newSize = a->size - 1; newSize >= -1; newSize--) {
-    if (newSize < 1 || a->digits[newSize] != 0) {
+  for (int newSize = a->size - 1; newSize >= 0; newSize--) {
+    if (a->digits[newSize] != 0) {
       a->size = newSize + 1;
       break;
     }
@@ -554,16 +562,19 @@ struct bignum shiftLeft(struct bignum a, size_t n) {
     }
     return newBigNum;
   }
+  // catch edge case
   if (newBigNum.size == 1) {
     newBigNum.digits[0] = lastBlock << n;
     return newBigNum;
   }
+  // shift last block seprarately to avoid unallowed writes
   if (a.size - 1 + blockShifts == newBigNum.size - 1) {
     newBigNum.digits[newBigNum.size - 1] = lastBlock << n;
   } else {
     newBigNum.digits[newBigNum.size - 1] = lastBlock >> (32 - n);
     newBigNum.digits[newBigNum.size - 2] = lastBlock << n;
   }
+  // shift remaining elements
   for (size_t i = a.size - 2; i < a.size; i--) {
     uint64_t tmp = a.digits[i];
     *(uint64_t *)(newBigNum.digits + i + blockShifts) += tmp << n;
@@ -593,98 +604,10 @@ void shiftRight(struct bignum *a, size_t number) {
   }
 
   size_t restShifts = number % 32;
-  // if (a->size > blockShifts + 1) {
   for (i = 0; i < a->size - blockShifts - 1; i++) {
     *(a->digits + i) = (uint32_t)(*(uint64_t *)(a->digits + i) >> restShifts);
   }
   *(a->digits + i) = (*(a->digits + i) >> restShifts);
-  //}
-}
-
-// Calculate a/b with newton-raphson: result is in *a
-void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize) {
-
-  // Treat 1/2 as a edge case
-  if (a->digits[0] == 1 && b->digits[0] == 2) {
-    free(a->digits);
-    *a = shiftLeftConstant(bignumOfInt(1), fracSize - 1);
-    return;
-  }
-
-  a->fracSize = 1;
-  b->fracSize = 1;
-  struct bignum oneShift = shiftLeftConstant(bignumOfInt(1), b->fracSize);
-
-  // Calculates b * 0.5 until b < 1
-  while (compareBigNum(*b, oneShift) == 1) {
-    b->fracSize++;
-    a->fracSize++;
-    oneShift = shiftLeftConstant(oneShift, 1);
-  }
-  free(oneShift.digits);
-
-  // load constant 32 / 17 (approx. 1.875)
-  struct bignum t2 =
-      (struct bignum){.digits = allocateDigits(1), .size = 1, .fracSize = 3};
-  t2.digits[0] = 0xf;
-
-  // load constant 48 / 17
-  size_t numberBlocks = ((t2.fracSize + b->fracSize) / 32) + 2;
-  struct bignum t1 = {.digits = allocateDigits(numberBlocks),
-                      .size = numberBlocks,
-                      .fracSize = (numberBlocks - 1) * 32};
-  for (size_t i = 0; i < t1.size - 1; i++) {
-    *(t1.digits + i) = 0xD2D2D2D2;
-  }
-  *(t1.digits + t1.size - 1) = 2;
-
-  // calculate first approximation: t1 + t2 * b
-  struct bignum multt2b = multiplicationBignum(t2, *b);
-  shiftRight(&t1, t1.fracSize - multt2b.fracSize);
-  t1.fracSize -= (t1.fracSize - multt2b.fracSize);
-
-  subtractionBignum(&t1, multt2b);
-
-  free(multt2b.digits);
-  free(t2.digits);
-
-  size_t iterationCounter = 0;
-  for (size_t i = fracSize; i > 1; i /= 2) {
-    iterationCounter++;
-  }
-
-  // iterations to approximate the values with: t1 = t1 * (2 - b * t1)
-  for (size_t i = 0; i < iterationCounter; i++) {
-    struct bignum t1t = multiplicationBignum(t1, *b);
-    struct bignum two = shiftLeftConstant(bignumOfInt(2), t1t.fracSize);
-    subtractionBignum(&two, t1t);
-
-    free(t1t.digits);
-    t1t = multiplicationBignum(t1, two);
-
-    free(t1.digits);
-    free(two.digits);
-
-    t1 = t1t;
-  }
-
-  // multiply a with the approximated value to get a/b
-  struct bignum at = multiplicationBignum(*a, t1);
-  free(a->digits);
-  free(t1.digits);
-  *a = at;
-
-  // Shift bignum right, until we have our desired number of fraction size
-  shiftRight(a, a->fracSize - fracSize);
-  a->fracSize -= a->fracSize - fracSize;
-
-  // Remove leading zeros
-  for (int newSize = a->size - 1; newSize >= 0; newSize--) {
-    if (a->digits[newSize] != 0) {
-      a->size = newSize + 1;
-      break;
-    }
-  }
 }
 
 struct bignum splitAndAdd(struct bignum a, size_t split) {
@@ -731,7 +654,7 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
     return (struct bignum){NULL, 1, 0};
   } else if (x.size <= 8 && y.size <= 8) {
       return multiplicationBignum(x, y);
-     } else {
+  } else {
     // the maximum result size is x.size + y.size
     uint32_t *digits = allocateDigits(x.size + y.size);
 
@@ -815,7 +738,7 @@ struct bignum karazubaMultiplication(struct bignum x, struct bignum y) {
 }
 
 /* This division only works if a < b*/
-void divisionBignum2(struct bignum *a, struct bignum *b, size_t fracSize,
+void divisionBignum(struct bignum *a, struct bignum *b, size_t fracSize,
                      void subtract(struct bignum *, struct bignum)) {
   b->fracSize = fracSize;
   size_t newSize = fracSize / 32 + (fracSize % 32 != 0);

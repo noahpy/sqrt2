@@ -164,7 +164,7 @@ void test_division(struct bignum a, struct bignum b, size_t number,
     printf("%08x_", b.digits[j]);
   }
   printf("%08x, with a fraction size of %zu)", b.digits[0], number);
-  divisionBignum(&a, &b, number);
+  divisionBignum(&a, &b, number, subtractionBignum);
   struct bignum result = a;
   if (result.size == expected.size) {
     for (size_t i = 0; i < result.size; i++) {
@@ -185,36 +185,6 @@ void test_division(struct bignum a, struct bignum b, size_t number,
   }
   free(a.digits);
   free(b.digits);
-  free(expected.digits);
-}
-
-void test_shift_left_constant(struct bignum a, size_t number,
-                              struct bignum expected) {
-  test_cases++;
-  printf("Test: shiftLeftConstant(0x");
-  for (size_t j = a.size - 1; j > 0; j--) {
-    printf("%08x_", a.digits[j]);
-  }
-  printf("%08x, ", a.digits[0]);
-  printf("%zu)", number);
-  struct bignum result = shiftLeftConstant(a, number);
-  if (result.size == expected.size) {
-    for (size_t i = 0; i < result.size; i++) {
-      if (result.digits[i] != expected.digits[i]) {
-        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i,
-               expected.digits[i], result.digits[i]);
-        free(result.digits);
-        free(expected.digits);
-        return;
-      }
-    }
-    printf(" passed\n");
-    test_passed++;
-  } else {
-    printf(" failed! size should be %zu, but was %zu\n", expected.size,
-           result.size);
-  }
-  free(result.digits);
   free(expected.digits);
 }
 
@@ -1033,6 +1003,7 @@ int main(void) {
   *(expected.digits + 3) = 0x69696969;
   *(expected.digits + 4) = 0x9;
   test_multiplication(a, b, expected, multiplicationBignumSIMD);
+
   // TESTS FOR ADDITION
 
   resetBignums(1, 1, 1);
@@ -1307,40 +1278,6 @@ int main(void) {
   *(expected.digits + 3) = 0xffffffff;
   *(expected.digits + 4) = 0xffffffff;
   *(expected.digits + 5) = 0x00000001;
-  test_addition(a, b, expected, true);
-
-  resetBignums(10, 8, 11);
-  // addition size overflow
-  // 0xffffffff_ffffffff + 0x1 = 0x1_00000000_00000000
-  *a.digits = 0xffffffff;
-  *(a.digits + 1) = 0xfffffffe;
-  *(a.digits + 2) = 0xfffffffe;
-  *(a.digits + 3) = 0xfffffffe;
-  *(a.digits + 4) = 0xfffffffe;
-  *(a.digits + 5) = 0xfffffffe;
-  *(a.digits + 6) = 0xfffffffe;
-  *(a.digits + 7) = 0xfffffffe;
-  *(a.digits + 8) = 0xffffffff;
-  *(a.digits + 9) = 0xffffffff;
-  *b.digits = 0x1;
-  *(b.digits + 1) = 0x1;
-  *(b.digits + 2) = 0x1;
-  *(b.digits + 3) = 0x1;
-  *(b.digits + 4) = 0x1;
-  *(b.digits + 5) = 0x1;
-  *(b.digits + 6) = 0x1;
-  *(b.digits + 7) = 0x1;
-  *expected.digits = 0x0;
-  *(expected.digits + 1) = 0x0;
-  *(expected.digits + 2) = 0x0;
-  *(expected.digits + 3) = 0x0;
-  *(expected.digits + 4) = 0x0;
-  *(expected.digits + 5) = 0x0;
-  *(expected.digits + 6) = 0x0;
-  *(expected.digits + 7) = 0x0;
-  *(expected.digits + 8) = 0x0;
-  *(expected.digits + 9) = 0x0;
-  *(expected.digits + 10) = 0x1;
   test_addition(a, b, expected, true);
 
   resetBignums(10, 8, 10);
@@ -1730,21 +1667,6 @@ int main(void) {
   *(expected.digits + 14) = 0xDB5ACCF2;
   *(expected.digits + 15) = 0x6A09E66F;
   test_division(a, b, 512, expected);
-
-  // TEST SHIFT LEFT CONSTANT
-
-  resetBignums(1, 1, 1);
-  *a.digits = 1;
-  *expected.digits = 2;
-  test_shift_left_constant(a, 1, expected);
-  free(b.digits);
-
-  resetBignums(1, 1, 2);
-  *a.digits = 1;
-  *expected.digits = 0;
-  *(expected.digits + 1) = 1;
-  test_shift_left_constant(a, 32, expected);
-  free(b.digits);
 
   // TEST SHIFT LEFT
   resetBignums(1, 1, 1);

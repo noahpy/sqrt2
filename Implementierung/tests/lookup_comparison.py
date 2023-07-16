@@ -8,6 +8,9 @@ with open("digit.txt", "r") as f:
 
 TEST_RANGE = 10000
 STEP = 1000
+VERSION_START = 0
+VERSION_END = 3
+
 
 counts = []  # Store the count values
 iterations = []  # Store the i values
@@ -16,50 +19,49 @@ plt.ion()  # Enable interactive mode
 
 fig, ax = plt.subplots()
 
-for i in range(1, TEST_RANGE + 1, STEP):
-    result = subprocess.run(['../main','-V3', f'-d{i}'], capture_output=True, text=True)
-    output = result.stdout
-    errors = result.stderr
-    count = 0
 
-    for digit in lookup:
-        if count >= len(output):
-            print("Reached the end of the output.")
-            break
-        if output[count] == digit:
-            count += 1
-        else:
-            break
+for version in range(VERSION_START, VERSION_END + 1):
+    print("Running version", version)
+    counts = []
+    iterations = []
+    for i in range(1, TEST_RANGE + 1, STEP):
+        print('../main',f'-V{version}', f'-d{i}')
+        result = subprocess.run(['../main','-V2', f'-d{i}'], capture_output=True, text=True)
+        output = result.stdout.strip()
+        errors = result.stderr
+        count = 0
 
-    print(f"Matched {count - 2} digits when requested for {i}. Realtive Error: {abs(i-(count-2))/i}")
-    if  i > count - 2:
-        print("Fever digits than expected!")
-        print("Output:", output[100:])
-    if errors:
-        print("Received error messages:", errors)
+        for digit in lookup:
+            if count >= len(output):
+                print("Reached the end of the output.")
+                break
+            if output[count] == digit:
+                count += 1
+            else:
+                break
 
-    counts.append(count - 2)
-    iterations.append(i)
+        print(f"Matched {count - 2} digits when requested for {i}. Relative Error: {abs(i-(count-2))/i}")
+        if  i > count - 2:
+            print("Fewer digits than expected!")
+            print(output[:100])
+        if errors:
+            print("Received error messages:", errors)
 
-    ax.clear()
+        counts.append(count - 2)
+        iterations.append(i)
 
-    # Plot the count vs. iterations graph
-    ax.plot(iterations, counts, label='Demanded vs Given precision of Sqrt 2')
-    ax.set_xlabel('precision in decimal digits')
-    ax.set_ylabel(f'average runtime of {ITERATION} iterations in s')
-    ax.set_xlabel('Demanded Precision')
-    ax.set_ylabel('Resulting Precision')
-    ax.grid(True)
+        ax.clear()
 
-    # Plot the additional function y = 2x + 50
-    x = np.arange(1, i + 1, STEP)
-    y = x
-    ax.plot(x, y, label='y = x')
+        # Plot the count vs. iterations graph
+        ax.plot(iterations, counts, label='Demanded vs Given precision of Sqrt 2')
+        ax.set_xlabel('Demanded Precision')
+        ax.set_ylabel('Resulting Precision')
+        ax.grid(True)
 
-    # Update the plot
-    ax.legend()
-    plt.draw()
-    plt.pause(0.001)
+        # Update the plot
+        ax.legend()
+        plt.draw()
+        plt.pause(0.001)
 
 # Save the final graph to a file
 plt.savefig('precision_comparison.png')
