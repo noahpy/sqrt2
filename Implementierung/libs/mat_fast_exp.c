@@ -30,9 +30,11 @@ struct matrix2x2 powMatrix2x2(struct matrix2x2 a, uint32_t n, struct bignum mult
         }
 
         // Square a
-        old = a;
-        a = mulMatrix2x2(a, a, multiply, addition);
-        free2x2(old);
+        if (n > 1) {
+            old = a;
+            a = mulMatrix2x2(a, a, multiply, addition);
+            free2x2(old);
+        }
     }
     free2x2(a);
 

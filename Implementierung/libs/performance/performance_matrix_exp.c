@@ -99,7 +99,8 @@ int main () {
     freeResults(n / stepsize, results_normal, results_cmp, results_s);
 
     printf("%s\n", "Generating benchmark results");
-    printf("This will take about %f seconds, because there are %zu iterations\n", iterations * (time_normal + time_cmp),
+    printf("This will take about %f seconds, because there are %zu iterations\n",
+            iterations * (time_normal + time_cmp + time_f),
             iterations);
     struct timespec start;
     struct timespec end;
