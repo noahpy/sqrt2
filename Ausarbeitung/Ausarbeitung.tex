@@ -91,10 +91,10 @@ a b &= (a_0+2^ma_1) (b_0+2^mb_1)\\
 Kann eines der Zwischenprodukte immer noch nicht durch eingebaute CPU-Instruktionen berechnet werden, kann der Algorithmus rekursiv angewendet werden oder auch ab einer bestimmten Grenze auf die russische Bauernmultiplikation zurückgegriffen werden.
 Zur Veranschaulichung ein Beispiel mit $0x0001.0002 \cdot 0x0003.0004$ unter der Annahme, dass wir 16-bit Zahlen mit der CPU multiplizieren können:
 \begin{align*}
-      a &= 0x0002 + 2^40x0001, b = 0x0004 + 2^40x0003 \\
-      a_0b_0 &= 0x0000.0008, a_1b_1 = 0x0000.0003, (a_0+a_1)(b_0+b_1) = 0x0000.0015 \\
-      ab &= 0x0000.0003.0000.0008 + 2^4(0x0000.0015-0x0000.0008-0x0000.0003) \\
-      &= 0x0000.0003.000a.0008 \, .
+      a &= (0002)_{16} + 2^4(0001)_{16}; \quad b = (0004)_{16} + 2^4(0003)_{16} \\
+      a_0b_0 &= (0000.0008)_{16}; \quad a_1b_1 = (0000.0003)_{16}; \quad (a_0+a_1)(b_0+b_1) = (0000.0015)_{16} \\
+      ab &= (0000.0003.0000.0008)_{16} + 2^4((0000.0015)_{16}-(0000.0008)_{16}-(0000.0003)_{16}) \\
+      &= (0000.0003.000a.0008)_{16} \, .
 \end{align*}
 
 \subsection{Matrixmultiplikation}
@@ -166,7 +166,7 @@ Bei der Multiplikation mit unserer Basismatrix müssen demnach lediglich $x_{n-1
 \subsection{Schnelle Exponentiation} \label{sec:schnelle_exp}
 Die schnelle Exponentiation nutzt Assoziativität und Potenzgesetze, um die Anzahl der Multiplikationen bei der Exponentiation von $\mathcal{O}(n)$ auf $\mathcal{O}(\log{}n)$ zu verringern. 
 Naiv kann eine Potenz $a^n$ mit $n\in\mathbb{N}$ nach der Schulmethode mit \(\prod_{1}^{n} a \) berechnet werden. 
-Dafür benötigt man allerdings $n-1$ Multiplikationen, was bei großen Werten für $n$ zu einer langen Berechnung ausartet. \par
+Dafür benötigt man allerdings $n-1$ Multiplikationen, was bei großen Werten für $n$ zu einer langen Berechnung führt. \par
 Um dieses Problem effizienter zu lösen, werfen wir einen Blick auf die Potenzgesetze für assoziative Operatoren. Denn sowohl eine Multiplikation, als auch eine Addition im Exponenten kann aufgeteilt werden mit
 \begin{align}
   a^{n+m} &= \overbrace{a\dots a}^{n+m} = \overbrace{(a\dots a)}^n \overbrace{(a\dots a)}^m = a^n a^m \quad \text{und} \label{exponenten_addition} \\
@@ -271,13 +271,11 @@ Wir sind in der Lage, Divisionen durchzuführen und effizient Werte auszurechnen
 
 % TODO: Je nach Aufgabenstellung einen der Begriffe wählen
 \section{Genauigkeit} \label{sec:genauigkeit}
-In dieser Sektion wird die Genauigkeit des Ansatzes und seiner Implementierung belegt und erläutert. Da das Belegen der Korrektheit des Gesamtansatzes über die Anforderungen dieses Projektes hinaus gehen, werden wir uns auf die Genauigkeit unserer Implementierung fokussieren. Die mathematische Korrektheit der Ansätze der Komponenten wurde beretis oben belegt \ref{sec:loesungsansatz}.
+In dieser Sektion wird die Genauigkeit des Ansatzes und seiner Implementierung belegt und erläutert. Da das Belegen der Korrektheit des Gesamtansatzes über die Anforderungen dieses Projektes hinaus gehen, werden wir uns auf die Genauigkeit unserer Implementierung fokussieren. Die mathematische Korrektheit der Ansätze der Komponenten wurde bereits in Kapitel \ref{sec:loesungsansatz} belegt.
 
-Wir haben eine Vielzahl an Methoden ergriffen, um die Korrektheit unserer Implementierung sicherzustellen. Einer dieser Aspekte sind Unit-Tests. Unser Code wurde in möglich inkohärente Komponenten aufgeteilt, um diese einzeln auf ihre Korrektheit zu prüfen. Die jeweiligen Tests einer Komponente sind im \texttt{tests} Subordner zu finden.
+Wir haben eine Vielzahl an Methoden ergriffen, um die Korrektheit unserer Implementierung sicherzustellen. Einer dieser Aspekte sind Unit-Tests. Unser Code wurde in möglichst inkohärente Komponenten aufgeteilt, um diese einzeln auf ihre Korrektheit zu prüfen. Die jeweiligen Tests einer Komponente sind im \texttt{tests} Subordner zu finden.
 
 Zusätzlich wurden automatisierte System-Tests ausgeführt, die alle Versionen und ihre Ausgaben bis auf 100.000 Dezimalnachkommastellen abgleicht (Implementierung/tests/lookup\_comparison.py). Diese Vergleichs-Nachkommastellen wurden aus mehreren unabhängigen Quellen erhalten \cite{sqrt2_Quelle}, \cite{sqrt2_Quelle2}. Somit wird nicht nur die Korrektheit der einzelnen Komponenten festgestellt, sondern auch die des Gesamtsystems.
-
-% Darüber hinaus wurde für jedes neue Feature ein neuer Branch eröffnet, so dass wir die Änderungen gegenseitig kontrolliert und nur unter unabhängiger Zulassung in den \texttt{master}-Branch hinzugefügt haben. Die Bedingungen für eine Zulassung waren das Bestehen von allen Tests, lesbarer Code und eine fehlerfreie statische Analyse per \texttt{valgrind}. Mit dieser Vorgehensweise wurde fehlerfreier und qualitativer Code gewährleistet.
 
 Wie bereits in \ref{sec:division} erwähnt, erlaubt die Struktur von \texttt{bignums} eine Darstellung von beliebig genauen Zahlen. Außerdem wurde gezeigt, dass bei der vorgestellten Divisionsmethode die Anzahl an errechneten Binärnachkommastellen beliebig bestimmbar ist. Da in unserem Anwendungsfall die Multiplikation, Addition und Subtraktion von \texttt{bignum} nicht mit Fixkommazahlen rechnen müssen, sind diese per Definition (unter Annahme der Korrektheit) unendlich genau, also exakt. Da somit alle benötigten arithmetische Methoden für die Errechung von $\frac{x_n}{x_{n+1}}$ entweder exakt oder beliebig genau bestimmbar sind, ist dieser auf beliebig genaue Binärnachkommastellen bestimmbar.
 
@@ -295,15 +293,15 @@ Die Umwandlung von hexadezimaler Präzision $n$ in binärer Präzision $i$ läss
   i \geq \left\lceil n \cdot \frac{\ln(16)}{\ln(2)}\right\rceil = n \cdot 4 \, . \nonumber
 \end{align}
 Diese Korrelationen wurden im Code umgesetzt (\texttt{decimal\_place\_converter.c}).
-Außerdem wurde durch Messungen die Anzahl an konvergenten Nachkommastellen in Abhängigkeit zum Matrixexponenten $n$ ermittelt, die sich als logarithmischen Wachstum herausstellte. Dieser lässt sich gut durch einem linearen Wachstum annähern, da ein logarithmisches Wachstum sich zunehmend linear verhält. Somit lässt sich für eine gegebene Anzahl an konvergenten Binärnachkommastellen (Eingabe von \texttt{sqrt2}) ein approximatives Minimum des Matrixexponenten rückrechnen (siehe \texttt{sqrt2.c}). Die aktuelle Approximierung rechnet ca. 0.5\% mehr konvergente Nachkommastellen aus als benötigt. Hierdurch ist unser Programm stets auf den geforderten Nachkommastellen präzise.
+Außerdem wurde durch Messungen die Anzahl an konvergenten Nachkommastellen in Abhängigkeit zum Matrixexponenten $n$ ermittelt, die sich als logarithmisches Wachstum herausstellte. Dieser lässt sich gut durch lineares Wachstum annähern, da ein logarithmisches Wachstum sich zunehmend linear verhält. Somit lässt sich für eine gegebene Anzahl an konvergenten Binärnachkommastellen (Eingabe von \texttt{sqrt2}) ein approximatives Minimum des Matrixexponenten rückrechnen (siehe \texttt{sqrt2.c}). Die aktuelle Approximierung rechnet ca. 0.5\% mehr konvergente Nachkommastellen aus als benötigt. Hierdurch ist unser Programm stets auf den geforderten Nachkommastellen präzise.
 Hier sind einige Beispiele, die dieses Verhalten demonstrieren:
-%
+
 \begin{verbatim}
 $ ./main -d100
 1.414213562373095048801688724209698078569671875376948073176679737990732478
 4621070388503875343276415727
 \end{verbatim}
-%
+
 \begin{verbatim}
 $ ./main -h10
 0x1.6a09e667f3
@@ -311,13 +309,13 @@ $ ./main -h10
 
 \section{Performanzanalyse} \label{sec:performanz}
 \begin{figure}[h] \centering
-  \includegraphics[scale=0.4]{graphiken/performanz-diagramm.jpg}
+  \includegraphics[scale=0.5]{graphiken/performanz-diagramm.png}
   \caption{Performanz der einzelnen Implementierungen} \label{img:performanz-diagramm}
-\end{figure} 
+\end{figure}  
 
-\begin{figure} \label{fig:performanz-matrix}
+\begin{figure} 
 \centering
-\begin{subfigure}{.5\textwidth} \label{subfig:matrixexp}
+\begin{subfigure}{.48\textwidth} \label{subfig:matrixexp}
       \centering
 \pgfplotsset{scaled x ticks=false}
 \begin{tikzpicture}
@@ -331,8 +329,8 @@ $ ./main -h10
 \end{axis}
 \end{tikzpicture}
 \caption{Matrixexponentiationen}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth} \label{subfig:matrixmul}
+\end{subfigure}
+\begin{subfigure}{.48\textwidth} \label{subfig:matrixmul}
       \centering
 \begin{tikzpicture}
 \begin{axis}[width=1.1\textwidth]
@@ -344,11 +342,11 @@ $ ./main -h10
 \end{tikzpicture}
 \caption{Matrixmultiplikationen}
 \end{subfigure}
-\caption{Performanz einzelner Operationen}
+\caption{Performanz einzelner Operationen} \label{fig:performanz-matrix}
 \end{figure}
 
 Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i5-10210U Prozessor, 4.2GHz, 16 GB Arbeitsspeicher,
-Fedora 38 x86\_64, Linux-Kernel 6.3.8 ausgeführt. Kompiliert wurde mit der Option -03 mit GCC 13.1.1 \par
+Fedora 38 x86\_64, Linux-Kernel 6.3.8 ausgeführt. Kompiliert wurde mit der Option -O1 mit GCC 13.1.1 \par
 Die Hauptimplementierung nutzt eine herkömmliche Matrix und alle naiven Implementierungen der Arithmetik von Big-Nums, die erste Vergleichsimplementierung nutzt kompakte Matrizen statt der herkömmlichen. 
 Die zweite Vergleichsimplementierung nutzt neben kompakten Matrizen auch die Addition und Subtraktion in SIMD und die Karazuba-Multiplikation. Die Dritte gleicht der zweiten, nur mit dem Unterschied, dass statt der 
 Karazuba-Multiplikation eine SIMD Implementierung der Multiplikation verwendet wird. \par
@@ -359,8 +357,10 @@ eingetragen.
 An dem Diagramm ist zu erkennen, dass die Hauptimplementierung langsamer ist als die drei Vergleichsimplementierungen. Dies liegt zum Einen an der Tatsache, dass die kompakten Matrizen deutlich Rechenzeit einsparen, wie man im direkten Vergleich in Abbildung \ref{fig:performanz-matrix} erkennen kann. Zum 
 Anderen liegt das daran, dass die arithmetischen Operationen in SIMD und die Karazuba-Multiplikation schneller sind als die naiven Implementierungen. \par
 Aufgrund des nahezu identischen Graphenverlaufs der ersten und der zweiten Vergleichsimplementierung sieht man, dass die Karazuba-Multiplikation und die Multiplikation in SIMD ähnlich performant abschneiden. Dies steht 
-entgegen unserer anfänglichen Annahme, dass die Karazuba-Multiplikation wegen ihrer Laufzeit von $\mathcal{O}(n^{1.59})$ schneller ist als die SIMD Multiplikation. Dies kann einige Gründe haben, so ist der Overhead durch die rekursiven 
-Funktionsaufrufe ein möglicher Grund. Ein weiterer Aspekt könnte darin liegen, dass die Optimierung durch den Compiler mit der Option -O3 bei der rekursiven Karazuba-Lösung nicht so groß ausfällt.
+entgegen unserer anfänglichen Annahme, dass die Karazuba-Multiplikation wegen ihrer Laufzeit von $\mathcal{O}(n^{1.59})$ schneller ist als die SIMD Multiplikation. Ein möglicher Grund dafür ist der Overhead, der durch die rekursiven 
+Funktionsaufrufe entstehen kann.
+
+Die Optimierungsstufe -O1 wurde bewusst gewählt. Mit der Option -O3 verlaufen alle Graphen identisch, alle Unterschiede werden also durch die Optimierungen des Compilers ausgeglichen.
 
 \section{Zusammenfassung und Ausblick} \label{sec:zusammenfassung}
 In dieser Arbeit beschäftigten wir uns mit der Berechnung der Quadratwurzel aus zwei. Es wurden verschiedene Algorithmen thematisiert, wie die Karazuba-Multiplikation oder Divisionsalgorithmus und ihr Einfluss auf die Laufzeit erläutert. Außerdem wurden SIMD Implementierungen berücksichtigt. \par
