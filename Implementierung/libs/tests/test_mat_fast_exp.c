@@ -81,7 +81,7 @@ int test(uint32_t arr[]) {
 
     struct matrix2x2 matrix = createMatrix(arr);
 
-    matrix = powMatrix2x2(matrix, arr[4], multiplicationBignum);
+    matrix = powMatrix2x2(matrix, arr[4], multiplicationBignum, additionBignum);
 
     int result = compareTo(matrix, (arr + 5));
     free2x2(matrix);
@@ -110,7 +110,7 @@ int testCmp(uint32_t arr[]) {
 
     struct cmp_matrix2x2 matrix = createCmpMatrix(arr);
 
-    matrix = powCmpMatrix2x2(matrix, arr[3], multiplicationBignum);
+    matrix = powCmpMatrix2x2(matrix, arr[3], multiplicationBignum, additionBignum);
 
     int result = compareCmpTo(matrix, (arr + 4));
     freeCmp2x2(matrix);

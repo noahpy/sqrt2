@@ -1,4 +1,5 @@
 
+#include "libs/big_num/big_num.h"
 #include "libs/decimal_place_converter/decimal_place_converter.h"
 #include "libs/utils/utils.h"
 #include "sqrt2.h"
@@ -15,7 +16,7 @@ const char *usage_msg = "Usage: %s [options]   Compute the square root of 2\n";
 
 const char *help_msg =
     "Optional arguments:\n"
-    "  -VX    The version of the progam (default: X = 0)\n"
+    "  -VX    The version of the progam with 0 <= X <= 3 (default: X = 0)\n"
     "  -B     Time the runtime\n"
     "  -BX    Time the runtime with X > 0 repetitions (default: X = 1)\n"
     "  -dX    Expected number of decimal places with X > 0 (default: X = 2)\n"
@@ -54,7 +55,7 @@ bool convert_string_to_long(const char *str, long *value) {
 }
 
 bool run_program(int argc, char *argv[]) {
-  /*Get user options adn trugger matrix exponentiation program.
+  /*Get user options and trigger matrix exponentiation program.
    *Returns:
       - is_valid (bool): true if user options were vaild, else false*/
 
@@ -64,10 +65,12 @@ bool run_program(int argc, char *argv[]) {
   bool decimal_places = false;
   bool hex_places = false;
 
-  long version = 0;
+  long version = 1;
   long repetitions = 1;
   long decimal_precision = 2;
   long hex_precision = 2;
+
+  struct bignum (*calculateSqrt2)(size_t precision) = sqrt2;
 
   int flag = 0;
   struct option long_options[] = {{"help", 0, &flag, HELP_RETURN_CODE},
@@ -86,6 +89,23 @@ bool run_program(int argc, char *argv[]) {
         return false;
       }
       if (!convert_string_to_long(optarg, &version)) {
+        print_help(progname);
+        return false;
+      }
+      switch (version) {
+      case 0:
+        break;
+      case 1:
+        calculateSqrt2 = sqrt2_V1;
+        break;
+      case 2:
+        calculateSqrt2 = sqrt2_V2;
+        break;
+      case 3:
+        calculateSqrt2 = sqrt2_V3;
+        break;
+      default:
+        fprintf(stderr, "Version %ld not supported.\n", version);
         print_help(progname);
         return false;
       }
@@ -159,21 +179,23 @@ bool run_program(int argc, char *argv[]) {
 
   if (!timing) {
     if (hex_places && !decimal_places) {
-      sqrt2_bignum = sqrt2(hex_to_binary_places(hex_precision));
+      sqrt2_bignum = calculateSqrt2(hex_to_binary_places(hex_precision));
       print_bignum_hex(&sqrt2_bignum, hex_precision);
     } else {
-      sqrt2_bignum = sqrt2(decimal_to_binary_places(decimal_precision));
+      sqrt2_bignum =
+          calculateSqrt2(decimal_to_binary_places(decimal_precision));
       print_bignum_dec(&sqrt2_bignum, multiplicationBignum, decimal_precision);
     }
     free(sqrt2_bignum.digits);
     return true;
   }
   clock_t start = clock();
-  while(repetitions--){
+  while (repetitions--) {
     if (hex_places && !decimal_places) {
-      sqrt2_bignum = sqrt2(hex_to_binary_places(hex_precision));
+      sqrt2_bignum = calculateSqrt2(hex_to_binary_places(hex_precision));
     } else {
-      sqrt2_bignum = sqrt2(decimal_to_binary_places(decimal_precision));
+      sqrt2_bignum =
+          calculateSqrt2(decimal_to_binary_places(decimal_precision));
     }
   }
   if (hex_places && !decimal_places) {

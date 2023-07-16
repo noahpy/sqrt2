@@ -4,7 +4,7 @@
 *
 # Unignore all with extensions
 !*.*
-# Unignore all dirs
+# Unignore all relevant dirs
 !*/
 # Unignore main binary
 !Implementierung/main
