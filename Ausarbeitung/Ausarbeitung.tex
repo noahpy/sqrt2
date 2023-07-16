@@ -316,7 +316,7 @@ $ ./main -h10
 \end{figure}
 
 Im Folgenden werden drei Implementierungen ausgewählt und ihre Performanz verglichen, anschließend erklärt. Die Performanztests wurden auf einem System mit einem Intel i5-10210U Prozessor, 4.2GHz, 16 GB Arbeitsspeicher,
-Fedora 38 x86\_64, Linux-Kernel 6.3.8 ausgeführt. Kompiliert wurde mit der Option -O1 mit GCC 13.1.1 \par
+Fedora 38 x86\_64, Linux-Kernel 6.3.8 ausgeführt. Kompiliert wurde mit der Option -O2 mit GCC 13.1.1 \par
 Die Hauptimplementierung nutzt eine herkömmliche Matrix und alle naiven Implementierungen der Arithmetik von Big-Nums, die erste Vergleichsimplementierung nutzt kompakte Matrizen statt der herkömmlichen. 
 Die zweite Vergleichsimplementierung nutzt neben kompakten Matrizen auch die Addition und Subtraktion in SIMD und die Karazuba-Multiplikation. Die Dritte gleicht der zweiten, nur mit dem Unterschied, dass statt der 
 Karazuba-Multiplikation eine SIMD Implementierung der Multiplikation verwendet wird. \par
@@ -330,7 +330,7 @@ Aufgrund des nahezu identischen Graphenverlaufs der ersten und der zweiten Vergl
 entgegen unserer anfänglichen Annahme, dass die Karazuba-Multiplikation wegen ihrer Laufzeit von $\mathcal{O}(n^{1.59})$ schneller ist als die SIMD Multiplikation. Ein möglicher Grund dafür ist der Overhead, der durch die rekursiven 
 Funktionsaufrufe entstehen kann.
 
-Die Optimierungsstufe -O1 wurde bewusst gewählt. Mit der Option -O3 verlaufen alle Graphen identisch, alle Unterschiede werden also durch die Optimierungen des Compilers ausgeglichen.
+Die Optimierungsstufe -O2 wurde bewusst gewählt. Mit der Option -O3 verlaufen alle Graphen identisch, alle Unterschiede werden also durch die Optimierungen des Compilers ausgeglichen.
 
 \section{Zusammenfassung und Ausblick} \label{sec:zusammenfassung}
 In dieser Arbeit beschäftigten wir uns mit der Berechnung der Quadratwurzel aus zwei. Es wurden verschiedene Algorithmen thematisiert, wie die Karazuba-Multiplikation oder Divisionsalgorithmus und ihr Einfluss auf die Laufzeit erläutert. Außerdem wurden SIMD Implementierungen berücksichtigt. \par
