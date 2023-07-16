@@ -40,9 +40,9 @@ for version in range(VERSION_START, VERSION_END + 1):
             else:
                 break
 
-        print(f"Matched {count - 2} digits when requested for {i}. Realtive Error: {abs(i-(count-2))/i}")
+        print(f"Matched {count - 2} digits when requested for {i}. Relative Error: {abs(i-(count-2))/i}")
         if  i > count - 2:
-            print("Fever digits than expected!")
+            print("Fewer digits than expected!")
             print(output[:100])
         if errors:
             print("Received error messages:", errors)
