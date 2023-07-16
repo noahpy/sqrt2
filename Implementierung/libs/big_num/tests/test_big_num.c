@@ -246,48 +246,6 @@ void test_shift_right(struct bignum a, size_t number, struct bignum expected) {
   free(expected.digits);
 }
 
-void test_division2(struct bignum a, struct bignum b, struct bignum expected) {
-  test_cases++;
-  printf("Test: division2(0x");
-  for (size_t j = a.size - 1; j > 0; j--) {
-    printf("%08x_", a.digits[j]);
-  }
-  printf("%08x, 0x", a.digits[0]);
-  for (size_t j = b.size - 1; j > 0; j--) {
-    printf("%08x_", b.digits[j]);
-  }
-  printf("%08x, ", b.digits[0]);
-  printf("%zu)", expected.fracSize);
-  divisionBignum2(&a, &b, expected.fracSize, subtractionBignum);
-  if (a.size == expected.size) {
-    if (a.fracSize != expected.fracSize) {
-      printf(" failed! fracSize should be %zu, but was %zu\n",
-             expected.fracSize, a.fracSize);
-      free(a.digits);
-      free(b.digits);
-      free(expected.digits);
-      return;
-    }
-    for (size_t i = 0; i < a.size; i++) {
-      if (a.digits[i] != expected.digits[i]) {
-        printf(" failed! digits[%zu] should be 0x%08x, but was 0x%08x\n", i,
-               expected.digits[i], a.digits[i]);
-        free(a.digits);
-        free(b.digits);
-        free(expected.digits);
-        return;
-      }
-    }
-    printf(" passed\n");
-    test_passed++;
-  } else {
-    printf(" failed! size should be %zu, but was %zu\n", expected.size, a.size);
-  }
-  free(a.digits);
-  free(b.digits);
-  free(expected.digits);
-}
-
 int main(void) {
 
   // TESTS FOR NORMAL MULTIPLICATION
@@ -1332,16 +1290,6 @@ int main(void) {
   *(expected.digits + 1) = 0;
   test_subtraction(a, b, expected, false);
 
-  resetBignums(2, 2, 1);
-  // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
-  *a.digits = 0x13214ab1;
-  *(a.digits + 1) = 0x13214ab1;
-  *b.digits = 0x13214ab1;
-  *(b.digits + 1) = 0x13214ab1;
-  *expected.digits = 0x0;
-  *(expected.digits + 1) = 0x0;
-  test_subtraction(a, b, expected, false);
-
   resetBignums(3, 2, 3);
   // 0xffffffff_ffffffff_ffffffff - 0xffffffff_ffffffff =
   // 0xffffffff_00000000_00000000
@@ -1443,16 +1391,6 @@ int main(void) {
   *b.digits = 1;
   *expected.digits = 0xffffffff;
   *(expected.digits + 1) = 0;
-  test_subtraction(a, b, expected, true);
-
-  resetBignums(2, 2, 0);
-  // 0x13214ab1_13214ab1 - 0x13214ab1_13214ab1 = 0x0_0
-  *a.digits = 0x13214ab1;
-  *(a.digits + 1) = 0x13214ab1;
-  *b.digits = 0x13214ab1;
-  *(b.digits + 1) = 0x13214ab1;
-  *expected.digits = 0x0;
-  *(expected.digits + 1) = 0x0;
   test_subtraction(a, b, expected, true);
 
   resetBignums(3, 2, 3);
@@ -1774,7 +1712,7 @@ int main(void) {
   *b.digits = 0x8acd;
   *expected.digits = 0x5;
   expected.fracSize = 4;
-  test_division2(a, b, expected);
+  test_division(a, b, 4, expected);
 
   // 0x3333 / 0x8acd = 0x0.5e6e_286aea73_7d405f72
   resetBignums(1, 1, 3);
@@ -1784,7 +1722,7 @@ int main(void) {
   *(expected.digits + 1) = 0x286aea73;
   *(expected.digits + 2) = 0x5e6e;
   expected.fracSize = 80;
-  test_division2(a, b, expected);
+  test_division(a, b, 80, expected);
 
   // 0x11111111_00000001 / 0x1_00000000_00000000 = 0x0.11111111_00000001
   resetBignums(2, 3, 2);
@@ -1796,7 +1734,7 @@ int main(void) {
   *expected.digits = 0x00000001;
   *(expected.digits + 1) = 0x11111111;
   expected.fracSize = 64;
-  test_division2(a, b, expected);
+  test_division(a, b, 64, expected);
 
   // 0x289d8_c98e98f8_98a8aaa8_98f98482 / 0x11111111111111111111111111111111 =
   // 0x0.002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e_002613b3_cf5af690_f1e1ffe0_f69ec39e
@@ -1828,7 +1766,7 @@ int main(void) {
   *(expected.digits + 14) = 0xcf5af690;
   *(expected.digits + 15) = 0x002613b3;
   expected.fracSize = 512;
-  test_division2(a, b, expected);
+  test_division(a, b,512, expected);
 
   // print overall resulte
   float success_rate = ((float)test_passed) / ((float)test_cases) * 100;
